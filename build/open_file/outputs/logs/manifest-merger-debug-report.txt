@@ -1,0 +1,47 @@
+-- Merging decision tree log ---
+manifest
+ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml:1:1-18:12
+INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml:1:1-18:12
+INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml:1:1-18:12
+	package
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml:3:5-38
+		INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml
+	xmlns:tools
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml:2:5-51
+	xmlns:android
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml:1:11-69
+application
+ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml:5:5-17:19
+provider#com.crazecoder.openfile.FileProvider
+ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml:6:9-16:20
+	android:grantUriPermissions
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml:10:13-47
+	android:authorities
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml:8:13-88
+	android:exported
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml:9:13-37
+	tools:replace
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml:11:13-48
+	android:name
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml:7:13-64
+meta-data#android.support.FILE_PROVIDER_PATHS
+ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml:12:13-15:20
+	android:resource
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml:14:17-50
+	android:name
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml:13:17-67
+uses-sdk
+INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml
+INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml
+INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml
+INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\open_file-3.3.2\android\src\main\AndroidManifest.xml

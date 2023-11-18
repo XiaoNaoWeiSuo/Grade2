@@ -1,0 +1,53 @@
+-- Merging decision tree log ---
+manifest
+ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:1:1-19:12
+INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:1:1-19:12
+INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:1:1-19:12
+	package
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:2:3-38
+		INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:1:11-69
+uses-permission#android.permission.REQUEST_INSTALL_PACKAGES
+ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:3:5-83
+	android:name
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:3:22-80
+application
+ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:5:5-18:19
+meta-data#flutterEmbedding
+ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:6:9-8:33
+	android:value
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:8:13-30
+	android:name
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:7:13-44
+provider#com.zaihui.installplugin.InstallFileProvider
+ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:9:9-17:20
+	android:grantUriPermissions
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:13:13-47
+	android:authorities
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:11:13-79
+	android:exported
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:12:13-37
+	android:name
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:10:13-72
+meta-data#android.support.FILE_PROVIDER_PATHS
+ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:14:13-16:65
+	android:resource
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:16:17-63
+	android:name
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:15:17-67
+uses-sdk
+INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml
+INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml
+INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml
+INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml
+		ADDED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml

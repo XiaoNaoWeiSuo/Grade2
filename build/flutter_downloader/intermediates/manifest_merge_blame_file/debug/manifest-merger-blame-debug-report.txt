@@ -1,0 +1,26 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="vn.hunghd.flutterdownloader" >
+4
+5    <uses-sdk
+6        android:minSdkVersion="19"
+6-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\flutter_downloader-1.10.5\android\src\main\AndroidManifest.xml
+7        android:targetSdkVersion="32" />
+7-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\flutter_downloader-1.10.5\android\src\main\AndroidManifest.xml
+8
+9    <!-- See https://developer.android.com/training/package-visibility -->
+10    <queries>
+10-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\flutter_downloader-1.10.5\android\src\main\AndroidManifest.xml:5:5-9:15
+11        <intent>
+11-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\flutter_downloader-1.10.5\android\src\main\AndroidManifest.xml:6:9-8:18
+12            <action android:name="android.intent.action.VIEW" />
+12-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\flutter_downloader-1.10.5\android\src\main\AndroidManifest.xml:7:13-65
+12-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\flutter_downloader-1.10.5\android\src\main\AndroidManifest.xml:7:21-62
+13        </intent>
+14    </queries>
+15
+16    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+16-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\flutter_downloader-1.10.5\android\src\main\AndroidManifest.xml:10:5-77
+16-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\flutter_downloader-1.10.5\android\src\main\AndroidManifest.xml:10:22-74
+17
+18</manifest>
