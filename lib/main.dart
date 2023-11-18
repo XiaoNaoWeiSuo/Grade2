@@ -3443,7 +3443,7 @@ class _vacationState extends State<vacationPage> with TickerProviderStateMixin {
                     size: ItemSize,
                   ),
                   const Text(
-                    "如何销假？",
+                    "如何销假 ？",
                     style: TextStyle(color: Colors.white),
                   )
                 ],
