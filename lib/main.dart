@@ -1078,6 +1078,44 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                   },
                                 ),
                               ),
+                              SizedBox(
+                                  height: fontsz * 0.7,
+                                  child: Padding(
+                                    padding: EdgeInsets.only(top: fontsz * 0.2),
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: widget.schedule.length,
+                                      itemBuilder: (context, index) {
+                                        return AnimatedContainer(
+                                            duration: const Duration(
+                                                milliseconds: 400),
+                                            width: fontsz *
+                                                ((int.parse(teacherName) - 1) ==
+                                                        index
+                                                    ? 1.5
+                                                    : 0.5),
+                                            margin: const EdgeInsets.only(
+                                              // top: 3,
+                                              left: 3,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: currentWeek == (index + 1)
+                                                  ? Colors.blue
+                                                  : Colors.transparent,
+                                              border: Border.all(
+                                                  width:
+                                                      currentWeek == (index + 1)
+                                                          ? 0
+                                                          : 1,
+                                                  color: Colors.black45),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                fontsz * 0.5,
+                                              ),
+                                            ));
+                                      },
+                                    ),
+                                  )),
                               AnimatedBuilder(
                                   animation: _ChatLoadAnima,
                                   builder: (context, child) {
@@ -1122,7 +1160,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                               child: Container(
                                                   margin: EdgeInsets.only(
                                                       right: fontsz / 2),
-                                                  height: fontsz * 3.5,
+                                                  height: fontsz * 3,
                                                   width: fontsz * 3,
                                                   child: Center(
                                                     child: Icon(

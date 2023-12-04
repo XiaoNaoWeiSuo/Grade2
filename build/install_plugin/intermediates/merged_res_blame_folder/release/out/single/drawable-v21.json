@@ -1,0 +1,6 @@
+[
+    {
+        "merged": "com.example.installplugin.install_plugin-merged_res-12:/drawable-v21/notification_action_background.xml",
+        "source": "com.example.installplugin.install_plugin-core-1.6.0-1:/drawable-v21/notification_action_background.xml"
+    }
+]
