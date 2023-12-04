@@ -1,9 +1,6 @@
-// ignore_for_file: non_constant_identifier_names, library_private_types_in_public_api, must_be_immutable, use_build_context_synchronously, prefer_typing_uninitialized_variables, camel_case_types
-
-//import "package:html/parser.dart";
-
 //import "package:flutter/services.dart";
-import 'dart:ffi';
+
+// ignore_for_file: use_build_context_synchronously
 
 import 'package:dio/dio.dart';
 import "package:flutter/services.dart";
@@ -871,7 +868,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                   curve: Curves.fastLinearToSlowEaseIn,
                                   child: Text(
                                     index == currentIndex
-                                        ? '${listOfStrings[index]}'
+                                        ? listOfStrings[index]
                                         : '',
                                     style: const TextStyle(
                                       color: Colors.blueAccent,
@@ -917,7 +914,12 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                     _labelstate = index;
                   });
                 },
-                children: [classPage(), HomoPage(), ExamPage(), updatePage()],
+                children: [
+                  classPage(),
+                  HomoPage(),
+                  ExamPage(),
+                  const updatePage()
+                ],
               ),
             ])));
   }
@@ -1653,7 +1655,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                   currentdelete == "";
                                 });
                               },
-                              child: Icon(
+                              child: const Icon(
                                 Icons.close,
                                 color: Colors.blue,
                               ),
@@ -1672,7 +1674,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                   ctrlFile.writeCounter(datalist);
                                 });
                               },
-                              child: Icon(
+                              child: const Icon(
                                 Icons.check,
                                 color: Colors.blue,
                               ),
@@ -2350,7 +2352,11 @@ class AutherPage extends StatefulWidget {
   final String name;
   final String campus;
   final String code;
-  AutherPage({required this.name, required this.campus, required this.code});
+  const AutherPage(
+      {super.key,
+      required this.name,
+      required this.campus,
+      required this.code});
 
   @override
   _Auther createState() => _Auther();
@@ -2372,6 +2378,7 @@ class _Auther extends State<AutherPage> {
   String logdate = "";
   @override
   void initState() {
+    super.initState();
     load();
   }
 
@@ -2386,7 +2393,7 @@ class _Auther extends State<AutherPage> {
 
   Future<void> _startUpdate() async {
     var appDocDir = await getTemporaryDirectory();
-    String savePath = appDocDir.path + "/new_version.apk";
+    String savePath = "${appDocDir.path}/new_version.apk";
     String fileUrl = "http://49.235.106.67/arm64-v8a.apk";
 
     await Dio().download(fileUrl, savePath, onReceiveProgress: (count, total) {
@@ -2423,7 +2430,6 @@ class _Auther extends State<AutherPage> {
     final mediaQueryData = MediaQuery.of(context);
     double statusBarHeight = mediaQueryData.padding.top;
     double screenWidth = mediaQueryData.size.width;
-    double screenHeight = mediaQueryData.size.height;
     double fontsz = screenWidth * 0.045;
     return Scaffold(
         appBar: AppBar(
@@ -2749,6 +2755,7 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
 
     TeenStudy().then((value) {
       urls = value;
+      setState(() {});
     });
   }
 
@@ -2833,7 +2840,6 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
                           } catch (e) {
                             data = await getdaxuexi();
                           }
-
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -3201,7 +3207,6 @@ class DaxuexiPage extends StatelessWidget {
     final mediaQueryData = MediaQuery.of(context);
     double statusBarHeight = mediaQueryData.padding.top;
     double screenWidth = mediaQueryData.size.width;
-    double screenHeight = mediaQueryData.size.height;
     double fontsz = screenWidth * 0.045;
     return Scaffold(
         body: Column(
@@ -3280,17 +3285,12 @@ class vacationPage extends StatefulWidget {
 }
 
 class _vacationState extends State<vacationPage> with TickerProviderStateMixin {
-  //ture表示是AI的消息
-
-  late AnimationController _animationController;
-  late Animation<double> _animation;
-  late AnimationController _controller;
-
   late int hours, mins;
   late String totaltime;
   final ScrollController _scrollController = ScrollController();
   @override
   void initState() {
+    super.initState();
     // _controller = AnimationController(
     //   vsync: this,
     //   duration: const Duration(seconds: 3), // 动画持续时间为3秒
@@ -3498,7 +3498,7 @@ class _vacationState extends State<vacationPage> with TickerProviderStateMixin {
                 SizedBox(
                   width: screenWidth,
                   height: 20,
-                  child: AnimatedStrip(
+                  child: const AnimatedStrip(
                     color: Colors.white,
                     duration: Duration(milliseconds: 1000),
                     stripeHeight: 20,

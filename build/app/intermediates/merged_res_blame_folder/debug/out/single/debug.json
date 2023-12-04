@@ -1,0 +1,34 @@
+[
+    {
+        "merged": "com.example.xiaonaoweisuo.grade2.app-merged_res-24:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "com.example.xiaonaoweisuo.grade2.app-main-18:/mipmap-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.xiaonaoweisuo.grade2.app-merged_res-24:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "com.example.xiaonaoweisuo.grade2.app-main-18:/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.xiaonaoweisuo.grade2.app-merged_res-24:/drawable_launch_background.xml.flat",
+        "source": "com.example.xiaonaoweisuo.grade2.app-main-18:/drawable/launch_background.xml"
+    },
+    {
+        "merged": "com.example.xiaonaoweisuo.grade2.app-merged_res-24:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.example.xiaonaoweisuo.grade2.app-main-18:/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.xiaonaoweisuo.grade2.app-merged_res-24:/mipmap-ldpi_ic_launcher.png.flat",
+        "source": "com.example.xiaonaoweisuo.grade2.app-main-18:/mipmap-ldpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.xiaonaoweisuo.grade2.app-merged_res-24:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "com.example.xiaonaoweisuo.grade2.app-main-18:/mipmap-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.xiaonaoweisuo.grade2.app-merged_res-24:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "com.example.xiaonaoweisuo.grade2.app-main-18:/mipmap-xhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.xiaonaoweisuo.grade2.app-merged_res-24:/drawable-v21_launch_background.xml.flat",
+        "source": "com.example.xiaonaoweisuo.grade2.app-main-18:/drawable-v21/launch_background.xml"
+    }
+]

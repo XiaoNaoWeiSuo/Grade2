@@ -1,0 +1,43 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.example.installplugin" >
+4
+5    <uses-sdk
+6        android:minSdkVersion="16"
+6-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml
+7        android:targetSdkVersion="16" />
+7-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml
+8
+9    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+9-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:3:5-83
+9-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:3:22-80
+10
+11    <application>
+11-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:5:5-18:19
+12        <meta-data
+12-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:6:9-8:33
+13            android:name="flutterEmbedding"
+13-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:7:13-44
+14            android:value="2" />
+14-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:8:13-30
+15
+16        <provider
+16-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:9:9-17:20
+17            android:name="com.zaihui.installplugin.InstallFileProvider"
+17-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:10:13-72
+18            android:authorities="${applicationId}.installFileProvider.install"
+18-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:11:13-79
+19            android:exported="false"
+19-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:12:13-37
+20            android:grantUriPermissions="true" >
+20-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:13:13-47
+21            <meta-data
+21-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:14:13-16:65
+22                android:name="android.support.FILE_PROVIDER_PATHS"
+22-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:15:17-67
+23                android:resource="@xml/provider_install_paths" />
+23-->C:\Users\35170\AppData\Local\Pub\Cache\hosted\mirrors.tuna.tsinghua.edu.cn%47dart-pub%47\install_plugin-2.1.0\android\src\main\AndroidManifest.xml:16:17-63
+24        </provider>
+25    </application>
+26
+27</manifest>
