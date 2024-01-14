@@ -851,150 +851,179 @@ class ExamList extends StatelessWidget {
     double screenWidth = mediaQueryData.size.width;
     double screenHeight = mediaQueryData.size.height;
     double fontsz = screenWidth * 0.045;
-    return Container(
-      child: Column(children: [
-        SizedBox(
-          height: statusBarHeight,
-        ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: EdgeInsets.all(fontsz),
-            child: Text(
-              "考试安排",
-              style: TextStyle(
-                  fontSize: fontsz,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.blue),
-            ),
+    return Column(children: [
+      SizedBox(
+        height: statusBarHeight,
+      ),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: Padding(
+          padding: EdgeInsets.all(fontsz),
+          child: Text(
+            "考试安排",
+            style: TextStyle(
+                fontSize: fontsz,
+                fontWeight: FontWeight.w700,
+                color: Colors.blue),
           ),
         ),
-        SizedBox(
-            width: screenWidth,
-            height: screenHeight * 0.75,
-            // decoration: const BoxDecoration(
-            //     border:
-            //         Border(bottom: BorderSide(width: 2, color: Colors.black))),
-            child: ListView.builder(
-              itemCount: examlist.length,
-              itemBuilder: (context, index) {
-                // 获取当前索引处的数据模型
-                var data = examlist[index];
-                return Container(
-                    margin: EdgeInsets.only(
-                        left: fontsz / 2, right: fontsz / 2, top: fontsz / 2),
-                    padding: EdgeInsets.all(fontsz / 3),
-                    height: screenHeight / 10,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(fontsz),
-                        // gradient: const LinearGradient(colors: [
-                        //   Colors.blue,
-                        //   Color.fromARGB(255, 0, 132, 226)
-                        // ], begin: Alignment.bottomRight),
-                        color: Colors.blue),
-                    child: Row(
-                      children: [
-                        Container(
-                            width: fontsz / 5,
-                            height: fontsz * 3,
-                            margin: EdgeInsets.all(fontsz / 4),
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(fontsz))),
-                        SizedBox(
-                            width: screenWidth / 3.2,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(data.courseName,
-                                    maxLines: 1,
-                                    style: TextStyle(
+      ),
+      Expanded(
+          child: SizedBox(
+              width: screenWidth,
+              // height: screenHeight * 0.75,
+              // decoration: const BoxDecoration(
+              //     border:
+              //         Border(bottom: BorderSide(width: 2, color: Colors.black))),
+              child: MediaQuery.removePadding(
+                  context: context,
+                  removeTop: true,
+                  child: ListView.builder(
+                    itemCount: examlist.length,
+                    itemBuilder: (context, index) {
+                      // 获取当前索引处的数据模型
+                      var data = examlist[index];
+                      return Container(
+                          margin: EdgeInsets.only(
+                              left: fontsz / 2,
+                              right: fontsz / 2,
+                              top: fontsz / 4),
+                          //padding: EdgeInsets.all(fontsz / 3),
+                          height: screenHeight / 10,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(fontsz / 2),
+                              // gradient: const LinearGradient(colors: [
+                              //   Colors.blue,
+                              //   Color.fromARGB(255, 0, 132, 226)
+                              // ], begin: Alignment.bottomRight),
+                              color: Colors.transparent),
+                          child: Row(
+                            children: [
+                              Container(
+                                  width: fontsz / 5,
+                                  height: fontsz * 3,
+                                  margin: EdgeInsets.all(fontsz / 4),
+                                  decoration: BoxDecoration(
+                                      color: data.ispass
+                                          ? Colors.black38
+                                          : Colors.blue,
+                                      borderRadius:
+                                          BorderRadius.circular(fontsz))),
+                              SizedBox(
+                                  width: screenWidth / 3.2,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(data.courseName,
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: fontsz * 0.8)),
+                                      Text("模式：${data.examFormat}",
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                              color: Colors.black54,
+                                              // fontWeight: FontWeight.w800,
+                                              fontSize: fontsz * 0.7)),
+                                      Text("类型：${data.examType}",
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                              color: Colors.black54,
+                                              //fontWeight: FontWeight.w800,
+                                              fontSize: fontsz * 0.75)),
+                                    ],
+                                  )),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.access_alarm,
+                                    color: data.ispass
+                                        ? Colors.green.withOpacity(0.3)
+                                        : Colors.green.withOpacity(0.8),
+                                    size: fontsz * 2,
+                                  ),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        removeYear(data.examDate),
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black54,
+                                            fontSize: fontsz * 1.2),
+                                      ),
+                                      Text(
+                                        data.examTime,
+                                        style: TextStyle(
+                                            color: Colors.black87,
+                                            fontSize: fontsz / 1.2),
+                                      )
+                                    ],
+                                  )
+                                ],
+                              ),
+                              const Expanded(
+                                  child: SizedBox(
+                                      //width: fontsz / 2,
+                                      //height: fontsz * 3,
+                                      )),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(data.capacity.toString(),
+                                          style: TextStyle(
+                                              color: data.ispass
+                                                  ? Colors.blue.withOpacity(0.5)
+                                                  : Colors.blue,
+                                              //fontWeight: FontWeight.w800,
+
+                                              fontSize: fontsz * 1.5,
+                                              fontWeight: FontWeight.bold)),
+                                      Icon(
+                                        Icons.place,
                                         color: Colors.white,
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: fontsz * 0.8)),
-                                Text("模式：${data.examFormat}",
-                                    maxLines: 1,
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        // fontWeight: FontWeight.w800,
-                                        fontSize: fontsz * 0.7)),
-                                Text("类型：${data.examType}",
-                                    maxLines: 1,
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        //fontWeight: FontWeight.w800,
-                                        fontSize: fontsz * 0.75)),
-                              ],
-                            )),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Icon(
-                              Icons.access_alarm,
-                              color: Colors.white,
-                              size: fontsz * 2.5,
-                            ),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  data.examDate,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      fontSize: fontsz * 1.2),
-                                ),
-                                Text(
-                                  data.examTime,
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: fontsz / 1.2),
-                                )
-                              ],
-                            )
-                          ],
-                        ),
-                        SizedBox(
-                          width: fontsz / 2,
-                          //height: fontsz * 3,
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.place,
-                                  color: Colors.white,
-                                  size: fontsz * 2,
-                                ),
-                                Text(data.capacity.toString(),
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        //fontWeight: FontWeight.w800,
-                                        fontSize: fontsz * 1.5,
-                                        fontWeight: FontWeight.bold))
-                              ],
-                            ),
-                            Text(
-                              data.examRoom,
-                              style: TextStyle(
-                                  color: Colors.white, fontSize: fontsz / 1.2),
-                            )
-                          ],
-                        ),
-                        SizedBox(
-                          width: fontsz,
-                          //height: fontsz * 3,
-                        ),
-                      ],
-                    ));
-              },
-            ))
-      ]),
-    );
+                                        shadows: [
+                                          BoxShadow(
+                                              color: data.ispass
+                                                  ? Colors.black12
+                                                  : Colors.black38,
+                                              blurRadius: fontsz * 2.5)
+                                        ],
+                                        size: fontsz * 2.5,
+                                      ),
+                                    ],
+                                  ),
+                                  Container(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(3, 0, 3, 0),
+                                    decoration: BoxDecoration(
+                                        color: data.ispass
+                                            ? Colors.black.withOpacity(0.5)
+                                            : Colors.black,
+                                        borderRadius: BorderRadius.circular(3)),
+                                    child: Text(
+                                      data.examRoom,
+                                      style: TextStyle(
+                                          //backgroundColor: Colors.black,
+                                          color: Colors.white,
+                                          fontSize: fontsz / 1.2,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ],
+                          ));
+                    },
+                  ))))
+    ]);
   }
 }
 

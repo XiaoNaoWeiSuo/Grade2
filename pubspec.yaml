@@ -1,5 +1,5 @@
 name: grade2
-description: A new Flutter project.
+description: Just for you.
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 2.1.5+1
+version: 2.2.7+1
 
 environment:
   sdk: '>=2.19.6 <3.0.0'
@@ -43,6 +43,7 @@ dependencies:
   install_plugin: ^2.1.0
   intl: ^0.17.0
   flutter_pickers: ^2.1.9
+  adobe_xd: ^2.0.1
   #permission_handler: ^10.2.0
   # flutter_downloader: ^1.5.2
   # open_file: ^3.0.3

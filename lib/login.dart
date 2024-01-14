@@ -3,6 +3,8 @@
 //import 'dart:html';
 //import 'dart:io';
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 //import 'package:html/parser.dart' show parse;
 import 'dart:math';
@@ -57,6 +59,16 @@ Future<String> gettext() async {
     return data.data["word"];
   } catch (e) {
     return "当前网络不佳";
+  }
+}
+
+Future<List> getpass() async {
+  Dio a = Dio();
+  try {
+    Response data = await a.get("http://49.235.106.67:5000/api/version");
+    return data.data["pass"];
+  } catch (e) {
+    return ["0", "0", "0"];
   }
 }
 
@@ -239,6 +251,22 @@ class Coursesis {
   }
 }
 
+class Evaluate {
+  String url;
+  String name;
+  String course;
+  String type;
+  bool state;
+  String id;
+  Evaluate(
+      {required this.url,
+      required this.name,
+      required this.course,
+      required this.type,
+      required this.state,
+      required this.id});
+}
+
 class SourceAnalysis {
   List<Coursesis> Result(String Source) {
     RegExp regex =
@@ -276,8 +304,8 @@ class SourceAnalysis {
 //整体结构分离
   List<String> extractStructures(String input) {
     List<String> structures = [];
-    final startMarker = 'var teachers = [{id:';
-    final endMarker =
+    const startMarker = 'var teachers = [{id:';
+    const endMarker =
         'table0.activities[index][table0.activities[index].length]=activity;';
 
     int startIndex = input.indexOf(startMarker);
@@ -357,6 +385,7 @@ class ExamData {
   final int capacity;
   final String examFormat;
   final String status;
+  final bool ispass;
 
   ExamData({
     required this.id,
@@ -368,13 +397,14 @@ class ExamData {
     required this.capacity,
     required this.examFormat,
     required this.status,
+    required this.ispass,
   });
 
   @override
   String toString() {
     return 'ExamData(id: $id, courseName: $courseName, examType: $examType, '
         'examDate: $examDate, examTime: $examTime, examRoom: $examRoom, '
-        'capacity: $capacity, examFormat: $examFormat, status: $status)';
+        'capacity: $capacity, examFormat: $examFormat, status: $status, ispass: $ispass)';
   }
 }
 
@@ -484,6 +514,7 @@ class Requests {
 
 //获取考试安排
   Future<List<ExamData>> GetExam(Dio dio, bool mode) async {
+    //debugPrint("考试源打印-经过1");
     List da = await GetExamIds(dio);
     List<ExamData> item = [];
     try {
@@ -500,10 +531,13 @@ class Requests {
   Future<List<ExamData>> getexamitem(Dio dio, String id) async {
     String url =
         "http://jwc3.yangtzeu.edu.cn/eams/stdExamTable!examTable.action?examBatch.id=$id";
+    //debugPrint("考试源打印-经过3");
     Response examlist = await dio.get(url);
-
+    debugPrint(
+        "考试源打印${examlist.toString()}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
     var document = parser.parse(examlist.data);
     var table = document.querySelector('table'); // 直接选择第一个 <table> 元素
+    debugPrint("考试gen打印${table.toString()}");
     List<ExamData> examDataList = [];
     if (table != null) {
       var rows = table.querySelectorAll('tr');
@@ -512,23 +546,55 @@ class Requests {
         if (cells.length >= 10) {
           // 假设表格至少有10个单元格
           var data = cells.map((cell) => cell.text.trim()).toList();
+
           examDataList.add(ExamData(
-            id: int.parse(data[0]),
-            courseName: removeParentheses(data[1]),
-            examType: data[2],
-            examDate: removeYear(data[3]),
-            examTime: data[4],
-            examRoom: data[5],
-            capacity: int.parse(data[6]),
-            examFormat: data[7],
-            status: data[8],
-          ));
+              id: int.parse(data[0]),
+              courseName: removeParentheses(data[1]),
+              examType: data[2],
+              examDate: (data[3].contains("未安排") ? "2000-00-00" : data[3]),
+              examTime: (data[4].contains("未安排") ? "0:00~0:00" : data[4]),
+              examRoom: data[5],
+              capacity: int.parse(data[6].contains("未安排") ? "00" : data[6]),
+              examFormat: data[7],
+              status: data[8],
+              ispass: _parseDateTime(
+                (data[3].contains("未安排") ? "2000-00-00" : data[3]),
+                (data[4].contains("未安排") ? "0:00~0:00" : data[4]),
+              ).isBefore(DateTime.now())));
         }
       }
+      debugPrint(examDataList.toString());
     } else {
       return [];
     }
+    examDataList.sort((a, b) {
+      DateTime dateTimeA = _parseDateTime(a.examDate, a.examTime);
+      DateTime dateTimeB = _parseDateTime(b.examDate, b.examTime);
+
+      return dateTimeA.compareTo(dateTimeB);
+    });
     return examDataList;
+  }
+
+  DateTime _parseDateTime(String date, String time) {
+    List<String> timeParts = time.split('~');
+    String startTime = timeParts[0];
+    String endTime = timeParts[1];
+
+    List<String> dateParts = date.split('-');
+    int year = int.parse(dateParts[0]);
+    int month = int.parse(dateParts[1]);
+    int day = int.parse(dateParts[2]);
+
+    DateTime dateTime = DateTime(year, month, day);
+    DateTime startTimeDateTime = DateTime(
+        dateTime.year,
+        dateTime.month,
+        dateTime.day,
+        int.parse(startTime.split(':')[0]),
+        int.parse(startTime.split(':')[1]));
+
+    return startTimeDateTime;
   }
 
   String backyearid(String name) {
@@ -706,17 +772,18 @@ class Requests {
       case "2023-2024 上学期":
         id = "289";
         break;
+      case "2023-2024 下学期":
+        id = "309";
+        break;
+      case "2024-2025 上学期":
+        id = "329";
+        break;
       default:
         id = ""; // 如果没有匹配的情况，可以选择设置一个默认值
         break;
     }
 
     return id;
-  }
-
-  String removeYear(String inputString) {
-    final regex = RegExp(r'^\d{4}-');
-    return inputString.replaceAll(regex, '');
   }
 
   List<String> extractOptionValues(String html) {
@@ -737,7 +804,9 @@ class Requests {
         optionValues.add(value);
       }
     }
-
+    if (optionValues.length == 1) {
+      optionValues.add(optionValues[0]);
+    }
     return optionValues;
   }
 
@@ -755,6 +824,152 @@ class Requests {
       son.courseName = son.courseName.replaceAll('（', '').replaceAll('）', '');
     }
     return studentList;
+  }
+
+//获取量化评教
+  Future<List<Evaluate>> GetEvaluate(Dio dio) async {
+    String url =
+        "http://jwc3.yangtzeu.edu.cn/eams/quality/stdEvaluate.action?_=${DateTime.now().millisecondsSinceEpoch}";
+    //String ids = await GetIds(dio);
+    // FormData data = FormData.fromMap({
+    //   'ignoreHead': '1',
+    //   'semester.id': backyearid(key),
+    // });
+    Response call = await dio.get(
+      url,
+      //data: data,
+    );
+    // Parse the HTML content
+    List<Evaluate> asc = [];
+    // 解析HTML内容
+    var document = parser.parse(call.data);
+
+    // 获取表格中所有行
+    var rows = document.querySelectorAll('tbody tr');
+
+    for (var row in rows) {
+      // 提取单元格信息
+      var columns = row.children;
+
+      // 提取课程名称、教师名称和链接地址
+      //String label = columns[0].text;
+      String courseName = columns[1].text;
+      String teacher = columns[3].text;
+      String type = columns[2].text;
+      bool evastate;
+      String link = "";
+      String evaluationLessonId = "";
+      try {
+        link = columns[5].querySelector('a')!.attributes['href']!;
+        Uri uri = Uri.parse(link);
+        evaluationLessonId = uri.queryParameters['evaluationLesson.id']!;
+
+        evastate = false;
+      } catch (e) {
+        link = "";
+        evastate = true;
+      }
+
+      // 根据需要使用提取的信息
+      asc.add(Evaluate(
+          url: link,
+          course: removeParentheses(courseName),
+          type: type,
+          name: teacher,
+          state: evastate,
+          id: evaluationLessonId));
+    }
+    return asc;
+  }
+
+  //获取提交量化评教
+  Future GetSEvaluatePush(Dio dio, String key, String label, type) async {
+    String url =
+        "http://jwc3.yangtzeu.edu.cn/eams/quality/stdEvaluate!finishAnswer.action";
+    String ids = await GetIds(dio);
+    FormData data = FormData.fromMap({
+      "teacher.id": "",
+      "semester.id": backyearid(key),
+      "evaluationLesson.id": label,
+      "result1_0.questionName": "教学严谨，为人师表，上课精神饱满，认真负责",
+      "result1_0.content": "非常满意",
+      "result1_0.score": "10",
+      "result1_1.questionName": "教师遵守教学纪律，无迟到、早退、随意调停课情况",
+      "result1_1.content": "非常满意",
+      "result1_1.score": "10",
+      "result1_2.questionName": "按时安排辅导答疑，作业布置适量，作业批改及时认真",
+      "result1_2.content": "非常满意",
+      "result1_2.score": "10",
+      "result1_3.questionName": "备课充分，脉络清晰，重点难点突出",
+      "result1_3.content": "非常满意",
+      "result1_3.score": "10",
+      "result1_4.questionName": "注重将知识传授、能力提升与理想信念、价值引领、家国情怀等课程思政教育有机融合",
+      "result1_4.content": "非常满意",
+      "result1_4.score": "10",
+      "result1_5.questionName": "教材选用合理，能反映或联系学科新思想、新概念、新成果",
+      "result1_5.content": "非常满意",
+      "result1_5.score": "10",
+      "result1_6.questionName": "课堂讲授技巧及语言表达能力好，能合理、有效运用互动式、启发式、研讨式等教学方式",
+      "result1_6.content": "非常满意",
+      "result1_6.score": "10",
+      "result1_7.questionName": "能合理、有效使用信息化、智能化等现代教学手段",
+      "result1_7.content": "非常满意",
+      "result1_7.score": "10",
+      "result1_8.questionName": "对该门课程感兴趣，掌握了该门课程的知识和技能",
+      "result1_8.content": "非常满意",
+      "result1_8.score": "10",
+      "result1_9.questionName": "学习方法及解决相关问题的能力得到提高，收获大",
+      "result1_9.content": "非常满意",
+      "result1_9.score": "10",
+      "result1Num": "10",
+      "result2Num": "0"
+    });
+    FormData data_Practice = FormData.fromMap({
+      "teacher.id": "",
+      "semester.id": backyearid(key),
+      "evaluationLesson.id": label,
+      "result1_0.questionName": "教学严谨，为人师表，上课精神饱满，认真负责",
+      "result1_0.content": "非常满意",
+      "result1_0.score": "10",
+      "result1_1.questionName": "课前准备充分，安全措施得当，积极巡视，认真指导，过程记录完整",
+      "result1_1.content": "非常满意",
+      "result1_1.score": "10",
+      "result1_2.questionName": "教学目标明确，与理论课内容相衔接",
+      "result1_2.content": "非常满意",
+      "result1_2.score": "10",
+      "result1_3.questionName": "对课堂目标、操作要点等讲解清晰，教师讲解与学生操作训练时间分配合理",
+      "result1_3.content": "非常满意",
+      "result1_3.score": "10",
+      "result1_4.questionName": "注重将知识传授、能力提升与理想信念、价值引领、家国情怀等课程思政教育有机融合",
+      "result1_4.content": "非常满意",
+      "result1_4.score": "10",
+      "result1_5.questionName": "将安全、职业道德教育融入教学全过程",
+      "result1_5.content": "非常满意",
+      "result1_5.score": "10",
+      "result1_6.questionName": "讲授技巧及语言表达能力好，能合理、有效运用互动式、启发式、研讨式等教学方式",
+      "result1_6.content": "非常满意",
+      "result1_6.score": "10",
+      "result1_7.questionName": "分组合理，实践充分，因材施教",
+      "result1_7.content": "非常满意",
+      "result1_7.score": "10",
+      "result1_8.questionName": "突出学生的主体地位,重视实践能力和创新精神的培养，注重指导学生独立自主地进行实践实训",
+      "result1_8.content": "非常满意",
+      "result1_8.score": "10",
+      "result1_9.questionName": "通过实践实训进一步加深了对理论知识的理解，动手能力及分析、解决问题的能力得到提高",
+      "result1_9.content": "非常满意",
+      "result1_9.score": "10",
+      "result1Num": "10",
+      "result2Num": "0"
+    });
+    await dio.post(
+      url,
+      data: type == "实践" ? data_Practice : data,
+      options: Options(
+          followRedirects: false,
+          validateStatus: (status) {
+            return status! <= 500;
+          }),
+    );
   }
 
   List<Student> parseStudentTable(String htmlSource) {
@@ -1137,7 +1352,7 @@ int getCurrentTimeSlot() {
 //获取青年大学习列表
 Future<List> TeenStudy() async {
   List urls = [];
-  String url = "https://h5.cyol.com/special/daxuexi/daxuexiall17/m.html?t=1";
+  String url = "https://h5.cyol.com/special/daxuexi/daxuexiall19/m.html?t=1";
   try {
     Response response = await Dio().get(url);
     var document = parser.parse(response.data);

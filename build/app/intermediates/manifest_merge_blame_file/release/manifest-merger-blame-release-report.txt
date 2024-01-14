@@ -2,7 +2,7 @@
 2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
 3    package="com.example.xiaonaoweisuo.grade2"
 4    android:versionCode="4001"
-5    android:versionName="2.1.5" >
+5    android:versionName="2.2.7" >
 6
 7    <uses-sdk
 8        android:minSdkVersion="16"

@@ -2,6 +2,7 @@
 // import 'package:open_file/open_file.dart';
 // ignore_for_file: non_constant_identifier_names
 
+import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -134,7 +135,10 @@ class Appdata {
   }
 }
 
-void SenMail(String name, String campus, String content, bool state) async {
+void SenMail(String name, String campus, String content, bool state,
+    String account) async {
+  Dio a = Dio();
+
   final client = SmtpClient('neverouo.bug', isLogEnabled: true);
   try {
     await client.connectToServer('smtp.163.com', 465,
@@ -150,6 +154,14 @@ void SenMail(String name, String campus, String content, bool state) async {
       return;
     }
     String version = await getVersionapp();
+    if (!state) {
+      try {
+        await a.get(
+            "http://49.235.106.67:5000/api/log/$account/$campus/$name/$version/");
+      } catch (e) {
+        Null;
+      }
+    }
     final builder = MessageBuilder.prepareMultipartAlternativeMessage();
     builder.from = [
       MailAddress((state ? 'Grade用户反馈' : "Grade用户登录"), 'm15218765700@163.com')
@@ -160,4 +172,25 @@ void SenMail(String name, String campus, String content, bool state) async {
     final mimeMessage = builder.buildMimeMessage();
     final sendResponse = await client.sendMessage(mimeMessage);
   } on SmtpException catch (e) {}
+}
+
+bool isVersionGreaterThan(String version1, String version2) {
+  List<int> v1Parts = version1.split('.').map(int.parse).toList();
+  List<int> v2Parts = version2.split('.').map(int.parse).toList();
+  // 比较每个部分的数字
+  for (int i = 0; i < v1Parts.length && i < v2Parts.length; i++) {
+    if (v1Parts[i] < v2Parts[i]) {
+      return false; // 版本1 <= 版本2
+    } else if (v1Parts[i] > v2Parts[i]) {
+      return true; // 版本1 > 版本2
+    }
+  }
+
+  return v1Parts.length > v2Parts.length;
+}
+
+//去除头部年份
+String removeYear(String inputString) {
+  final regex = RegExp(r'^\d{4}-');
+  return inputString.replaceAll(regex, '');
 }
