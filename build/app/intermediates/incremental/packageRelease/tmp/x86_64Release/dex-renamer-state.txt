@@ -1,4 +1,4 @@
-#Fri Jan 12 02:01:19 CST 2024
+#Tue Jan 16 17:15:07 CST 2024
 base.0=C\:\\Users\\35170\\Desktop\\+\\Flutter\\grade2\\build\\app\\intermediates\\dex\\release\\minifyReleaseWithR8\\classes.dex
 path.0=classes.dex
 renamed.0=classes.dex

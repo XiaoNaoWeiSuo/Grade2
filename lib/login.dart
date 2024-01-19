@@ -2,9 +2,7 @@
 
 //import 'dart:html';
 //import 'dart:io';
-
-import 'dart:io';
-
+// import 'dart:io';
 import 'package:flutter/material.dart';
 //import 'package:html/parser.dart' show parse;
 import 'dart:math';
@@ -523,7 +521,9 @@ class Requests {
       } else {
         item = await getexamitem(dio, da[1]);
       }
-    } catch (e) {}
+    } catch (e) {
+      Null;
+    }
     //print(data);
     return item;
   }
@@ -533,11 +533,11 @@ class Requests {
         "http://jwc3.yangtzeu.edu.cn/eams/stdExamTable!examTable.action?examBatch.id=$id";
     //debugPrint("考试源打印-经过3");
     Response examlist = await dio.get(url);
-    debugPrint(
-        "考试源打印${examlist.toString()}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    // debugPrint(
+    //     "考试源打印${examlist.toString()}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
     var document = parser.parse(examlist.data);
     var table = document.querySelector('table'); // 直接选择第一个 <table> 元素
-    debugPrint("考试gen打印${table.toString()}");
+    //debugPrint("考试gen打印${table.toString()}");
     List<ExamData> examDataList = [];
     if (table != null) {
       var rows = table.querySelectorAll('tr');
@@ -563,7 +563,7 @@ class Requests {
               ).isBefore(DateTime.now())));
         }
       }
-      debugPrint(examDataList.toString());
+      //debugPrint(examDataList.toString());
     } else {
       return [];
     }
@@ -579,7 +579,7 @@ class Requests {
   DateTime _parseDateTime(String date, String time) {
     List<String> timeParts = time.split('~');
     String startTime = timeParts[0];
-    String endTime = timeParts[1];
+    //String endTime = timeParts[1];
 
     List<String> dateParts = date.split('-');
     int year = int.parse(dateParts[0]);
@@ -818,7 +818,9 @@ class Requests {
     List<CourseDataModel> studentList = parseTableData(call.data);
     try {
       studentList.removeAt(0);
-    } catch (w) {}
+    } catch (w) {
+      Null;
+    }
 
     for (CourseDataModel son in studentList) {
       son.courseName = son.courseName.replaceAll('（', '').replaceAll('）', '');
@@ -886,7 +888,7 @@ class Requests {
   Future GetSEvaluatePush(Dio dio, String key, String label, type) async {
     String url =
         "http://jwc3.yangtzeu.edu.cn/eams/quality/stdEvaluate!finishAnswer.action";
-    String ids = await GetIds(dio);
+    //String ids = await GetIds(dio);
     FormData data = FormData.fromMap({
       "teacher.id": "",
       "semester.id": backyearid(key),
@@ -1157,7 +1159,6 @@ class Requests {
         .trim()
         .replaceAll('（', '')
         .replaceAll('）', '');
-    ;
   }
 
   String removespace(String input) {
@@ -1238,6 +1239,29 @@ class Requests {
     }
     OneYear.removeAt(0);
     return OneYear;
+  }
+}
+
+class SelectCourse {
+  //获取选课列表
+  Future<List<Map>> GetSelectList(Dio dio) async {
+    String url =
+        "http://jwc3.yangtzeu.edu.cn/eams/stdElectCourse.action?_=${DateTime.now().millisecondsSinceEpoch}";
+    Response response = await dio.get(url);
+    var document = parser.parse(response.data);
+    List<Map<String, String>> extractedData = [];
+    document
+        .querySelectorAll('.ajax_container > div[id^="electIndexNotice"]')
+        .forEach((container) {
+      String title = container.querySelector('h2')?.text ?? '';
+      String url = container.querySelector('a')?.attributes['href'] ?? '';
+      Map<String, String> outlineData = {
+        'title': title.split("-")[3],
+        'url': url,
+      };
+      extractedData.add(outlineData);
+    });
+    return extractedData;
   }
 }
 
@@ -1336,7 +1360,7 @@ int getCurrentTimeSlot() {
   int startTimeHour = 7; // 开始时间的小时数
   int endTimeHour = 20; // 结束时间的小时数
 
-  final int totalSlots = 8; // 时间区间总数
+  const int totalSlots = 8; // 时间区间总数
   int hourDiff = endTimeHour - startTimeHour; // 开始时间和结束时间之间的小时差
   int slotDuration = (hourDiff / totalSlots).floor(); // 每个时间区间的小时数
 

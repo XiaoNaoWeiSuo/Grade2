@@ -1,6 +1,24 @@
 <component name="libraryTable">
   <library name="Flutter Plugins" type="FlutterPluginsLibraryType">
-    <CLASSES />
+    <CLASSES>
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/flutter_local_notifications-16.3.0" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/path_provider_android-2.2.0" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/path_provider_linux-2.2.1" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/image_picker-1.0.4" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/image_picker_for_web-3.0.1" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/file_selector_linux-0.9.2+1" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/path_provider_foundation-2.3.1" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/install_plugin-2.1.0" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/image_picker_macos-0.2.1+1" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/image_picker_ios-0.8.8+2" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/path_provider-2.1.1" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/image_picker_android-0.8.8+1" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/image_picker_windows-0.2.1+1" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/file_selector_windows-0.9.3+1" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/file_selector_macos-0.9.3+3" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/image_picker_linux-0.2.1+1" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/path_provider_windows-2.2.1" />
+    </CLASSES>
     <JAVADOC />
     <SOURCES />
   </library>

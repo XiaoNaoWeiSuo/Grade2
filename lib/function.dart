@@ -170,8 +170,10 @@ void SenMail(String name, String campus, String content, bool state,
     builder.subject = "$campus:$name";
     builder.addTextPlain("版本：$version\n$content");
     final mimeMessage = builder.buildMimeMessage();
-    final sendResponse = await client.sendMessage(mimeMessage);
-  } on SmtpException catch (e) {}
+    await client.sendMessage(mimeMessage);
+  } on SmtpException {
+    Null;
+  }
 }
 
 bool isVersionGreaterThan(String version1, String version2) {

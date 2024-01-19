@@ -2,7 +2,6 @@
 
 import 'dart:async';
 import 'dart:math';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pickers/style/default_style.dart';
@@ -435,7 +434,7 @@ class CalendarPage extends StatelessWidget {
 class CustomTextField extends StatefulWidget {
   final TextEditingController controller;
 
-  CustomTextField({required this.controller});
+  const CustomTextField({required this.controller});
 
   @override
   _CustomTextFieldState createState() => _CustomTextFieldState();
@@ -534,7 +533,7 @@ class _AnimatedStripState extends State<AnimatedStrip>
             left: -_animation.value,
             right:
                 _animation.value - (widget.stripeWidth + widget.spaceBetween),
-            child: Container(
+            child: SizedBox(
               height: widget.stripeHeight,
               child: ListView.builder(
                 physics: const NeverScrollableScrollPhysics(),
@@ -601,7 +600,7 @@ class SubjectCreditsList extends StatelessWidget {
                     //     blurRadius: 5.0,
                     //   )
                     // ],
-                    color: Color.fromARGB(180, 228, 227, 227)),
+                    color: const Color.fromARGB(180, 228, 227, 227)),
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1038,7 +1037,7 @@ class CircularProgressBar extends StatelessWidget {
   final double beginCapRadius;
   final double endCapRadius;
 
-  CircularProgressBar({
+  const CircularProgressBar({
     required this.progress,
     this.strokeWidth = 10.0,
     this.color = Colors.blue,
@@ -1175,7 +1174,7 @@ class _MyCustomWidgetState extends State<loadanimation>
     super.initState();
 
     controller1 =
-        AnimationController(vsync: this, duration: Duration(seconds: 1));
+        AnimationController(vsync: this, duration: const Duration(seconds: 1));
     animation1 = Tween<double>(begin: .0, end: .5)
         .animate(CurvedAnimation(parent: controller1, curve: Curves.easeInOut))
       ..addListener(() {
@@ -1191,7 +1190,7 @@ class _MyCustomWidgetState extends State<loadanimation>
       });
 
     controller2 =
-        AnimationController(vsync: this, duration: Duration(seconds: 1));
+        AnimationController(vsync: this, duration: const Duration(seconds: 1));
     animation2 = Tween<double>(begin: .0, end: .5)
         .animate(CurvedAnimation(parent: controller2, curve: Curves.easeInOut))
       ..addListener(() {
@@ -1235,19 +1234,73 @@ class MyPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    Paint Circle_1 = Paint()..color = Color(0xff4285f4);
+    Paint circle1 = Paint()..color = const Color(0xff4285f4);
 
-    Paint Circle_2 = Paint()..color = Color(0xfffbbc05);
-
-    canvas.drawCircle(Offset(size.width * .5, size.height * .5),
-        size.width * Radius_1, Circle_1);
+    Paint circle2 = Paint()..color = const Color(0xfffbbc05);
 
     canvas.drawCircle(Offset(size.width * .5, size.height * .5),
-        size.width * Radius_2, Circle_2);
+        size.width * Radius_1, circle1);
+
+    canvas.drawCircle(Offset(size.width * .5, size.height * .5),
+        size.width * Radius_2, circle2);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
   }
+}
+
+//对话框确认取消
+Future<bool?> showConfirmationDialog(BuildContext context, String text) async {
+  return showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('提示'),
+        content: Text(text),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(true); // 返回true
+            },
+            child: const Text('确认'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(false); // 返回false
+            },
+            child: const Text('取消'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+//对话框更新提醒
+Future<bool?> showTextDialog(BuildContext context, String text) async {
+  return showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('提示'),
+        content: Text(text),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(true); // 返回true
+            },
+            child: const Text('继续登录'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(false); // 返回false
+            },
+            child: const Text('获取更新'),
+          ),
+        ],
+      );
+    },
+  );
 }

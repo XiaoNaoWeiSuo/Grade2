@@ -86,6 +86,12 @@
       "languageVersion": "2.19"
     },
     {
+      "name": "dbus",
+      "rootUri": "file:///C:/Users/35170/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%2547dart-pub%2547/dbus-0.7.10",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
       "name": "dio",
       "rootUri": "file:///C:/Users/35170/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%2547dart-pub%2547/dio-5.3.3",
       "packageUri": "lib/",
@@ -180,6 +186,24 @@
       "rootUri": "file:///C:/Users/35170/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%2547dart-pub%2547/flutter_lints-2.0.3",
       "packageUri": "lib/",
       "languageVersion": "2.19"
+    },
+    {
+      "name": "flutter_local_notifications",
+      "rootUri": "file:///C:/Users/35170/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%2547dart-pub%2547/flutter_local_notifications-16.3.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
+      "name": "flutter_local_notifications_linux",
+      "rootUri": "file:///C:/Users/35170/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%2547dart-pub%2547/flutter_local_notifications_linux-4.0.0+1",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
+      "name": "flutter_local_notifications_platform_interface",
+      "rootUri": "file:///C:/Users/35170/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%2547dart-pub%2547/flutter_local_notifications_platform_interface-7.0.0+1",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
     },
     {
       "name": "flutter_pickers",
@@ -464,6 +488,12 @@
       "languageVersion": "2.18"
     },
     {
+      "name": "timezone",
+      "rootUri": "file:///C:/Users/35170/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%2547dart-pub%2547/timezone-0.9.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "typed_data",
       "rootUri": "file:///C:/Users/35170/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%2547dart-pub%2547/typed_data-1.3.2",
       "packageUri": "lib/",
@@ -506,7 +536,7 @@
       "languageVersion": "2.19"
     }
   ],
-  "generated": "2024-01-11T18:00:35.272330Z",
+  "generated": "2024-01-17T09:57:54.074756Z",
   "generator": "pub",
   "generatorVersion": "2.19.6"
 }
