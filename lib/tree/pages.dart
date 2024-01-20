@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:install_plugin/install_plugin.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:roundcheckbox/roundcheckbox.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../function.dart';
 import '../login.dart';
@@ -40,9 +41,9 @@ class _MyImagePickerState extends State<MyImagePicker> {
     "itemcolorstate": "false"
   };
 
-  Color dateColor = Colors.lightBlueAccent;
-  Color timeColor = Colors.lightBlueAccent;
-  Color bgColor = Colors.orange.withOpacity(0.6);
+  Color dateColor = const Color.fromARGB(255, 0, 0, 0);
+  Color timeColor = const Color.fromARGB(255, 2, 32, 45);
+  Color bgColor = const Color.fromARGB(255, 171, 232, 255).withOpacity(0.6);
   @override
   void initState() {
     super.initState();
@@ -444,7 +445,7 @@ class AutherPage extends StatefulWidget {
 
 class _Auther extends State<AutherPage> {
   TextEditingController advicecontrol = TextEditingController();
-
+  final Uri url = Uri.parse('https://github.com/XiaoNaoWeiSuo/Grade2');
   String versionserive = "";
   String updateurl = "";
   String versionapp = "";
@@ -460,6 +461,12 @@ class _Auther extends State<AutherPage> {
   void initState() {
     super.initState();
     load();
+  }
+
+  Future<void> _launchUrl() async {
+    if (!await launchUrl(url)) {
+      throw Exception('Could not launch $url');
+    }
   }
 
   load() async {
@@ -512,287 +519,298 @@ class _Auther extends State<AutherPage> {
     double screenWidth = mediaQueryData.size.width;
     double fontsz = screenWidth * 0.045;
     return Scaffold(
-        appBar: AppBar(
+      appBar: AppBar(
           backgroundColor: Colors.white,
           foregroundColor: Colors.blue,
-          title: const Text("关于"),
-        ),
-        body: Padding(
-          padding: EdgeInsets.all(statusBarHeight / 2),
-          child: Column(
+          title: Row(
             children: [
-              Container(
-                  padding: const EdgeInsets.all(2.0),
-                  decoration: BoxDecoration(
-                    color: Colors.yellow[700], // 选择黄金色
-                    borderRadius: BorderRadius.circular(5.0),
-                    // boxShadow: [
-                    //   BoxShadow(
-                    //     color: Colors.yellow.withOpacity(0.5), // 添加一点深色投影
-                    //     spreadRadius: 2,
-                    //     blurRadius: 4,
-                    //     offset: const Offset(0, 2),
-                    //   ),
-                    // ],
-                  ),
-                  child: const Text(
-                    '长江大学武汉校区计算机学会',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15.0,
-                    ),
-                  )),
-              Container(
-                margin: const EdgeInsets.all(10),
-                padding: const EdgeInsets.all(10),
+              const Text("关于"),
+              const Expanded(child: SizedBox()),
+              IconButton(
+                  onPressed: _launchUrl,
+                  icon: Icon(
+                    const IconData(0xe85a, fontFamily: "GradeIcon"),
+                    color: Colors.black,
+                    size: fontsz * 1.5,
+                  ))
+            ],
+          )),
+      body: SingleChildScrollView(
+          child: Padding(
+        padding: EdgeInsets.all(statusBarHeight / 2),
+        child: Column(
+          children: [
+            Container(
+                padding: const EdgeInsets.all(2.0),
                 decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 214, 214, 214),
-                    borderRadius: BorderRadius.circular(fontsz)),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(fontsz / 2),
-                      clipBehavior: Clip.hardEdge,
-                      width: screenWidth / 5.5,
-                      height: screenWidth / 5.5,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(screenWidth / 3)),
-                      child: Image.asset(
-                        'assets/data/icon.png',
-                        fit: BoxFit.cover,
-                      ),
-                      // child: Image(image: kWebNumPadMap),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Grade2",
-                          style:
-                              TextStyle(fontSize: fontsz, color: Colors.white),
-                        ),
-                        SizedBox(
-                          height: fontsz,
-                        ),
-                        Text(
-                          " v.$versionapp",
-                          style: TextStyle(
-                              fontSize: fontsz / 1.5, color: Colors.white),
-                        ),
-                      ],
-                    ),
-                    const Expanded(child: SizedBox()),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          "小脑萎缩",
-                          style:
-                              TextStyle(fontSize: fontsz, color: Colors.white),
-                        ),
-                        Text(
-                          "联系我 ",
-                          style: TextStyle(
-                              fontSize: fontsz / 1.5, color: Colors.white),
-                        ),
-                        Text(
-                          "3517049357",
-                          style: TextStyle(
-                              fontSize: fontsz / 1.5, color: Colors.white),
-                        )
-                      ],
-                    ),
-                    Container(
-                      clipBehavior: Clip.hardEdge,
-                      width: screenWidth / 5.5,
-                      height: screenWidth / 5.5,
-                      decoration: BoxDecoration(
-                          color: Colors.lightBlueAccent,
-                          borderRadius: BorderRadius.circular(screenWidth / 3)),
-                      child: Image.asset(
-                        'assets/data/profile.jpg',
-                      ),
-                      // child: Image(image: kWebNumPadMap),
-                    ),
-                  ],
+                  color: Colors.yellow[700], // 选择黄金色
+                  borderRadius: BorderRadius.circular(5.0),
+                  // boxShadow: [
+                  //   BoxShadow(
+                  //     color: Colors.yellow.withOpacity(0.5), // 添加一点深色投影
+                  //     spreadRadius: 2,
+                  //     blurRadius: 4,
+                  //     offset: const Offset(0, 2),
+                  //   ),
+                  // ],
                 ),
-              ),
-              Container(
-                  margin: const EdgeInsets.all(10),
-                  padding: const EdgeInsets.only(left: 3),
-                  // decoration: const BoxDecoration(
-                  //     border: Border(
-                  //         left: BorderSide(
-                  //             width: 2,
-                  //             color: Color.fromARGB(255, 152, 209, 255)))),
-                  child: Column(
+                child: const Text(
+                  '长江大学武汉校区计算机学会',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15.0,
+                  ),
+                )),
+            Container(
+              margin: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 214, 214, 214),
+                  borderRadius: BorderRadius.circular(fontsz)),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(fontsz / 2),
+                    clipBehavior: Clip.hardEdge,
+                    width: screenWidth / 5.5,
+                    height: screenWidth / 5.5,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(screenWidth / 3)),
+                    child: Image.asset(
+                      'assets/data/icon.png',
+                      fit: BoxFit.cover,
+                    ),
+                    // child: Image(image: kWebNumPadMap),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        logtext,
-                        style: const TextStyle(
-                            color: Color.fromARGB(255, 86, 86, 86)),
+                        "Grade2",
+                        style: TextStyle(fontSize: fontsz, color: Colors.white),
                       ),
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: Text("_$logdate"),
+                      SizedBox(
+                        height: fontsz,
+                      ),
+                      Text(
+                        " v.$versionapp",
+                        style: TextStyle(
+                            fontSize: fontsz / 1.5, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                  const Expanded(child: SizedBox()),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        "小脑萎缩",
+                        style: TextStyle(fontSize: fontsz, color: Colors.white),
+                      ),
+                      Text(
+                        "联系我 ",
+                        style: TextStyle(
+                            fontSize: fontsz / 1.5, color: Colors.white),
+                      ),
+                      Text(
+                        "3517049357",
+                        style: TextStyle(
+                            fontSize: fontsz / 1.5, color: Colors.white),
                       )
                     ],
-                  )),
-              Container(
-                padding: EdgeInsets.only(left: fontsz / 4),
-                decoration: BoxDecoration(
-                    border: Border.all(
-                        width: 2, color: Colors.blue.withOpacity(0.5)),
-                    borderRadius: BorderRadius.circular(fontsz / 1.3)),
-                //height: screenHeight / 8,
-                child: SingleChildScrollView(
-                  child: TextField(
-                    cursorHeight: fontsz * 1.1,
-                    controller: advicecontrol,
-                    maxLines: null,
-                    keyboardType: TextInputType.multiline,
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.all(0),
-                      border: InputBorder.none, // 设置边框为none，即消除边框
-                      hintText: "编辑反馈",
+                  ),
+                  Container(
+                    clipBehavior: Clip.hardEdge,
+                    width: screenWidth / 5.5,
+                    height: screenWidth / 5.5,
+                    decoration: BoxDecoration(
+                        color: Colors.lightBlueAccent,
+                        borderRadius: BorderRadius.circular(screenWidth / 3)),
+                    child: Image.asset(
+                      'assets/data/profile.jpg',
                     ),
+                    // child: Image(image: kWebNumPadMap),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+                margin: const EdgeInsets.all(10),
+                padding: const EdgeInsets.only(left: 3),
+                // decoration: const BoxDecoration(
+                //     border: Border(
+                //         left: BorderSide(
+                //             width: 2,
+                //             color: Color.fromARGB(255, 152, 209, 255)))),
+                child: Column(
+                  children: [
+                    Text(
+                      logtext,
+                      style: const TextStyle(
+                          color: Color.fromARGB(255, 86, 86, 86)),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Text("_$logdate"),
+                    )
+                  ],
+                )),
+            Container(
+              padding: EdgeInsets.only(left: fontsz / 4),
+              decoration: BoxDecoration(
+                  border:
+                      Border.all(width: 2, color: Colors.blue.withOpacity(0.5)),
+                  borderRadius: BorderRadius.circular(fontsz / 1.3)),
+              //height: screenHeight / 8,
+              child: SingleChildScrollView(
+                child: TextField(
+                  cursorHeight: fontsz * 1.1,
+                  controller: advicecontrol,
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
+                  decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.all(0),
+                    border: InputBorder.none, // 设置边框为none，即消除边框
+                    hintText: "编辑反馈",
                   ),
                 ),
               ),
+            ),
 
-              GestureDetector(
-                onTap: () {
-                  if (advicecontrol.text != "") {
-                    SenMail(widget.name, widget.campus, advicecontrol.text,
-                        true, "");
+            GestureDetector(
+              onTap: () {
+                if (advicecontrol.text != "") {
+                  SenMail(
+                      widget.name, widget.campus, advicecontrol.text, true, "");
+                  const snackBar = SnackBar(
+                    content: Text('发送成功'), // 显示的消息文本
+                    duration: Duration(seconds: 2), // 持续时间，单位为秒
+                  );
+                  if (advicecontrol.text == "2022007915") {
                     const snackBar = SnackBar(
-                      content: Text('发送成功'), // 显示的消息文本
-                      duration: Duration(seconds: 2), // 持续时间，单位为秒
-                    );
-                    if (advicecontrol.text == "2022007915") {
-                      const snackBar = SnackBar(
-                        content: Text('恶心的骗子'), // 显示的消息文本
-                        duration: Duration(seconds: 2), // 持续时间，单位为秒
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                    }
-                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                  } else {
-                    const snackBar = SnackBar(
-                      content: Text('内容不能为空'), // 显示的消息文本
+                      content: Text('恶心的骗子'), // 显示的消息文本
                       duration: Duration(seconds: 2), // 持续时间，单位为秒
                     );
                     ScaffoldMessenger.of(context).showSnackBar(snackBar);
                   }
-                },
-                child: Container(
-                    margin: EdgeInsets.all(fontsz / 2),
-                    width: fontsz * 8,
-                    height: fontsz * 2,
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(fontsz / 2),
-                    ),
-                    child: Center(
-                      child: Text(
-                        "发送反馈给开发者",
-                        style: TextStyle(
-                            fontWeight: FontWeight.normal,
-                            fontSize: fontsz * 0.8,
-                            decoration: TextDecoration.none,
-                            color: Colors.blue),
-                      ),
-                    )),
-              ),
-              Container(
-                  // width: fontsz * 15,
-                  // height: fontsz * 10,
-                  padding: const EdgeInsets.all(10),
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                } else {
+                  const snackBar = SnackBar(
+                    content: Text('内容不能为空'), // 显示的消息文本
+                    duration: Duration(seconds: 2), // 持续时间，单位为秒
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                }
+              },
+              child: Container(
+                  margin: EdgeInsets.all(fontsz / 2),
+                  width: fontsz * 8,
+                  height: fontsz * 2,
+                  padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: const Color.fromARGB(255, 202, 238, 228)),
-                  child: Row(
-                    children: [
-                      Column(
-                        children: [
-                          Container(
-                            margin: EdgeInsets.only(bottom: fontsz / 2),
-                            decoration: BoxDecoration(
-                                //color: Colors.green,
-                                borderRadius: BorderRadius.circular(5)),
-                            child: Text(
-                              " 最新版本:  $versionserive",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: fontsz,
-                                  decoration: TextDecoration.none,
-                                  color: Colors.black.withOpacity(0.7)),
-                            ),
-                          ),
-                          Container(
-                            decoration: BoxDecoration(
-                                //color: Colors.blue,
-                                borderRadius: BorderRadius.circular(5)),
-                            child: Text(
-                              " 当前版本:  $versionapp",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: fontsz,
-                                  decoration: TextDecoration.none,
-                                  color: Colors.black.withOpacity(0.7)),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Expanded(child: SizedBox()),
-                      _progressValue == 0
-                          ? GestureDetector(
-                              onTap: _startUpdate,
-                              child: Container(
-                                  width: fontsz * 5,
-                                  height: fontsz * 2,
-                                  padding: const EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.05),
-                                    borderRadius:
-                                        BorderRadius.circular(fontsz / 4),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      "同步更新",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.normal,
-                                          fontSize: fontsz * 0.8,
-                                          decoration: TextDecoration.none,
-                                          color: Colors.blue),
-                                    ),
-                                  )),
-                            )
-                          : Row(
-                              children: [
-                                CircularProgressIndicator(
-                                  value: _progressValue,
-                                ),
-                                SizedBox(
-                                  width: statusBarHeight / 2,
-                                )
-                              ],
-                            )
-                    ],
+                    color: Colors.black.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(fontsz / 2),
+                  ),
+                  child: Center(
+                    child: Text(
+                      "发送反馈给开发者",
+                      style: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: fontsz * 0.8,
+                          decoration: TextDecoration.none,
+                          color: Colors.blue),
+                    ),
                   )),
-              // Align(
-              //   alignment: Alignment.centerLeft,
-              //   child: Text(
-              //     "  反馈建议",
-              //     style: TextStyle(fontSize: fontsz),
-              //   ),
-              // ),
-            ],
-          ),
-        ));
+            ),
+            Container(
+                // width: fontsz * 15,
+                // height: fontsz * 10,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: const Color.fromARGB(255, 202, 238, 228)),
+                child: Row(
+                  children: [
+                    Column(
+                      children: [
+                        Container(
+                          margin: EdgeInsets.only(bottom: fontsz / 2),
+                          decoration: BoxDecoration(
+                              //color: Colors.green,
+                              borderRadius: BorderRadius.circular(5)),
+                          child: Text(
+                            " 最新版本:  $versionserive",
+                            style: TextStyle(
+                                fontWeight: FontWeight.normal,
+                                fontSize: fontsz,
+                                decoration: TextDecoration.none,
+                                color: Colors.black.withOpacity(0.7)),
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                              //color: Colors.blue,
+                              borderRadius: BorderRadius.circular(5)),
+                          child: Text(
+                            " 当前版本:  $versionapp",
+                            style: TextStyle(
+                                fontWeight: FontWeight.normal,
+                                fontSize: fontsz,
+                                decoration: TextDecoration.none,
+                                color: Colors.black.withOpacity(0.7)),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Expanded(child: SizedBox()),
+                    _progressValue == 0
+                        ? GestureDetector(
+                            onTap: _startUpdate,
+                            child: Container(
+                                width: fontsz * 5,
+                                height: fontsz * 2,
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.05),
+                                  borderRadius:
+                                      BorderRadius.circular(fontsz / 4),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    "同步更新",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.normal,
+                                        fontSize: fontsz * 0.8,
+                                        decoration: TextDecoration.none,
+                                        color: Colors.blue),
+                                  ),
+                                )),
+                          )
+                        : Row(
+                            children: [
+                              CircularProgressIndicator(
+                                value: _progressValue,
+                              ),
+                              SizedBox(
+                                width: statusBarHeight / 2,
+                              )
+                            ],
+                          )
+                  ],
+                )),
+            // Align(
+            //   alignment: Alignment.centerLeft,
+            //   child: Text(
+            //     "  反馈建议",
+            //     style: TextStyle(fontSize: fontsz),
+            //   ),
+            // ),
+          ],
+        ),
+      )),
+    );
   }
 }
 

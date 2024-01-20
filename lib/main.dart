@@ -18,8 +18,6 @@ import "topbar.dart";
 import 'function.dart';
 import 'tree/pages.dart';
 
-// import 'Adapt.dart';
-// import 'dart:math';
 List netdata = [];
 
 String enterkey = "";
@@ -739,9 +737,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   var imagetip = "";
   String Imagepath = "";
   bool blur = false;
-  Color dateColor = Colors.lightBlueAccent;
-  Color timeColor = Colors.lightBlueAccent;
-  Color bgColor = Colors.orange.withOpacity(0.6);
+  Color dateColor = const Color.fromARGB(255, 0, 0, 0);
+  Color timeColor = const Color.fromARGB(255, 2, 32, 45);
+  Color bgColor = const Color.fromARGB(255, 171, 232, 255).withOpacity(0.6);
   Map initdata = {};
   int currentWeek = 1;
   late String teacherName;
@@ -2775,32 +2773,7 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
 
                         //,const Expanded(child: SizedBox())
 
-                        passstate[2] == "0"
-                            ? Container(
-                                margin: EdgeInsets.all(fontsz),
-                                padding: EdgeInsets.all(fontsz / 4),
-                                width: screenWidth,
-                                height: fontsz * 3,
-                                decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.4),
-                                    borderRadius:
-                                        BorderRadius.circular(fontsz)),
-                                child: Center(
-                                  child: Text(
-                                    "功能暂时关闭",
-                                    style: TextStyle(
-                                        shadows: [
-                                          BoxShadow(
-                                              color: Colors.black45,
-                                              blurRadius: fontsz)
-                                        ],
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w600),
-                                  ),
-                                ),
-                              )
-                            : Container()
+                        Container()
                       ]),
                     ),
                     Center(
