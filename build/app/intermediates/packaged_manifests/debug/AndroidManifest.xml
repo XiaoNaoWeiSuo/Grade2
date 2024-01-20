@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.xiaonaoweisuo.grade2"
+    package="com.example.xiaonaoweisuo.grade2.grade2"
     android:versionCode="1"
     android:versionName="2.3.7" >
 
     <uses-sdk
-        android:minSdkVersion="16"
+        android:minSdkVersion="19"
         android:targetSdkVersion="33" />
     <!--
          The INTERNET permission is required for development. Specifically,
@@ -26,19 +26,19 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <permission
-        android:name="com.example.xiaonaoweisuo.grade2.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+        android:name="com.example.xiaonaoweisuo.grade2.grade2.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
         android:protectionLevel="signature" />
 
-    <uses-permission android:name="com.example.xiaonaoweisuo.grade2.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+    <uses-permission android:name="com.example.xiaonaoweisuo.grade2.grade2.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
 
     <application
         android:name="android.app.Application"
         android:appComponentFactory="androidx.core.app.CoreComponentFactory"
         android:debuggable="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="Grade2" >
+        android:label="grade2" >
         <activity
-            android:name="com.example.xiaonaoweisuo.grade2.MainActivity"
+            android:name="com.example.xiaonaoweisuo.grade2.grade2.MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:exported="true"
             android:hardwareAccelerated="true"
@@ -72,7 +72,7 @@
 
         <provider
             android:name="io.flutter.plugins.imagepicker.ImagePickerFileProvider"
-            android:authorities="com.example.xiaonaoweisuo.grade2.flutter.image_provider"
+            android:authorities="com.example.xiaonaoweisuo.grade2.grade2.flutter.image_provider"
             android:exported="false"
             android:grantUriPermissions="true" >
             <meta-data
@@ -81,7 +81,7 @@
         </provider>
         <provider
             android:name="com.zaihui.installplugin.InstallFileProvider"
-            android:authorities="com.example.xiaonaoweisuo.grade2.installFileProvider.install"
+            android:authorities="com.example.xiaonaoweisuo.grade2.grade2.installFileProvider.install"
             android:exported="false"
             android:grantUriPermissions="true" >
             <meta-data
@@ -98,7 +98,7 @@
 
         <provider
             android:name="androidx.startup.InitializationProvider"
-            android:authorities="com.example.xiaonaoweisuo.grade2.androidx-startup"
+            android:authorities="com.example.xiaonaoweisuo.grade2.grade2.androidx-startup"
             android:exported="false" >
             <meta-data
                 android:name="androidx.profileinstaller.ProfileInstallerInitializer"

@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.xiaonaoweisuo.grade2.app-mergeDebugResources-22:/values-night-v8/values-night-v8.xml",
+            "outputFile": "com.example.xiaonaoweisuo.grade2.grade2.app-mergeDebugResources-22:/values-night-v8/values-night-v8.xml",
             "map": [
                 {
                     "source": "C:\\Users\\35170\\Desktop\\+\\Flutter\\grade2\\android\\app\\src\\main\\res\\values-night\\styles.xml",

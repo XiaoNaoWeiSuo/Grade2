@@ -888,7 +888,6 @@ class _vacationState extends State<vacationPage> with TickerProviderStateMixin {
     final double screenWidth = mediaQueryData.size.width;
     final double screenHeight = mediaQueryData.size.height;
     final double ItemSize = screenWidth * 0.05;
-    var keyboardSize = MediaQuery.of(context).viewInsets.bottom;
     return Scaffold(
       body: Column(
         children: [

@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.xiaonaoweisuo.grade2.app-mergeDebugResources-22:/values-v24/values-v24.xml",
+            "outputFile": "com.example.xiaonaoweisuo.grade2.grade2.app-mergeDebugResources-22:/values-v24/values-v24.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\35170\\.gradle\\caches\\transforms-3\\f057e7418cf3ed9a7aa575bdc69ad668\\transformed\\media-1.0.0\\res\\values-v24\\values-v24.xml",
+                    "source": "C:\\Users\\35170\\.gradle\\caches\\transforms-3\\bae5be81cfe276d78af705e15de27a9a\\transformed\\media-1.1.0\\res\\values-v24\\values-v24.xml",
                     "from": {
                         "startLines": "2,3,4,5",
                         "startColumns": "4,4,4,4",

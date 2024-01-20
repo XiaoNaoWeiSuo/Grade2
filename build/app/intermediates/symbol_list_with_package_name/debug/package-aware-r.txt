@@ -1,4 +1,4 @@
-com.example.xiaonaoweisuo.grade2
+com.example.xiaonaoweisuo.grade2.grade2
 attr activityAction
 attr activityName
 attr alpha

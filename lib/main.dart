@@ -4,6 +4,7 @@
 
 import 'package:dio/dio.dart';
 import "package:flutter/services.dart";
+
 import 'package:path_provider/path_provider.dart';
 import "package:roundcheckbox/roundcheckbox.dart";
 import "package:flutter/material.dart";
@@ -726,7 +727,6 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   final PageController _pageController = PageController();
-  int _labelstate = 0;
   int number = 2;
   late double statusBarHeight;
   late double screenWidth;
@@ -759,7 +759,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   String dayword = "";
   void _buttonstate(int index) {
     setState(() {
-      _labelstate = index;
       _pageController.jumpToPage(
         index,
       );
@@ -1012,9 +1011,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                 physics: const NeverScrollableScrollPhysics(),
                 controller: _pageController,
                 onPageChanged: (index) {
-                  setState(() {
-                    _labelstate = index;
-                  });
+                  setState(() {});
                 },
                 children: [classPage(), HomoPage(), ExamPage(), updatePage()],
               ),
@@ -2340,7 +2337,7 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
                                                               .keyboard_arrow_up,
                                                           size: fontsz * 1.5,
                                                           color: const Color
-                                                                  .fromARGB(255,
+                                                              .fromARGB(255,
                                                               114, 114, 114),
                                                         ));
                                                   })
@@ -2643,17 +2640,21 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
                         GestureDetector(
                           onTap: () async {
                             Requests functico = Requests();
-                            evaluate = await functico.GetEvaluate(netdata[0]);
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) {
-                                  return EvaluatePage(
-                                    evaluatedata: evaluate,
-                                  );
-                                },
-                              ),
-                            );
+                            try {
+                              evaluate = await functico.GetEvaluate(netdata[0]);
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return EvaluatePage(
+                                      evaluatedata: evaluate,
+                                    );
+                                  },
+                                ),
+                              );
+                            } catch (e) {
+                              Null;
+                            }
                             //setState(() {});
                           },
                           child: Container(

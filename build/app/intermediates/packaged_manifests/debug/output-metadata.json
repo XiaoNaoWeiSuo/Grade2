@@ -4,7 +4,7 @@
     "type": "PACKAGED_MANIFESTS",
     "kind": "Directory"
   },
-  "applicationId": "com.example.xiaonaoweisuo.grade2",
+  "applicationId": "com.example.xiaonaoweisuo.grade2.grade2",
   "variantName": "debug",
   "elements": [
     {

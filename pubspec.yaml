@@ -1,5 +1,5 @@
 name: grade2
-description: Just for you.
+description: "Just for you."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 2.3.7+1
 
 environment:
-  sdk: '>=2.19.6 <3.0.0'
+  sdk: '>=3.2.5 <4.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -30,25 +30,25 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  dio: ^5.3.1
-  path_provider: ^2.1.0
+  dio: ^5.4.0
+  path_provider: ^2.1.2
   crypto: ^3.0.3
   cookie_jar: ^4.0.8
-  dio_cookie_manager: ^3.1.0
+  dio_cookie_manager: ^3.1.1
   html: ^0.15.4
-  roundcheckbox: ^2.0.4+1
+  roundcheckbox: ^2.0.5
   flutter_colorpicker: ^1.0.3
-  image_picker: ^1.0.2
-  enough_mail: ^2.1.1
+  image_picker: ^1.0.7
+  enough_mail: ^2.1.6
   install_plugin: ^2.1.0
-  intl: ^0.17.0
+  intl: ^0.19.0
   flutter_pickers: ^2.1.9
-  adobe_xd: ^2.0.1
-  flutter_local_notifications: ^16.3.0
-  #permission_handler: ^10.2.0
-  # flutter_downloader: ^1.5.2
-  # open_file: ^3.0.3
-  
+  flutter_local_notifications: ^16.3.1
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -70,7 +70,6 @@ flutter:
     - assets/data/icon.png
     - assets/data/daxuexi.png
     - assets/data/version.json
-
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
