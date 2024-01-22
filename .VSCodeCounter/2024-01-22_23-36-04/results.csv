@@ -1,0 +1,33 @@
+"filename", "language", "YAML", "Dart", "Objective-C", "Markdown", "JSON", "Gradle", "Java Properties", "XML", "C++", "Java", "comment", "blank", "total"
+"c:\Users\35170\Desktop\+\Flutter\grade2\README.md", "Markdown", 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 7, 17
+"c:\Users\35170\Desktop\+\Flutter\grade2\analysis_options.yaml", "YAML", 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 4, 29
+"c:\Users\35170\Desktop\+\Flutter\grade2\android\app\build.gradle", "Gradle", 0, 0, 0, 0, 0, 44, 0, 0, 0, 0, 5, 9, 58
+"c:\Users\35170\Desktop\+\Flutter\grade2\android\app\src\debug\AndroidManifest.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 4, 1, 8
+"c:\Users\35170\Desktop\+\Flutter\grade2\android\app\src\main\AndroidManifest.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 37, 0, 0, 11, 7, 55
+"c:\Users\35170\Desktop\+\Flutter\grade2\android\app\src\main\java\com\example\xiaonaoweisuo\grade2\grade2\MainActivity.java", "Java", 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 3, 7
+"c:\Users\35170\Desktop\+\Flutter\grade2\android\app\src\main\res\drawable-v21\launch_background.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 1, 2, 6
+"c:\Users\35170\Desktop\+\Flutter\grade2\android\app\src\main\res\drawable\launch_background.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 7, 2, 13
+"c:\Users\35170\Desktop\+\Flutter\grade2\android\app\src\main\res\values-night\styles.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 9, 1, 19
+"c:\Users\35170\Desktop\+\Flutter\grade2\android\app\src\main\res\values\styles.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 9, 1, 19
+"c:\Users\35170\Desktop\+\Flutter\grade2\android\app\src\profile\AndroidManifest.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 4, 1, 8
+"c:\Users\35170\Desktop\+\Flutter\grade2\android\build.gradle", "Gradle", 0, 0, 0, 0, 0, 26, 0, 0, 0, 0, 0, 5, 31
+"c:\Users\35170\Desktop\+\Flutter\grade2\android\gradle.properties", "Java Properties", 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 4
+"c:\Users\35170\Desktop\+\Flutter\grade2\android\gradle\wrapper\gradle-wrapper.properties", "Java Properties", 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 1, 6
+"c:\Users\35170\Desktop\+\Flutter\grade2\android\settings.gradle", "Gradle", 0, 0, 0, 0, 0, 24, 0, 0, 0, 0, 0, 6, 30
+"c:\Users\35170\Desktop\+\Flutter\grade2\assets\data\version.json", "JSON", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1
+"c:\Users\35170\Desktop\+\Flutter\grade2\ios\RunnerTests\RunnerTests.m", "Objective-C", 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 2, 6, 17
+"c:\Users\35170\Desktop\+\Flutter\grade2\ios\Runner\AppDelegate.h", "C++", 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 3, 7
+"c:\Users\35170\Desktop\+\Flutter\grade2\ios\Runner\AppDelegate.m", "Objective-C", 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 1, 4, 14
+"c:\Users\35170\Desktop\+\Flutter\grade2\ios\Runner\Assets.xcassets\AppIcon.appiconset\Contents.json", "JSON", 0, 0, 0, 0, 122, 0, 0, 0, 0, 0, 0, 1, 123
+"c:\Users\35170\Desktop\+\Flutter\grade2\ios\Runner\Assets.xcassets\LaunchImage.imageset\Contents.json", "JSON", 0, 0, 0, 0, 23, 0, 0, 0, 0, 0, 0, 1, 24
+"c:\Users\35170\Desktop\+\Flutter\grade2\ios\Runner\Assets.xcassets\LaunchImage.imageset\README.md", "Markdown", 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 2, 5
+"c:\Users\35170\Desktop\+\Flutter\grade2\ios\Runner\Base.lproj\LaunchScreen.storyboard", "XML", 0, 0, 0, 0, 0, 0, 0, 36, 0, 0, 1, 1, 38
+"c:\Users\35170\Desktop\+\Flutter\grade2\ios\Runner\Base.lproj\Main.storyboard", "XML", 0, 0, 0, 0, 0, 0, 0, 25, 0, 0, 1, 1, 27
+"c:\Users\35170\Desktop\+\Flutter\grade2\ios\Runner\main.m", "Objective-C", 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 2, 10
+"c:\Users\35170\Desktop\+\Flutter\grade2\lib\function.dart", "Dart", 0, 145, 0, 0, 0, 0, 0, 0, 0, 0, 30, 24, 199
+"c:\Users\35170\Desktop\+\Flutter\grade2\lib\login.dart", "Dart", 0, 1202, 0, 0, 0, 0, 0, 0, 0, 0, 77, 151, 1430
+"c:\Users\35170\Desktop\+\Flutter\grade2\lib\main.dart", "Dart", 0, 2728, 0, 0, 0, 0, 0, 0, 0, 0, 168, 76, 2972
+"c:\Users\35170\Desktop\+\Flutter\grade2\lib\topbar.dart", "Dart", 0, 1155, 0, 0, 0, 0, 0, 0, 0, 0, 59, 93, 1307
+"c:\Users\35170\Desktop\+\Flutter\grade2\lib\tree\pages.dart", "Dart", 0, 1506, 0, 0, 0, 0, 0, 0, 0, 0, 88, 42, 1636
+"c:\Users\35170\Desktop\+\Flutter\grade2\pubspec.yaml", "YAML", 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 14, 114
+"Total", "-", 43, 6736, 26, 13, 146, 94, 8, 129, 4, 4, 559, 472, 8234
