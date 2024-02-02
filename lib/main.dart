@@ -27,6 +27,13 @@ void main() async {
     statusBarIconBrightness: Brightness.dark,
   ));
   runApp(const MyApp());
+  if (Platform.isAndroid) {
+    SystemUiOverlayStyle systemUiOverlayStyle = const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: Colors.transparent);
+    SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -769,9 +776,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     load();
     formattedDate = DateFormat('M/d').format(currentDate);
     _ChatLoadAnimaController = AnimationController(
-        duration: const Duration(milliseconds: 2500), vsync: this);
+        duration: const Duration(milliseconds: 1500), vsync: this);
     _ChatLoadAnima = CurvedAnimation(
-        parent: _ChatLoadAnimaController, curve: Curves.easeOutBack);
+        parent: _ChatLoadAnimaController, curve: Curves.bounceOut);
     _ChatLoadAnima =
         Tween<double>(begin: 0.0, end: 1.0).animate(_ChatLoadAnima);
     _ChatLoadAnimaController.forward();
@@ -888,9 +895,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     screenHeight = mediaQueryData.size.height;
     fontsz = screenWidth * 0.045;
     double displayWidth = MediaQuery.of(context).size.width;
-    return WillPopScope(
+    return PopScope(
         // 禁用返回按钮
-        onWillPop: () async => false,
+        canPop: false,
         child: Scaffold(
             bottomNavigationBar: Container(
               margin: EdgeInsets.all(displayWidth * .05),
@@ -1171,6 +1178,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                 ),
                               ),
                               AnimatedBuilder(
+                                  //公告栏
                                   animation: _ChatLoadAnima,
                                   builder: (context, child) {
                                     return Row(
@@ -1178,11 +1186,12 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                           CrossAxisAlignment.center,
                                       children: [
                                         Container(
+                                          padding: const EdgeInsets.all(3),
                                           //margin: EdgeInsets.only(top: 0),
                                           width: screenWidth /
                                               1.9 *
                                               _ChatLoadAnima.value,
-                                          height: fontsz * 2,
+                                          // height: fontsz * 2,
                                           decoration: BoxDecoration(
                                               gradient: const LinearGradient(
                                                   colors: [
@@ -1201,7 +1210,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                             child: Text(
                                               dayword,
                                               style: TextStyle(
-                                                  fontSize: fontsz * 0.7,
+                                                  fontSize: fontsz * 0.75,
                                                   height: 1.1,
                                                   color: Colors.white),
                                             ),
@@ -1263,10 +1272,21 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                       child: Column(
                         children: [
                           //Text("$"),
-                          SizedBox(
+                          Container(
                             width: fontsz,
                             //width: screenWidth * 0.7,
                             height: screenHeight * 0.05,
+                            decoration: BoxDecoration(color: bgColor),
+                            child: Container(
+                              width: fontsz,
+                              //width: screenWidth * 0.7,
+                              height: screenHeight * 0.05,
+                              decoration: BoxDecoration(
+                                  color:
+                                      const Color.fromARGB(255, 255, 251, 254),
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(fontsz))),
+                            ),
                           ),
                           SizedBox(
                               width: fontsz,
@@ -1286,7 +1306,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                             ? w8
                                             : w5, // 设置进度条的值，范围为0.0到1.0
 
-                                        minHeight: fontsz / 2.5, // 设置进度条的最小高度
+                                        minHeight: fontsz * 0.3, // 设置进度条的最小高度
                                         backgroundColor:
                                             Colors.grey[300], // 设置进度条的背景颜色
                                         valueColor:
@@ -1318,21 +1338,12 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                                               .withOpacity(
                                                                   0)))),
                                           width: fontsz,
+                                          margin: EdgeInsets.only(
+                                              right: fontsz * 0.35),
                                           height: screenHeight *
                                               0.7 /
                                               (classstate ? 8 : 5),
                                           //color: Colors.white,
-                                          child: Center(
-                                            child: Container(
-                                              width: fontsz * 0.7,
-                                              height: fontsz * 0.7,
-                                              decoration: BoxDecoration(
-                                                  color: timeColor,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          fontsz)),
-                                            ),
-                                          ),
                                         );
                                       },
                                     ))
@@ -1841,9 +1852,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
         pravitesession += 1;
       }
     }
-    return WillPopScope(
+    return PopScope(
         // 禁用返回按钮
-        onWillPop: () async => false,
+        canPop: false,
         child: Scaffold(
           body: Center(
             child: Container(
@@ -2701,81 +2712,81 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
                             : Container()
                       ]),
                     ),
-                    SizedBox(
-                      // width: screenWidth,
-                      //height: fontsz * 3,
-                      child: Stack(children: [
-                        Container(
-                            margin:
-                                EdgeInsets.only(left: fontsz, right: fontsz),
-                            padding: EdgeInsets.only(
-                                left: fontsz / 2,
-                                right: fontsz / 2,
-                                top: fontsz / 2),
-                            //  width: screenWidth,
-                            height: selectcourselist.isNotEmpty
-                                ? selectcourselist.length * fontsz * 4 -
-                                    fontsz / 2
-                                : fontsz * 3,
-                            decoration: BoxDecoration(
-                                color: Colors.blue,
-                                borderRadius: BorderRadius.circular(fontsz)),
-                            child: selectcourselist.isNotEmpty
-                                ? MediaQuery.removePadding(
-                                    context: context,
-                                    removeTop: true,
-                                    child: ListView.builder(
-                                      itemCount: selectcourselist.length,
-                                      itemBuilder: (context, index) {
-                                        return Container(
-                                            margin: EdgeInsets.only(
-                                                bottom: fontsz / 2),
-                                            height: fontsz * 3,
-                                            decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        fontsz / 2)),
-                                            child: Row(
-                                              children: [
-                                                Expanded(
-                                                  child: Center(
-                                                    child: Text(
-                                                      selectcourselist[index]
-                                                              ["title"]
-                                                          .toString(),
-                                                      //selectcourselist.toString(),
-                                                      style: const TextStyle(
-                                                          fontSize: 20,
-                                                          fontWeight:
-                                                              FontWeight.w600),
-                                                    ),
-                                                  ),
-                                                ),
-                                                TextButton(
-                                                    onPressed: () {},
-                                                    child: const Text(
-                                                      "开选",
-                                                      style: TextStyle(
-                                                          fontSize: 18),
-                                                    ))
-                                              ],
-                                            ));
-                                      },
-                                    ))
-                                : const Center(
-                                    child: Text(
-                                      "=====================",
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20),
-                                    ),
-                                  )),
+                    // SizedBox(
+                    //   // width: screenWidth,
+                    //   //height: fontsz * 3,
+                    //   child: Stack(children: [
+                    //     Container(
+                    //         margin:
+                    //             EdgeInsets.only(left: fontsz, right: fontsz),
+                    //         padding: EdgeInsets.only(
+                    //             left: fontsz / 2,
+                    //             right: fontsz / 2,
+                    //             top: fontsz / 2),
+                    //         //  width: screenWidth,
+                    //         height: selectcourselist.isNotEmpty
+                    //             ? selectcourselist.length * fontsz * 4 -
+                    //                 fontsz / 2
+                    //             : fontsz * 3,
+                    //         decoration: BoxDecoration(
+                    //             color: Colors.blue,
+                    //             borderRadius: BorderRadius.circular(fontsz)),
+                    //         child: selectcourselist.isNotEmpty
+                    //             ? MediaQuery.removePadding(
+                    //                 context: context,
+                    //                 removeTop: true,
+                    //                 child: ListView.builder(
+                    //                   itemCount: selectcourselist.length,
+                    //                   itemBuilder: (context, index) {
+                    //                     return Container(
+                    //                         margin: EdgeInsets.only(
+                    //                             bottom: fontsz / 2),
+                    //                         height: fontsz * 3,
+                    //                         decoration: BoxDecoration(
+                    //                             color: Colors.white,
+                    //                             borderRadius:
+                    //                                 BorderRadius.circular(
+                    //                                     fontsz / 2)),
+                    //                         child: Row(
+                    //                           children: [
+                    //                             Expanded(
+                    //                               child: Center(
+                    //                                 child: Text(
+                    //                                   selectcourselist[index]
+                    //                                           ["title"]
+                    //                                       .toString(),
+                    //                                   //selectcourselist.toString(),
+                    //                                   style: const TextStyle(
+                    //                                       fontSize: 20,
+                    //                                       fontWeight:
+                    //                                           FontWeight.w600),
+                    //                                 ),
+                    //                               ),
+                    //                             ),
+                    //                             TextButton(
+                    //                                 onPressed: () {},
+                    //                                 child: const Text(
+                    //                                   "开选",
+                    //                                   style: TextStyle(
+                    //                                       fontSize: 18),
+                    //                                 ))
+                    //                           ],
+                    //                         ));
+                    //                   },
+                    //                 ))
+                    //             : const Center(
+                    //                 child: Text(
+                    //                   "=====================",
+                    //                   style: TextStyle(
+                    //                       color: Colors.white, fontSize: 20),
+                    //                 ),
+                    //               )),
 
-                        //,const Expanded(child: SizedBox())
+                    //     //,const Expanded(child: SizedBox())
 
-                        Container()
-                      ]),
-                    ),
+                    //     Container()
+                    //   ]),
+                    // ),
                     Center(
                       child: SizedBox(
                           width: screenWidth * 0.8,
