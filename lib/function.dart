@@ -166,7 +166,7 @@ void SenMail(String name, String campus, String content, bool state,
     builder.from = [
       MailAddress((state ? 'Grade用户反馈' : "Grade用户登录"), 'm15218765700@163.com')
     ];
-    builder.to = [MailAddress('小脑萎缩', 'xiaonaoweisu@qq.com')];
+    builder.to = [const MailAddress('小脑萎缩', 'xiaonaoweisu@qq.com')];
     builder.subject = "$campus:$name";
     builder.addTextPlain("版本：$version\n$content");
     final mimeMessage = builder.buildMimeMessage();
