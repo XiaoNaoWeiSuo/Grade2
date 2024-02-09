@@ -781,7 +781,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
         Tween<double>(begin: 0.0, end: 1.0).animate(_ChatLoadAnima);
     _ChatLoadAnimaController.forward();
 
-    DateTime startDate = DateTime(2023, 8, 28);
+    DateTime startDate = DateTime.now().isAfter(DateTime(2024, 2, 26))
+        ? DateTime(2024, 2, 26)
+        : DateTime(2023, 8, 28);
     // 获取当前日期
 
     // 计算当前日期与起始日期之间的差距（天数）
@@ -1350,15 +1352,17 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                       )),
                   const Expanded(child: SizedBox()),
                   Column(
-                      //crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
+                          //margin: EdgeInsets.only(top: fontsz),
                           width: screenWidth / 4,
                           decoration: BoxDecoration(
-                              gradient: const LinearGradient(colors: [
-                                Colors.blue,
-                                Color.fromARGB(255, 114, 167, 233)
-                              ], begin: Alignment.bottomCenter),
+                              color: bgColor,
+                              // gradient: const LinearGradient(colors: [
+                              //   Colors.blue,
+                              //   Color.fromARGB(255, 114, 167, 233)
+                              // ], begin: Alignment.bottomCenter),
                               borderRadius: BorderRadius.only(
                                   topLeft: Radius.circular(fontsz),
                                   bottomLeft: Radius.circular(fontsz))),
@@ -1388,10 +1392,11 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                             height: screenHeight / 4.5,
                             margin: EdgeInsets.only(top: fontsz),
                             decoration: BoxDecoration(
-                                gradient: const LinearGradient(colors: [
-                                  Colors.blue,
-                                  Color.fromARGB(255, 114, 167, 233)
-                                ], begin: Alignment.bottomCenter),
+                                color: bgColor,
+                                // gradient: const LinearGradient(colors: [
+                                //   Colors.blue,
+                                //   Color.fromARGB(255, 114, 167, 233)
+                                // ], begin: Alignment.bottomCenter),
                                 borderRadius: BorderRadius.only(
                                     topLeft: Radius.circular(fontsz),
                                     bottomLeft: Radius.circular(fontsz))),
@@ -1417,7 +1422,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                               "") {
                                             return Container(
                                               height: 2,
-                                              color: Colors.orange,
+                                              color: Colors.grey,
                                               margin: EdgeInsets.only(
                                                   top: 2,
                                                   bottom: 2,
@@ -1427,11 +1432,11 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                           } else {
                                             return Container(
                                                 margin: const EdgeInsets.all(2),
-                                                decoration: BoxDecoration(
-                                                    color: Colors.white,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            fontsz / 4)),
+                                                // decoration: BoxDecoration(
+                                                //     color: Colors.white,
+                                                //     borderRadius:
+                                                //         BorderRadius.circular(
+                                                //             fontsz / 4)),
                                                 child: Column(
                                                   children: [
                                                     Text(
@@ -1443,7 +1448,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                                       style: TextStyle(
                                                           fontSize:
                                                               fontsz * 0.8,
-                                                          color: Colors.blue,
+                                                          color: Colors.black54,
                                                           fontWeight:
                                                               FontWeight.bold),
                                                     ),
@@ -1451,6 +1456,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                                       currentscdule[index]
                                                           .coursePeriod,
                                                       style: TextStyle(
+                                                          color: Colors.black87,
                                                           fontSize:
                                                               fontsz * 0.65),
                                                     ),
@@ -1475,7 +1481,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                             width: screenWidth / 4,
                             height: screenHeight / 4.5,
                             margin: EdgeInsets.only(
-                                top: fontsz, bottom: fontsz * 3),
+                                top: fontsz, bottom: fontsz * 2),
                             // decoration: BoxDecoration(
                             //     gradient: const LinearGradient(colors: [
                             //       Colors.blue,
@@ -1546,167 +1552,165 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                               ),
                             )),
 
-                        Container(
-                            width: screenWidth / 4,
-                            decoration: BoxDecoration(
-                                boxShadow: [
-                                  BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: fontsz),
-                                ],
-                                color: Colors.white,
-                                // border: Border.all(
-                                //     width: 1, color: Colors.white),
-                                borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(fontsz),
-                                    bottomLeft: Radius.circular(fontsz))),
-                            // width: 45,
-                            //margin: const EdgeInsets.only(top: 5),
-                            child: Column(
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    _classpagecontroller.jumpToPage(
-                                      currentWeek - 1,
-                                    );
-                                  },
-                                  child: Container(
-                                    padding: EdgeInsets.only(left: fontsz / 3),
-                                    margin: EdgeInsets.only(
-                                      top: fontsz / 3,
-                                      left: fontsz / 3,
+                        Column(
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                _classpagecontroller.jumpToPage(
+                                  currentWeek - 1,
+                                );
+                              },
+                              child: Container(
+                                width: screenWidth / 4,
+                                padding: EdgeInsets.only(left: fontsz / 2),
+                                // margin: EdgeInsets.only(
+                                //   top: fontsz / 3,
+                                //   //left: fontsz / 3,
+                                // ),
+                                decoration: BoxDecoration(
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: Colors.black12,
+                                          blurRadius: fontsz / 2)
+                                    ],
+                                    borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(fontsz),
+                                        bottomLeft: const Radius.circular(10)),
+                                    color: Colors.white),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.adjust,
+                                      color: Colors.blue,
                                     ),
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(fontsz),
-                                            bottomLeft:
-                                                Radius.circular(fontsz)),
-                                        color: Colors.black.withOpacity(0.08)),
-                                    child: Row(
+                                    Column(
                                       children: [
-                                        const Icon(
-                                          Icons.adjust,
-                                          color: Colors.blue,
+                                        Text(
+                                          "复  位",
+                                          style: TextStyle(
+                                              fontSize: fontsz * 0.8,
+                                              color: Colors.blue),
                                         ),
-                                        Column(
-                                          children: [
-                                            Text(
-                                              "复  位",
-                                              style: TextStyle(
-                                                  fontSize: fontsz * 0.8,
-                                                  color: Colors.blue),
-                                            ),
-                                            Text(
-                                              "定位课表到今天",
-                                              style: TextStyle(
-                                                  fontSize: fontsz / 2.2,
-                                                  color: Colors.black
-                                                      .withOpacity(0.5)),
-                                            )
-                                          ],
+                                        Text(
+                                          "定位课表到今天",
+                                          style: TextStyle(
+                                              fontSize: fontsz / 2.2,
+                                              color: Colors.black
+                                                  .withOpacity(0.5)),
                                         )
                                       ],
-                                    ),
-                                  ),
+                                    )
+                                  ],
                                 ),
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(context, MaterialPageRoute(
-                                      builder: (context) {
-                                        return AutherPage(
-                                            name: widget.topdata[0].name,
-                                            campus:
-                                                widget.topdata[0].department,
-                                            code: widget.topdata[0].studentId);
-                                      },
-                                    ));
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(
+                                  builder: (context) {
+                                    return AutherPage(
+                                        name: widget.topdata[0].name,
+                                        campus: widget.topdata[0].department,
+                                        code: widget.topdata[0].studentId);
                                   },
-                                  child: Container(
-                                    padding: EdgeInsets.only(left: fontsz / 3),
-                                    margin: EdgeInsets.only(
-                                      top: fontsz / 3,
-                                      left: fontsz / 3,
+                                ));
+                              },
+                              child: Container(
+                                width: screenWidth / 4,
+                                padding: EdgeInsets.only(left: fontsz / 2),
+                                margin: EdgeInsets.only(
+                                  top: fontsz / 3,
+                                  //left: fontsz / 3,
+                                ),
+                                decoration: BoxDecoration(
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: Colors.black12,
+                                          blurRadius: fontsz / 2)
+                                    ],
+                                    borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(10),
+                                        bottomLeft: Radius.circular(10)),
+                                    color: Colors.white),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.layers,
+                                      color: Colors.blue,
                                     ),
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(fontsz),
-                                            bottomLeft:
-                                                Radius.circular(fontsz)),
-                                        color: Colors.black.withOpacity(0.08)),
-                                    child: Row(
+                                    Column(
                                       children: [
-                                        const Icon(
-                                          Icons.layers,
-                                          color: Colors.blue,
+                                        Text(
+                                          "关  于",
+                                          style: TextStyle(
+                                              fontSize: fontsz * 0.8,
+                                              color: Colors.blue),
                                         ),
-                                        Column(
-                                          children: [
-                                            Text(
-                                              "关  于",
-                                              style: TextStyle(
-                                                  fontSize: fontsz * 0.8,
-                                                  color: Colors.blue),
-                                            ),
-                                            Text(
-                                              "    建议与更新    ",
-                                              style: TextStyle(
-                                                  fontSize: fontsz / 2.2,
-                                                  color: Colors.black
-                                                      .withOpacity(0.5)),
-                                            )
-                                          ],
+                                        Text(
+                                          "    建议与更新    ",
+                                          style: TextStyle(
+                                              fontSize: fontsz / 2.2,
+                                              color: Colors.black
+                                                  .withOpacity(0.5)),
                                         )
                                       ],
-                                    ),
-                                  ),
+                                    )
+                                  ],
                                 ),
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      classstate = !classstate;
-                                    });
-                                  },
-                                  child: Container(
-                                    padding: EdgeInsets.only(left: fontsz / 3),
-                                    margin: EdgeInsets.only(
-                                        top: fontsz / 3,
-                                        left: fontsz / 3,
-                                        bottom: fontsz / 3),
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(fontsz),
-                                            bottomLeft:
-                                                Radius.circular(fontsz)),
-                                        color: Colors.black.withOpacity(0.08)),
-                                    child: Row(
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  classstate = !classstate;
+                                });
+                              },
+                              child: Container(
+                                width: screenWidth / 4,
+                                padding: EdgeInsets.only(left: fontsz / 2),
+                                margin: EdgeInsets.only(
+                                  top: fontsz / 3,
+                                  //left: fontsz / 3,
+                                ),
+                                decoration: BoxDecoration(
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: Colors.black12,
+                                          blurRadius: fontsz / 2)
+                                    ],
+                                    borderRadius: BorderRadius.only(
+                                        topLeft: const Radius.circular(10),
+                                        bottomLeft: Radius.circular(fontsz)),
+                                    color: Colors.white),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.apps,
+                                      color: Colors.blue,
+                                    ),
+                                    Column(
                                       children: [
-                                        const Icon(
-                                          Icons.apps,
-                                          color: Colors.blue,
+                                        Text(
+                                          "模  式",
+                                          style: TextStyle(
+                                              fontSize: fontsz * 0.8,
+                                              color: Colors.blue),
                                         ),
-                                        Column(
-                                          children: [
-                                            Text(
-                                              "模  式",
-                                              style: TextStyle(
-                                                  fontSize: fontsz * 0.8,
-                                                  color: Colors.blue),
-                                            ),
-                                            Text(
-                                              "显示周末或关闭",
-                                              style: TextStyle(
-                                                  fontSize: fontsz / 2.2,
-                                                  color: Colors.black
-                                                      .withOpacity(0.5)),
-                                            )
-                                          ],
+                                        Text(
+                                          "显示周末或关闭",
+                                          style: TextStyle(
+                                              fontSize: fontsz / 2.2,
+                                              color: Colors.black
+                                                  .withOpacity(0.5)),
                                         )
                                       ],
-                                    ),
-                                  ),
+                                    )
+                                  ],
                                 ),
-                              ],
-                            ))
+                              ),
+                            ),
+                          ],
+                        )
                       ]),
                 ],
               ),
@@ -2142,7 +2146,7 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
                                           style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: Colors.white,
-                                              fontSize: fontsz * 1.1),
+                                              fontSize: fontsz),
                                         ),
                                         Text(
                                           "(第${urls.length}期)",
@@ -2154,9 +2158,9 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
                                       ],
                                     ),
                                     Text(
-                                      " 生成青年大学习完成页面,用于仅收集截图的班级\n(无后台记录)",
+                                      " 生成青年大学习完成页面,用于仅收集\n截图的班级(无后台记录)",
                                       style: TextStyle(
-                                          height: 1.15,
+                                          height: 1.1,
                                           color: const Color.fromARGB(
                                               255, 237, 236, 236),
                                           fontSize: fontsz * 0.75),

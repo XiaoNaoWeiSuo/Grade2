@@ -1269,7 +1269,7 @@ class SelectCourse {
 List<String> calculateDates(int currentWeek) {
   List<String> dates = [];
 
-  DateTime startDate = DateTime(2023, 8, 28); // 设置起始日期为 2023 年 8 月 21 日
+  DateTime startDate = DateTime(2024, 2, 26); // 设置起始日期为 2023 年 8 月 28 日
 
   for (int i = 0; i < 7; i++) {
     DateTime date = startDate.add(Duration(days: (currentWeek - 1) * 7 + i));

@@ -621,6 +621,7 @@ class SubjectCreditsList extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
+                                    height: 1.25,
                                     fontSize: size,
                                     fontWeight: FontWeight.bold,
                                     color:
