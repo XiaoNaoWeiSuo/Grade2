@@ -116,10 +116,6 @@ class _MyImagePickerState extends State<MyImagePicker> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Text(
-              "课程表背景",
-              style: TextStyle(fontSize: fontsz, color: Colors.blue),
-            ),
             Stack(
               children: [
                 Center(
@@ -168,49 +164,105 @@ class _MyImagePickerState extends State<MyImagePicker> {
                               ),
                             ),
                           )
-                        : Container())
+                        : Container()),
+                Column(
+                  children: [
+                    Text(
+                      "课程表背景",
+                      style: TextStyle(
+                          fontSize: fontsz,
+                          color: Colors.white,
+                          shadows: const [
+                            BoxShadow(color: Colors.black, blurRadius: 20)
+                          ]),
+                    ),
+                    SizedBox(
+                      width: screenWidth * 0.9,
+                      height: screenHeight / 9,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        SizedBox(
+                          width: fontsz,
+                        ),
+                        RoundCheckBox(
+                          size: fontsz * 1.5,
+                          checkedWidget: Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: fontsz,
+                          ),
+                          checkedColor: Colors.blue,
+                          uncheckedColor: Colors.transparent,
+                          border: Border.all(color: Colors.white, width: 3),
+                          onTap: (selected) {
+                            isUse = !isUse;
+                            Imagepath = "";
+                            initdata["classimage"] = Imagepath;
+                            initdata["blur"] = blur.toString();
+                            widget.appsetting.writeCounter(initdata);
+                            setState(() {});
+                          },
+                          isChecked: isUse,
+                        ),
+                        Text("  启用背景  ",
+                            style: TextStyle(
+                                fontSize: fontsz * 0.9,
+                                color: Colors.white,
+                                shadows: const [
+                                  BoxShadow(color: Colors.black, blurRadius: 20)
+                                ])),
+                        RoundCheckBox(
+                          size: fontsz * 1.5,
+                          checkedWidget: Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: fontsz,
+                          ),
+                          checkedColor: Colors.blue,
+                          uncheckedColor: Colors.transparent,
+                          border: Border.all(color: Colors.white, width: 3),
+                          onTap: (selected) {
+                            _blurchange();
+                          },
+                          isChecked: blur,
+                        ),
+                        Text(
+                          "  亚克力遮罩  ",
+                          style: TextStyle(
+                              fontSize: fontsz * 0.9,
+                              color: Colors.white,
+                              shadows: const [
+                                BoxShadow(color: Colors.black, blurRadius: 20)
+                              ]),
+                        ),
+                        const Expanded(child: SizedBox()),
+                        TextButton(
+                          // style: ButtonStyle(
+                          //     backgroundColor:
+                          //         MaterialStatePropertyAll(Colors.amber)),
+                          onPressed: _pickImage,
+                          child: Text(
+                            '选择图片',
+                            style: TextStyle(
+                                fontSize: fontsz * 0.9,
+                                color: const Color.fromARGB(255, 183, 219, 247),
+                                shadows: const [
+                                  BoxShadow(color: Colors.black, blurRadius: 10)
+                                ]),
+                          ),
+                        ),
+                        SizedBox(
+                          width: fontsz,
+                        ),
+                      ],
+                    ),
+                  ],
+                )
               ],
             ),
-            SizedBox(height: fontsz / 2),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                RoundCheckBox(
-                  onTap: (selected) {
-                    isUse = !isUse;
-                    Imagepath = "";
-
-                    initdata["classimage"] = Imagepath;
-                    initdata["blur"] = blur.toString();
-                    widget.appsetting.writeCounter(initdata);
-                    setState(() {});
-                  },
-                  size: fontsz * 1.4,
-                  isChecked: isUse,
-                ),
-                Text(isUse ? "启用" : "已删除",
-                    style: TextStyle(fontSize: fontsz / 1.2)),
-                const Expanded(child: SizedBox()),
-                ElevatedButton(
-                  onPressed: _pickImage,
-                  child: const Text('选择图片'),
-                ),
-                SizedBox(
-                  width: fontsz,
-                ),
-                RoundCheckBox(
-                  onTap: (selected) {
-                    _blurchange();
-                  },
-                  size: fontsz * 1.4,
-                  isChecked: blur,
-                ),
-                Text(
-                  "亚克力遮罩",
-                  style: TextStyle(fontSize: fontsz / 1.2),
-                ),
-              ],
-            ),
+            //SizedBox(height: fontsz / 2),
             SizedBox(
               height: fontsz,
             ),
@@ -247,6 +299,7 @@ class _MyImagePickerState extends State<MyImagePicker> {
                           width: fontsz * 3,
                           height: fontsz * 3,
                           decoration: BoxDecoration(
+                              border: Border.all(color: Colors.white, width: 3),
                               color: dateColor,
                               borderRadius: BorderRadius.circular(fontsz * 2)),
                         ),
@@ -279,6 +332,7 @@ class _MyImagePickerState extends State<MyImagePicker> {
                           width: fontsz * 3,
                           height: fontsz * 3,
                           decoration: BoxDecoration(
+                              border: Border.all(color: Colors.white, width: 3),
                               color: timeColor,
                               borderRadius: BorderRadius.circular(fontsz * 2)),
                         ),
@@ -310,6 +364,7 @@ class _MyImagePickerState extends State<MyImagePicker> {
                           width: fontsz * 3,
                           height: fontsz * 3,
                           decoration: BoxDecoration(
+                              border: Border.all(color: Colors.white, width: 3),
                               color: bgColor,
                               borderRadius: BorderRadius.circular(fontsz * 2)),
                         ),
@@ -319,63 +374,73 @@ class _MyImagePickerState extends State<MyImagePicker> {
                 ],
               ),
             ),
-            Text(
-              "单元格颜色",
-              style: TextStyle(fontSize: fontsz * 0.7, color: Colors.blue),
-            ),
-            SizedBox(
-                //decoration: const BoxDecoration(color: Colors.black12),
-                height: fontsz * 2,
-                child: Row(
-                  //crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: RoundCheckBox(
-                        onTap: (selected) {
-                          itemcolorstate = !itemcolorstate;
-                          initdata["itemcolorstate"] =
-                              itemcolorstate.toString();
-                          widget.appsetting.writeCounter(initdata);
-                          setState(() {});
-                        },
-                        size: fontsz * 1.4,
-                        isChecked: itemcolorstate,
-                      ),
-                    ),
-                    SizedBox(
-                      width: fontsz,
-                    ),
-                    Expanded(
-                      child: RoundCheckBox(
-                        onTap: (selected) {
-                          itemcolorstate = !itemcolorstate;
-                          initdata["itemcolorstate"] =
-                              itemcolorstate.toString();
-                          widget.appsetting.writeCounter(initdata);
-                          setState(() {});
-                        },
-                        size: fontsz * 1.4,
-                        isChecked: !itemcolorstate,
-                      ),
-                    )
-                  ],
-                )),
-            SizedBox(
-              height: fontsz,
-              child: Row(
-                children: const [
-                  Expanded(
-                      child: Align(
-                    alignment: Alignment.topCenter,
-                    child: Text("区分色"),
-                  )),
-                  Expanded(
-                      child: Align(
-                    alignment: Alignment.topCenter,
-                    child: Text("极简白"),
-                  ))
-                ],
-              ),
+            Container(
+              margin: EdgeInsets.only(top: fontsz),
+              padding: EdgeInsets.symmetric(
+                  vertical: fontsz / 2, horizontal: fontsz),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(fontsz),
+                  border: Border.all(color: Colors.black54, width: 5)),
+              child: Column(children: [
+                Text(
+                  "单元格颜色",
+                  style: TextStyle(fontSize: fontsz * 0.7, color: Colors.blue),
+                ),
+                SizedBox(
+                    //decoration: const BoxDecoration(color: Colors.black12),
+                    height: fontsz * 2,
+                    child: Row(
+                      //crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: RoundCheckBox(
+                            onTap: (selected) {
+                              itemcolorstate = !itemcolorstate;
+                              initdata["itemcolorstate"] =
+                                  itemcolorstate.toString();
+                              widget.appsetting.writeCounter(initdata);
+                              setState(() {});
+                            },
+                            size: fontsz * 1.4,
+                            isChecked: itemcolorstate,
+                          ),
+                        ),
+                        SizedBox(
+                          width: fontsz,
+                        ),
+                        Expanded(
+                          child: RoundCheckBox(
+                            onTap: (selected) {
+                              itemcolorstate = !itemcolorstate;
+                              initdata["itemcolorstate"] =
+                                  itemcolorstate.toString();
+                              widget.appsetting.writeCounter(initdata);
+                              setState(() {});
+                            },
+                            size: fontsz * 1.4,
+                            isChecked: !itemcolorstate,
+                          ),
+                        )
+                      ],
+                    )),
+                SizedBox(
+                  height: fontsz,
+                  child: const Row(
+                    children: [
+                      Expanded(
+                          child: Align(
+                        alignment: Alignment.topCenter,
+                        child: Text("区分色"),
+                      )),
+                      Expanded(
+                          child: Align(
+                        alignment: Alignment.topCenter,
+                        child: Text("亚克力白"),
+                      ))
+                    ],
+                  ),
+                )
+              ]),
             )
           ],
         ),
@@ -526,6 +591,10 @@ class _Auther extends State<AutherPage> {
             children: [
               const Text("关于"),
               const Expanded(child: SizedBox()),
+              const Text(
+                "开源仓库",
+                style: TextStyle(fontSize: 15, color: Colors.black45),
+              ),
               IconButton(
                   onPressed: _launchUrl,
                   icon: Icon(
@@ -543,7 +612,7 @@ class _Auther extends State<AutherPage> {
             Container(
                 padding: const EdgeInsets.all(2.0),
                 decoration: BoxDecoration(
-                  color: Colors.yellow[700], // 选择黄金色
+                  color: Colors.yellow[800], // 选择黄金色
                   borderRadius: BorderRadius.circular(5.0),
                   // boxShadow: [
                   //   BoxShadow(
@@ -673,7 +742,7 @@ class _Auther extends State<AutherPage> {
                   decoration: const InputDecoration(
                     contentPadding: EdgeInsets.all(0),
                     border: InputBorder.none, // 设置边框为none，即消除边框
-                    hintText: "编辑反馈",
+                    hintText: " 编辑问题反馈或功能建议",
                   ),
                 ),
               ),

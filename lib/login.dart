@@ -778,6 +778,21 @@ class Requests {
       case "2024-2025 上学期":
         id = "329";
         break;
+      case "2024-2025 下学期":
+        id = "349";
+        break;
+      case "2025-2026 上学期":
+        id = "369";
+        break;
+      case "2025-2026 下学期":
+        id = "389";
+        break;
+      case "2026-2027 上学期":
+        id = "409";
+        break;
+      case "2026-2027 下学期":
+        id = "429";
+        break;
       default:
         id = ""; // 如果没有匹配的情况，可以选择设置一个默认值
         break;

@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pickers/style/default_style.dart';
@@ -275,50 +276,56 @@ class CalendarPage extends StatelessWidget {
         context: context,
         builder: (BuildContext context) {
           return Container(
-              color: const Color.fromARGB(30, 118, 118, 118),
+              color: Colors.black.withOpacity(0.03),
               child: Center(
-                child: Container(
-                  clipBehavior: Clip.hardEdge,
-                  padding: EdgeInsets.only(top: size / 7),
-                  height: size * 2,
-                  width: size * 3,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      color: Colors.white),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: size * 3,
-                        color: Colors.blue,
-                        child: Text(
-                          classname,
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: size / 4,
-                              fontWeight: FontWeight.bold),
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                        child: Container(
+                          clipBehavior: Clip.hardEdge,
+                          padding: EdgeInsets.only(top: size / 7),
+                          height: size * 2,
+                          width: size * 3,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: Colors.grey.shade200.withOpacity(0.5)),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                classname,
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: size / 4,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(teachername),
+                              Text(
+                                position,
+                                style: TextStyle(
+                                    color: Colors.black45,
+                                    fontSize: size / 5,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              const Expanded(child: SizedBox()),
+                              TextButton(
+                                onPressed: () {
+                                  // Close the dialog
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text(
+                                  '关闭',
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 20),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Text(teachername),
-                      Text(
-                        position,
-                        style: TextStyle(
-                            fontSize: size / 5, fontWeight: FontWeight.bold),
-                      ),
-                      const Expanded(child: SizedBox()),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Close the dialog
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('关闭'),
-                      ),
-                    ],
-                  ),
-                ),
-              ));
+                      ))));
         });
   }
 
@@ -342,6 +349,8 @@ class CalendarPage extends StatelessWidget {
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: showstate ? 7 : 5, // Number of columns
             mainAxisExtent: iteh,
+            mainAxisSpacing: 1,
+            crossAxisSpacing: 1,
             childAspectRatio:
                 showstate ? 7 / 8 : 5 / 5, // Width-to-height ratio of each cell
           ),
@@ -360,59 +369,65 @@ class CalendarPage extends StatelessWidget {
                           data[index].teacherName,
                           data[index].coursePeriod);
                     },
-                    child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 500),
-                        clipBehavior: Clip.hardEdge,
-                        margin: const EdgeInsets.all(1),
-                        padding: const EdgeInsets.all(3),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(5),
-                            color: colorstate
-                                ? data[index].color
-                                : const Color.fromARGB(255, 255, 255, 255)),
-                        child: Column(
-                          children: [
-                            Row(children: [
-                              SizedBox(
-                                width: iteh / 8,
-                                height: iteh * 0.75,
-                                child: Text(
-                                  data[index].courseName,
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                            child: Container(
+                                //duration: const Duration(milliseconds: 500),
+                                //clipBehavior: Clip.hardEdge,
+                                //margin: const EdgeInsets.all(1),
+                                padding: const EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    color: colorstate
+                                        ? data[index].color
+                                        : const Color.fromARGB(
+                                            150, 255, 255, 255)),
+                                child: Column(
+                                  children: [
+                                    Row(children: [
+                                      SizedBox(
+                                        width: iteh / 8,
+                                        height: iteh * 0.75,
+                                        child: Text(
+                                          data[index].courseName,
 
-                                  textAlign: TextAlign.center,
-                                  //maxLines: 2,
-                                  //overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      height: 1.1,
-                                      fontSize: iteh / 9,
-                                      fontWeight: FontWeight.bold,
-                                      color: const Color.fromARGB(
-                                          255, 71, 71, 71)),
-                                ),
-                              ),
-                              const SizedBox(
-                                width: 3,
-                              ),
-                              SizedBox(
-                                width: iteh / 5,
-                                child: Text(data[index].coursePeriod,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 5,
-                                    textAlign: TextAlign.left,
-                                    style: TextStyle(
-                                        fontSize: iteh / 12,
-                                        color: const Color.fromARGB(
-                                            255, 80, 80, 80))),
-                              ),
-                            ]),
-                            Text(
-                              data[index].teacherName,
-                              style: TextStyle(
-                                  fontSize: iteh / 10,
-                                  color: const Color.fromARGB(255, 83, 83, 83)),
-                            ),
-                          ],
-                        )));
+                                          textAlign: TextAlign.center,
+                                          //maxLines: 2,
+                                          //overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                              height: 1.1,
+                                              fontSize: iteh / 9,
+                                              fontWeight: FontWeight.bold,
+                                              color: const Color.fromARGB(
+                                                  255, 71, 71, 71)),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 3,
+                                      ),
+                                      SizedBox(
+                                        width: iteh / 5,
+                                        child: Text(data[index].coursePeriod,
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 5,
+                                            textAlign: TextAlign.left,
+                                            style: TextStyle(
+                                                fontSize: iteh / 12,
+                                                color: const Color.fromARGB(
+                                                    255, 80, 80, 80))),
+                                      ),
+                                    ]),
+                                    Text(
+                                      data[index].teacherName,
+                                      style: TextStyle(
+                                          fontSize: iteh / 10,
+                                          color: const Color.fromARGB(
+                                              255, 83, 83, 83)),
+                                    ),
+                                  ],
+                                )))));
               } catch (e) {
                 return Container(
                   //margin: const EdgeInsets.all(2),
@@ -663,184 +678,6 @@ class SubjectCreditsList extends StatelessWidget {
   }
 }
 
-class DropdownList extends StatefulWidget {
-  late int startYear;
-  double size;
-  DropdownList({required this.startYear, required this.size});
-
-  @override
-  _DropdownListState createState() => _DropdownListState();
-}
-
-class _DropdownListState extends State<DropdownList>
-    with SingleTickerProviderStateMixin {
-  String selectedOption = "选择学期";
-  final CounterStorage ctrlFile = CounterStorage();
-  bool isExpanded = false;
-  late AnimationController _animationController;
-  late Animation<double> _animation;
-
-  //int currentYear = DateTime.now().year;
-  List<String> semesters = [];
-  late Map initdata;
-  @override
-  void initState() {
-    super.initState();
-    DateTime currentDate = DateTime.now(); // 获取当前日期时间
-    int currentYear = currentDate.year; // 获取当前年份
-    int currentMonth = currentDate.month; // 获取当前月份
-
-    for (int year = widget.startYear; year <= currentYear; year++) {
-      if (year == currentYear) {
-        if (currentMonth >= 8 && currentMonth <= 12) {
-          // 当前月份在9月到12月之间，表示存在上学期
-          semesters.add('$year-${year + 1} 上学期');
-        }
-
-        if (currentMonth >= 1 && currentMonth <= 6) {
-          // 当前月份在2月到6月之间，表示存在下学期
-          semesters.add('$year-${year + 1} 下学期');
-        }
-      } else {
-        semesters.add('$year-${year + 1} 上学期');
-        semesters.add('$year-${year + 1} 下学期');
-      }
-    }
-
-    ctrlFile.readCounter().then((value) {
-      initdata = value;
-      if (initdata["goal"] == "") {
-        initdata["goal"] = semesters[0];
-        selectedOption = semesters[0];
-        ctrlFile.writeCounter(initdata);
-      } else {
-        selectedOption = initdata["goal"];
-      }
-    });
-
-    //selectedOption = semesters[0];
-
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-
-    _animation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  void toggleExpand() {
-    setState(() {
-      isExpanded = !isExpanded;
-    });
-
-    if (isExpanded) {
-      _animationController.forward();
-    } else {
-      _animationController.reverse();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: toggleExpand,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        //height: isExpanded ? widget.options.length * 50.0 : 0.0,
-        width: isExpanded ? widget.size * 12 : widget.size * 9,
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(widget.size / 2)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              //mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                SizedBox(
-                  width: widget.size / 3,
-                ),
-                Text(
-                  selectedOption,
-                  style: TextStyle(fontSize: widget.size / 1.2),
-                ),
-                const Expanded(child: SizedBox()),
-                AnimatedBuilder(
-                  animation: _animation,
-                  builder: (context, child) {
-                    return Transform.rotate(
-                      angle: _animation.value * 1 * 3.14,
-                      child: Icon(
-                        Icons.keyboard_arrow_up,
-                        size: widget.size * 1.4,
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              height: isExpanded ? widget.size * 8 : 0.0,
-              //width: isExpanded ? widget.options.length * 50.0 : 200,
-              child: Scrollbar(
-                child: MediaQuery.removePadding(
-                  context: context,
-                  removeTop: true,
-                  child: ListView.builder(
-                    itemCount: semesters.length,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        child: Container(
-                            decoration: BoxDecoration(
-                                color: Colors.black12,
-                                borderRadius:
-                                    BorderRadius.circular(widget.size / 3)),
-                            margin: EdgeInsets.only(
-                                left: widget.size / 3,
-                                bottom: widget.size / 5,
-                                right: widget.size / 3),
-                            height: widget.size * 1.6,
-                            child: Center(
-                              child: Text(
-                                semesters[index],
-                                style: TextStyle(fontSize: widget.size / 1.3),
-                              ),
-                            )),
-                        onTap: () {
-                          setState(() {
-                            selectedOption = semesters[index];
-                            initdata["goal"] = selectedOption;
-                            ctrlFile.writeCounter(initdata);
-                            isExpanded = false;
-                          });
-                          _animationController.reverse();
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class ExamList extends StatelessWidget {
   var examlist;
   ExamList({required this.examlist});
@@ -885,9 +722,9 @@ class ExamList extends StatelessWidget {
                       var data = examlist[index];
                       return Container(
                           margin: EdgeInsets.only(
-                              left: fontsz / 2,
-                              right: fontsz / 2,
-                              top: fontsz / 4),
+                            // left: fontsz / 2,
+                            right: fontsz / 2,
+                          ),
                           //padding: EdgeInsets.all(fontsz / 3),
                           height: screenHeight / 10,
                           decoration: BoxDecoration(
@@ -900,15 +737,18 @@ class ExamList extends StatelessWidget {
                           child: Row(
                             children: [
                               Container(
-                                  width: fontsz / 5,
-                                  height: fontsz * 3,
-                                  margin: EdgeInsets.all(fontsz / 4),
+                                  width: fontsz * 0.7,
+                                  height: fontsz * 0.7,
+                                  margin: EdgeInsets.only(
+                                      right: fontsz / 2, left: fontsz / 2),
                                   decoration: BoxDecoration(
-                                      color: data.ispass
-                                          ? Colors.black38
-                                          : Colors.blue,
-                                      borderRadius:
-                                          BorderRadius.circular(fontsz))),
+                                    borderRadius: BorderRadius.circular(fontsz),
+                                    color: data.ispass
+                                        ? Colors.black38
+                                        : Colors.blue,
+                                    // borderRadius:
+                                    //     BorderRadius.circular(fontsz)
+                                  )),
                               SizedBox(
                                   width: screenWidth / 3.2,
                                   child: Column(
@@ -1005,7 +845,7 @@ class ExamList extends StatelessWidget {
                                         const EdgeInsets.fromLTRB(3, 0, 3, 0),
                                     decoration: BoxDecoration(
                                         color: data.ispass
-                                            ? Colors.black.withOpacity(0.5)
+                                            ? Colors.black.withOpacity(0.3)
                                             : Colors.black,
                                         borderRadius: BorderRadius.circular(3)),
                                     child: Text(

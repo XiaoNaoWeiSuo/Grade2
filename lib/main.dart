@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, must_be_immutable, library_private_types_in_public_api, prefer_typing_uninitialized_variables
 
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import "package:flutter/services.dart";
 
 import 'package:path_provider/path_provider.dart';
@@ -74,7 +75,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   bool loginState = false;
   Map initdata = {"initial": "", "content": {}, "goal": ""};
   bool datedisplay = false;
-  late int startyear;
+  late int startYear;
 
   bool bukao = false;
   String tell = "...";
@@ -83,17 +84,19 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   PageController updatepagecheck = PageController();
   late AnimationController initailanime;
   late Animation<double> initialanimation;
+  List<String> semesters = []; //学期列表
+  String currentlogindate = "";
   @override
   void initState() {
     super.initState();
 
     initailanime = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1700))
+        vsync: this, duration: const Duration(milliseconds: 1500))
       ..addStatusListener(
         (status) {},
       );
     initialanimation =
-        CurvedAnimation(parent: initailanime, curve: Curves.easeOutBack);
+        CurvedAnimation(parent: initailanime, curve: Curves.easeOutCubic);
     initialanimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -110,10 +113,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         widget.ctrlFile.writeCounter(initdata);
       } else {
         initdata = value;
+        currentlogindate = initdata["goal"];
         if (widget.intostate) {
           _numController.text = initdata["initial"];
+
           datedisplay = true;
-          startyear = int.parse(initdata["initial"].substring(0, 4));
+          startYear = int.parse(initdata["initial"].substring(0, 4));
 
           _pwdController.text = initdata["content"][initdata["initial"]][0];
           rememberPassword = true;
@@ -193,13 +198,132 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     });
   }
 
-  void _handleInputFinished() {
+  void _handleInputFinished(bool change) {
+    final CounterStorage ctrlFile = CounterStorage();
+    GestureDetector buildCustomItem(String option) {
+      return GestureDetector(
+        child: Container(
+          decoration: BoxDecoration(
+              color: Colors.black12,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(option.contains("上") ? 20 : 5),
+                topRight: Radius.circular(option.contains("下") ? 20 : 5),
+                bottomLeft: Radius.circular(option.contains("上") ? 20 : 5),
+                bottomRight: Radius.circular(option.contains("下") ? 20 : 5),
+              )),
+          //height: 20,
+          child: Center(
+            child: Text(
+              option,
+              style: TextStyle(
+                  color: Colors.black87.withOpacity(0.5),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 20),
+            ),
+          ),
+        ),
+        onTap: () {
+          setState(() {
+            currentlogindate = option;
+            initdata["goal"] = option;
+            ctrlFile.writeCounter(initdata);
+          });
+          // 处理选中选项的逻辑
+          //
+          //
+
+          //  print('Selected: $option');
+          Navigator.pop(context); // 关闭底部菜单
+        },
+      );
+    }
+
     if (_numController.text != "" && isLongNumber(_numController.text)) {
       int year = int.parse(_numController.text.substring(0, 4));
       setState(() {
         if (isYearFormat(year)) {
           datedisplay = true;
-          startyear = year;
+          startYear = year;
+
+          DateTime currentDate = DateTime.now(); // 获取当前日期时间
+          int currentYear = currentDate.year; // 获取当前年份
+          int currentMonth = currentDate.month; // 获取当前月份
+
+          semesters = []; //学期列表重置
+          for (int year = startYear; year <= currentYear; year++) {
+            if (year == currentYear) {
+              if (currentMonth >= 8) {
+                // 当前月份在8月到12月之间，表示存在上学期
+                semesters.add('$currentYear-${currentYear + 1} 上学期');
+              }
+            } else {
+              semesters.add('$year-${year + 1} 上学期');
+              semesters.add('$year-${year + 1} 下学期');
+            }
+          }
+          ctrlFile.readCounter().then((value) {
+            initdata = value;
+            String currentedg;
+            if (initdata["goal"] == "") {
+              if (currentDate.month >= 1 && currentDate.month < 8) {
+                // 如果当前月份在1月到7月之间，则认为是上学期
+                currentedg = '$currentYear-${currentYear + 1} 上学期';
+              } else {
+                // 否则认为是下学期
+                currentedg = '$currentYear-${currentYear + 1} 下学期';
+              }
+              initdata["goal"] = currentedg;
+              setState(() {
+                currentlogindate = currentedg;
+              });
+              // selectedOption = currentedg;
+              ctrlFile.writeCounter(initdata);
+              showModalBottomSheet(
+                context: context,
+                builder: (BuildContext builder) {
+                  return SizedBox(
+                    height: 300.0,
+                    child: ListView.builder(
+                      itemCount: semesters.length,
+                      itemBuilder: (context, index) {
+                        return buildCustomItem(semesters[index]);
+                      },
+                    ),
+                  );
+                },
+              );
+            } else {
+              if (change) {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (BuildContext builder) {
+                    return Container(
+                      padding: const EdgeInsets.only(
+                          bottom: 20, top: 10, left: 10, right: 10),
+                      height: 260.0,
+                      child: GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2, // 设置列数为2
+                                crossAxisSpacing: 3.0, // 调整为较小的值
+                                mainAxisSpacing: 5.0, // 调整为较小的值
+                                mainAxisExtent: 50),
+                        itemCount: semesters.length,
+                        itemBuilder: (context, index) {
+                          // return Container(
+                          //   height: 10,
+                          //   color: Colors.red,
+                          // );
+                          return buildCustomItem(semesters[index]);
+                        },
+                      ),
+                    );
+                  },
+                );
+              }
+              // selectedOption = initdata["goal"];
+            }
+          });
         }
       });
     }
@@ -282,7 +406,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       _numController.text = index;
       _pwdController.text = initdata["content"][index][0];
       datedisplay = true;
-      startyear = int.parse(index.substring(0, 4));
+      startYear = int.parse(index.substring(0, 4));
       enterkey = initdata["content"][index][2];
       rememberPassword = true;
       autoLogin = initdata["content"][index][1] == "true" ? true : false;
@@ -298,417 +422,617 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     final screenHeight = mediaQueryData.size.height;
     double fontsz = screenWidth * 0.045;
     return Scaffold(
+        resizeToAvoidBottomInset: false,
         body: Stack(
-      children: [
-        Positioned(
-            //top: screenWidth,
-            child: FractionallySizedBox(
-                widthFactor: 2, // 宽度因子大于1，超出屏幕宽度
+          children: [
+            Positioned(
+                //top: screenWidth,
+                child: FractionallySizedBox(
+                    widthFactor: 2, // 宽度因子大于1，超出屏幕宽度
 
-                //heightFactor: 1,
-                child: AnimatedBuilder(
-                    animation: initialanimation,
-                    builder: (context, child) {
-                      return Container(
-                        color: const Color.fromARGB(255, 204, 220, 221),
-                        child: Column(
-                          //mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              height: screenHeight * 0.35,
+                    heightFactor: 1,
+                    child: AnimatedBuilder(
+                        animation: initialanimation,
+                        builder: (context, child) {
+                          return SizedBox(
+                              height: screenHeight,
+                              child: Container(
+                                color: const Color.fromARGB(255, 204, 220, 221),
+                                child: Image.asset(
+                                  "assets/data/icon.png",
+                                  height: screenHeight,
+                                ),
+                                // child: Column(
+                                //   //mainAxisAlignment: MainAxisAlignment.center,
+                                //   children: [
+                                //     SizedBox(
+                                //       height: screenHeight * 0.35,
+                                //     ),
+                                //     CircularProgressBar(
+                                //       progress: 1.0,
+                                //       radius: screenWidth,
+                                //       startAngle: 90 - 25 * initialanimation.value,
+                                //       endAngle: 90 + 25 * initialanimation.value,
+                                //       strokeWidth: fontsz,
+                                //       // beginCapRadius: fontsz,
+                                //       // endCapRadius: fontsz,
+                                //     )
+                                //   ],
+                                // ),
+                              ));
+                        }))),
+            SingleChildScrollView(
+                child: SizedBox(
+                    height: screenHeight,
+                    // decoration: const BoxDecoration(
+                    //     // shape: BoxShape.circle,
+                    //     color: Color.fromARGB(255, 224, 233, 235)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(0),
+                      child: Column(
+                        children: [
+                          Container(
+                            height: statusBarHeight,
+                            //color: Colors.white,
+                            // child: Text("账号列"),
+                          ),
+                          const Text(
+                            "账号列表-Account List",
+                            style: TextStyle(color: Colors.blue),
+                          ),
+                          Container(
+                            //margin: EdgeInsets.all(fontsz),
+                            width: screenWidth * 0.8,
+                            height: screenHeight * 0.055,
+                            decoration: const BoxDecoration(
+                              //color: Color.fromARGB(0, 198, 198, 198),
+                              border: Border(
+                                  top: BorderSide(
+                                      width: 2, color: Colors.white)),
+                              // boxShadow: const [
+                              //   BoxShadow(
+                              //     color: Color.fromARGB(92, 105, 105, 105),
+                              //     offset: Offset(0, 5),
+                              //     blurRadius: 20.0,
+                              //   )
+                              // ],
+                              // borderRadius:
+                              //     const BorderRadius.all(Radius.circular(10))
                             ),
-                            CircularProgressBar(
-                              progress: 1.0,
-                              radius: screenWidth,
-                              startAngle: 90 - 25 * initialanimation.value,
-                              endAngle: 90 + 25 * initialanimation.value,
-                              strokeWidth: fontsz,
-                              // beginCapRadius: fontsz,
-                              // endCapRadius: fontsz,
-                            )
-                          ],
-                        ),
-                      );
-                    }))),
-        SingleChildScrollView(
-            child: SizedBox(
-                height: screenHeight,
-                // decoration: const BoxDecoration(
-                //     // shape: BoxShape.circle,
-                //     color: Color.fromARGB(255, 224, 233, 235)),
-                child: Padding(
-                  padding: const EdgeInsets.all(0),
-                  child: Column(
-                    children: [
-                      Container(
-                        height: statusBarHeight * 2,
-                        //color: Colors.white,
-                      ),
-
-                      // const Text(
-                      //   "长江大学计算机协会",
-                      //   style: TextStyle(color: Colors.white),
-                      // ),
-                      Container(
-                        margin: EdgeInsets.all(fontsz),
-                        width: screenWidth * 0.8,
-                        height: screenHeight * 0.055,
-                        decoration: const BoxDecoration(
-                          //color: Color.fromARGB(0, 198, 198, 198),
-                          border: Border(
-                              top: BorderSide(width: 2, color: Colors.white)),
-                          // boxShadow: const [
-                          //   BoxShadow(
-                          //     color: Color.fromARGB(92, 105, 105, 105),
-                          //     offset: Offset(0, 5),
-                          //     blurRadius: 20.0,
-                          //   )
-                          // ],
-                          // borderRadius:
-                          //     const BorderRadius.all(Radius.circular(10))
-                        ),
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal, // 设置横向滚动
-                          itemCount: initdata["content"].length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return GestureDetector(
-                                onTap: () => chioselogin(
-                                    initdata["content"].keys.toList()[index]),
-                                child: Container(
-                                  padding: const EdgeInsets.all(1),
-                                  decoration: BoxDecoration(
-                                      color: const Color.fromARGB(
-                                          255, 244, 255, 235),
-                                      // border: Border.all(
-                                      //     width: 1, color: Colors.white),
-                                      borderRadius: BorderRadius.circular(5)),
-                                  width: screenWidth * 0.3,
-                                  margin: const EdgeInsets.only(
-                                      left: 5, top: 5, bottom: 5),
-                                  child: Center(
-                                    child: Text(
-                                      '${initdata["content"].keys.toList()[index]}',
-                                      style: TextStyle(
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal, // 设置横向滚动
+                              itemCount: initdata["content"].length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return GestureDetector(
+                                    onTap: () => chioselogin(initdata["content"]
+                                        .keys
+                                        .toList()[index]),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(1),
+                                      decoration: BoxDecoration(
                                           color: const Color.fromARGB(
-                                              255, 51, 51, 51),
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: fontsz),
-                                    ),
-                                  ),
-                                ));
-                          },
-                        ),
-                      ),
-                      Container(
-                          margin: EdgeInsets.all(fontsz),
-                          padding: EdgeInsets.all(fontsz),
-                          width: screenWidth * 0.85,
-                          height: screenHeight * 0.4,
-                          decoration: BoxDecoration(
-                              color: const Color.fromARGB(255, 252, 252, 252),
-                              boxShadow: [
-                                BoxShadow(
-                                    color: Colors.black12, blurRadius: fontsz)
-                              ],
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(fontsz))),
-                          child: PageView(
-                            controller: updatepagecheck,
-                            physics: const NeverScrollableScrollPhysics(),
-                            children: [
-                              Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Align(
-                                        alignment: Alignment.centerLeft,
+                                              255, 244, 255, 235),
+                                          // border: Border.all(
+                                          //     width: 1, color: Colors.white),
+                                          borderRadius:
+                                              BorderRadius.circular(5)),
+                                      width: screenWidth * 0.3,
+                                      margin: const EdgeInsets.only(
+                                          left: 5, top: 5, bottom: 5),
+                                      child: Center(
                                         child: Text(
-                                          tip,
+                                          '${initdata["content"].keys.toList()[index]}',
                                           style: TextStyle(
-                                            fontSize: fontsz * 1.2,
-                                            color: Colors.blue,
-                                          ),
+                                              color: const Color.fromARGB(
+                                                  255, 51, 51, 51),
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: fontsz),
                                         ),
                                       ),
-                                      const Expanded(child: SizedBox()),
-                                      // Container(
-                                      //   width: screenWidth / 5,
-                                      //   height: screenHeight / 18,
-                                      //   clipBehavior: Clip.hardEdge,
-                                      //   decoration: BoxDecoration(
-                                      //       borderRadius:
-                                      //           BorderRadius.circular(30)),
-                                      //   child: const Image(
-                                      //     fit: BoxFit.fitHeight,
-                                      //     image: NetworkImage(
-                                      //         "https://assets.msn.cn/weathermapdata/1/static/background/v2.0/jpg/partlysunny_day.jpg"),
-                                      //   ),
-                                      // )
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: fontsz,
-                                  ),
-                                  TextField(
-                                    keyboardType: TextInputType.number,
-                                    controller: _numController,
-                                    onEditingComplete: _handleInputFinished,
-                                    onTap: _editingyear,
-                                    style: TextStyle(
-                                        color:
-                                            const Color.fromARGB(255, 0, 0, 0),
-                                        fontSize: fontsz + 3), // 文本颜色为白色
-                                    decoration: InputDecoration(
-                                      label: Text(
-                                        "学号",
-                                        style: TextStyle(fontSize: fontsz),
-                                      ),
-                                      contentPadding:
-                                          EdgeInsets.all(fontsz / 2),
-                                      filled: true,
-                                      // fillColor:
-                                      //     Color.fromARGB(91, 155, 39, 176), // 背景颜色
-                                      hintText: 'Enter account', // 提示文本
-                                      hintStyle: const TextStyle(
-                                          color: Colors.white), // 提示文本颜色
-                                      border: OutlineInputBorder(
-                                        // borderSide:
-                                        //     const BorderSide(width: 2), // 边框颜色和宽度
-                                        borderRadius:
-                                            BorderRadius.circular(10.0), // 边框圆角
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: fontsz,
-                                  ),
-                                  TextField(
-                                    obscureText: _isObscure,
-                                    obscuringCharacter: "◍",
-                                    controller: _pwdController,
-                                    onTap: _handleInputFinished,
-                                    style: TextStyle(
-                                        color:
-                                            const Color.fromARGB(255, 0, 0, 0),
-                                        fontSize: fontsz + 3), // 文本颜色为白色
-                                    decoration: InputDecoration(
-                                        label: Text(
-                                          "密码",
-                                          style: TextStyle(fontSize: fontsz),
-                                        ),
-                                        contentPadding:
-                                            EdgeInsets.all(fontsz / 2),
-                                        filled: true,
-                                        // fillColor: const Color.fromARGB(
-                                        //     95, 129, 129, 129), // 背景颜色
-
-                                        hintText: 'Enter password', // 提示文本
-                                        hintStyle: const TextStyle(
-                                            color: Color.fromARGB(
-                                                255, 87, 87, 87)), // 提示文本颜色
-                                        border: OutlineInputBorder(
-                                          // borderSide: const BorderSide(
-                                          //     color: Colors.white,
-                                          //     width: 3.0), // 边框颜色和宽度
-                                          borderRadius: BorderRadius.circular(
-                                              10.0), // 边框圆角
-                                        ),
-                                        suffixIcon: IconButton(
-                                            icon: Icon(_isObscure
-                                                ? Icons.visibility_off
-                                                : Icons.visibility),
-                                            onPressed: () {
-                                              setState(() {
-                                                _isObscure = !_isObscure;
-                                              });
-                                            })),
-                                  ),
-                                  SizedBox(
-                                    height: screenHeight * 0.03,
-                                  ),
-                                  Row(
-                                    children: [
-                                      Column(
-                                        children: [
-                                          Row(
-                                            children: [
-                                              RoundCheckBox(
-                                                  size: fontsz * 1.5,
-                                                  checkedWidget: Icon(
-                                                    Icons.check,
-                                                    color: Colors.white,
-                                                    size: fontsz,
-                                                  ),
-                                                  checkedColor: Colors.blue,
-                                                  uncheckedColor:
-                                                      const Color.fromARGB(
-                                                          0, 155, 39, 176),
-                                                  border: Border.all(
-                                                      color:
-                                                          const Color.fromARGB(
-                                                              255, 0, 0, 0),
-                                                      width: 1),
-                                                  isChecked: autoLogin,
-                                                  onTap: (selected) {
-                                                    autoLogin = !autoLogin;
-
-                                                    setState(() {});
-                                                  }),
-                                              SizedBox(
-                                                width: fontsz / 2,
-                                              ),
-                                              Text(
-                                                "自动登录",
-                                                style: TextStyle(
-                                                    fontSize: fontsz * 0.9,
-                                                    color: autoLogin
-                                                        ? Colors.blue
-                                                        : const Color.fromARGB(
-                                                            120, 39, 64, 176)),
-                                              )
-                                            ],
-                                          ),
-                                          SizedBox(
-                                            height: fontsz / 3,
-                                          ),
-                                          Row(
-                                            children: [
-                                              RoundCheckBox(
-                                                  size: fontsz * 1.5,
-                                                  checkedWidget: Icon(
-                                                    Icons.check,
-                                                    color: Colors.white,
-                                                    size: fontsz,
-                                                  ),
-                                                  checkedColor: Colors.blue,
-                                                  uncheckedColor:
-                                                      const Color.fromARGB(
-                                                          255, 255, 255, 255),
-                                                  border: Border.all(
-                                                      color:
-                                                          const Color.fromARGB(
-                                                              255, 24, 24, 24),
-                                                      width: 1),
-                                                  isChecked: rememberPassword,
-                                                  onTap: (selected) {
-                                                    rememberPassword =
-                                                        !rememberPassword;
-                                                    setState(() {});
-                                                  }),
-                                              SizedBox(
-                                                width: fontsz / 2,
-                                              ),
-                                              Text(
-                                                "保存账号",
-                                                style: TextStyle(
-                                                    fontSize: fontsz * 0.9,
-                                                    color: rememberPassword
-                                                        ? Colors.blue
-                                                        : const Color.fromARGB(
-                                                            120, 39, 64, 176)),
-                                              )
-                                            ],
-                                          ),
-                                          SizedBox(
-                                            height: fontsz / 3,
-                                          ),
-                                          Row(
-                                            children: [
-                                              RoundCheckBox(
-                                                  size: fontsz * 1.5,
-                                                  checkedWidget: Icon(
-                                                    Icons.check,
-                                                    color: Colors.white,
-                                                    size: fontsz,
-                                                  ),
-                                                  checkedColor: Colors.blue,
-                                                  uncheckedColor:
-                                                      const Color.fromARGB(
-                                                          255, 255, 255, 255),
-                                                  border: Border.all(
-                                                      color:
-                                                          const Color.fromARGB(
-                                                              255, 24, 24, 24),
-                                                      width: 1),
-                                                  isChecked: bukao,
-                                                  onTap: (selected) {
-                                                    bukao = !bukao;
-                                                    setState(() {});
-                                                  }),
-                                              SizedBox(
-                                                width: fontsz / 2,
-                                              ),
-                                              Text(
-                                                "查看补考",
-                                                style: TextStyle(
-                                                    fontSize: fontsz * 0.9,
-                                                    color: bukao
-                                                        ? Colors.blue
-                                                        : const Color.fromARGB(
-                                                            120, 39, 64, 176)),
-                                              )
-                                            ],
-                                          )
-                                        ],
-                                      ),
-                                      Expanded(
-                                          child: Padding(
-                                              padding: const EdgeInsets.all(10),
-                                              child: TextButton(
-                                                  onPressed: () async {
-                                                    await Loginact();
-                                                  },
-                                                  child: state == false
-                                                      ? Text(
-                                                          "登录",
+                                    ));
+                              },
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              AnimatedBuilder(
+                                  animation: initialanimation,
+                                  builder: (context, child) {
+                                    return ClipRect(
+                                        child: BackdropFilter(
+                                            filter: ImageFilter.blur(
+                                                sigmaX: 25.0, sigmaY: 25.0),
+                                            child: Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey.shade200
+                                                      .withOpacity(0.8),
+                                                  borderRadius:
+                                                      BorderRadius.only(
+                                                          bottomRight:
+                                                              Radius.circular(
+                                                                  fontsz * 2),
+                                                          topRight:
+                                                              Radius.circular(
+                                                                  fontsz * 2)),
+                                                ),
+                                                //clipBehavior: Clip.hardEdge,
+                                                alignment: Alignment.topLeft,
+                                                margin: EdgeInsets.only(
+                                                    top: fontsz * 2),
+                                                padding: EdgeInsets.all(fontsz),
+                                                width: screenWidth *
+                                                    0.85 *
+                                                    initialanimation.value,
+                                                height: screenHeight * 0.5,
+                                                child: PageView(
+                                                  controller: updatepagecheck,
+                                                  physics:
+                                                      const NeverScrollableScrollPhysics(),
+                                                  children: [
+                                                    Column(
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            Align(
+                                                              alignment: Alignment
+                                                                  .centerLeft,
+                                                              child: Text(
+                                                                tip,
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize:
+                                                                      fontsz *
+                                                                          1.2,
+                                                                  color: Colors
+                                                                      .blue,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            const Expanded(
+                                                                child:
+                                                                    SizedBox()),
+                                                            // Container(
+                                                            //   width: screenWidth / 5,
+                                                            //   height: screenHeight / 18,
+                                                            //   clipBehavior: Clip.hardEdge,
+                                                            //   decoration: BoxDecoration(
+                                                            //       borderRadius:
+                                                            //           BorderRadius.circular(30)),
+                                                            //   child: const Image(
+                                                            //     fit: BoxFit.fitHeight,
+                                                            //     image: NetworkImage(
+                                                            //         "https://assets.msn.cn/weathermapdata/1/static/background/v2.0/jpg/partlysunny_day.jpg"),
+                                                            //   ),
+                                                            // )
+                                                          ],
+                                                        ),
+                                                        SizedBox(
+                                                          height: fontsz,
+                                                        ),
+                                                        TextField(
+                                                          keyboardType:
+                                                              TextInputType
+                                                                  .number,
+                                                          controller:
+                                                              _numController,
+                                                          onEditingComplete:
+                                                              () {
+                                                            _handleInputFinished(
+                                                                false);
+                                                          },
+                                                          onTap: _editingyear,
                                                           style: TextStyle(
-                                                            color: Colors.blue,
-                                                            fontSize:
-                                                                fontsz * 1.8,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              color: Colors
+                                                                  .black
+                                                                  .withOpacity(
+                                                                      0.7),
+                                                              fontSize: 28,
+                                                              fontFamily:
+                                                                  "Consolas"),
+                                                          decoration: InputDecoration(
+                                                              label: Text(
+                                                                "学号",
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        fontsz),
+                                                              ),
+                                                              helperText: "account"
+                                                              // contentPadding:
+                                                              //     EdgeInsets.all(fontsz / 2),
+                                                              //filled: true,
+                                                              // fillColor:
+                                                              //     Color.fromARGB(91, 155, 39, 176), // 背景颜色
+                                                              // hintText:
+                                                              //     'Enter account', // 提示文本
+                                                              // hintStyle: const TextStyle(
+                                                              //     color:
+                                                              //         Colors.white), // 提示文本颜色
+                                                              // border: OutlineInputBorder(
+                                                              //   // borderSide:
+                                                              //   //     const BorderSide(width: 2), // 边框颜色和宽度
+                                                              //   borderRadius:
+                                                              //       BorderRadius.circular(
+                                                              //           10.0), // 边框圆角
+                                                              // ),
+                                                              ),
+                                                        ),
+                                                        SizedBox(
+                                                          height: fontsz,
+                                                        ),
+                                                        TextField(
+                                                          obscureText:
+                                                              _isObscure,
+                                                          obscuringCharacter:
+                                                              "◍",
+                                                          controller:
+                                                              _pwdController,
+                                                          onTap: () {
+                                                            _handleInputFinished(
+                                                                false);
+                                                          },
+                                                          style: TextStyle(
+                                                            // fontWeight: FontWeight.w600,
+                                                            color: Colors.black
+                                                                .withOpacity(
+                                                                    0.7),
+                                                            fontSize: 26,
                                                           ),
-                                                        )
-                                                      : loadanimation(
-                                                          radius: fontsz * 3,
-                                                        ))))
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                children: [
-                                  const Text(
-                                    "更新(Update)",
-                                    style: TextStyle(fontSize: 20),
-                                  ),
-                                  SizedBox(
-                                    height: fontsz * 3,
-                                  ),
-                                  Text(
-                                    "${(_progressValue * 100).toStringAsFixed(1)}%",
-                                    style: const TextStyle(
-                                        fontSize: 75, color: Colors.blue),
-                                  ),
-                                  const Expanded(child: SizedBox()),
-                                  const Text(
-                                    "你的更新，就是对grade开发者最大的认可。",
-                                    style: TextStyle(
-                                        fontSize: 12, color: Colors.black45),
-                                  ),
-                                ],
-                              )
+                                                          decoration: InputDecoration(
+                                                              label: Text(
+                                                                "密码",
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        fontsz),
+                                                              ),
+                                                              helperText: "password",
+                                                              // contentPadding:
+                                                              //     EdgeInsets.all(
+                                                              //         fontsz / 2),
+                                                              // filled: true,
+                                                              // fillColor: const Color.fromARGB(
+                                                              //     95, 129, 129, 129), // 背景颜色
+
+                                                              // hintText:
+                                                              //     'Enter password', // 提示文本
+                                                              // hintStyle: const TextStyle(
+                                                              //     color: Color.fromARGB(
+                                                              //         255,
+                                                              //         87,
+                                                              //         87,
+                                                              //         87)), // 提示文本颜色
+                                                              // border: OutlineInputBorder(
+                                                              //   // borderSide: const BorderSide(
+                                                              //   //     color: Colors.white,
+                                                              //   //     width: 3.0), // 边框颜色和宽度
+                                                              //   borderRadius:
+                                                              //       BorderRadius.circular(
+                                                              //           10.0), // 边框圆角
+                                                              // ),
+                                                              suffixIcon: IconButton(
+                                                                  icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility),
+                                                                  onPressed: () {
+                                                                    setState(
+                                                                        () {
+                                                                      _isObscure =
+                                                                          !_isObscure;
+                                                                    });
+                                                                  })),
+                                                        ),
+                                                        SizedBox(
+                                                          height: screenHeight *
+                                                              0.03,
+                                                        ),
+                                                        Row(
+                                                          children: [
+                                                            Column(
+                                                              children: [
+                                                                Row(
+                                                                  children: [
+                                                                    RoundCheckBox(
+                                                                        size: fontsz *
+                                                                            1.5,
+                                                                        checkedWidget:
+                                                                            Icon(
+                                                                          Icons
+                                                                              .check,
+                                                                          color:
+                                                                              Colors.white,
+                                                                          size:
+                                                                              fontsz,
+                                                                        ),
+                                                                        checkedColor:
+                                                                            Colors
+                                                                                .blue,
+                                                                        uncheckedColor:
+                                                                            Colors
+                                                                                .transparent,
+                                                                        border: Border.all(
+                                                                            color: Colors
+                                                                                .white,
+                                                                            width:
+                                                                                3),
+                                                                        isChecked:
+                                                                            autoLogin,
+                                                                        onTap:
+                                                                            (selected) {
+                                                                          autoLogin =
+                                                                              !autoLogin;
+
+                                                                          setState(
+                                                                              () {});
+                                                                        }),
+                                                                    SizedBox(
+                                                                      width:
+                                                                          fontsz /
+                                                                              2,
+                                                                    ),
+                                                                    Text(
+                                                                      "自动登录",
+                                                                      style: TextStyle(
+                                                                          fontSize: fontsz *
+                                                                              0.9,
+                                                                          color: autoLogin
+                                                                              ? Colors.blue
+                                                                              : const Color.fromARGB(120, 39, 64, 176)),
+                                                                    )
+                                                                  ],
+                                                                ),
+                                                                SizedBox(
+                                                                  height:
+                                                                      fontsz /
+                                                                          3,
+                                                                ),
+                                                                Row(
+                                                                  children: [
+                                                                    RoundCheckBox(
+                                                                        size: fontsz *
+                                                                            1.5,
+                                                                        checkedWidget:
+                                                                            Icon(
+                                                                          Icons
+                                                                              .check,
+                                                                          color:
+                                                                              Colors.white,
+                                                                          size:
+                                                                              fontsz,
+                                                                        ),
+                                                                        checkedColor:
+                                                                            Colors
+                                                                                .blue,
+                                                                        uncheckedColor:
+                                                                            Colors
+                                                                                .transparent,
+                                                                        border: Border.all(
+                                                                            color: Colors
+                                                                                .white,
+                                                                            width:
+                                                                                3),
+                                                                        isChecked:
+                                                                            rememberPassword,
+                                                                        onTap:
+                                                                            (selected) {
+                                                                          rememberPassword =
+                                                                              !rememberPassword;
+                                                                          setState(
+                                                                              () {});
+                                                                        }),
+                                                                    SizedBox(
+                                                                      width:
+                                                                          fontsz /
+                                                                              2,
+                                                                    ),
+                                                                    Text(
+                                                                      "保存账号",
+                                                                      style: TextStyle(
+                                                                          fontSize: fontsz *
+                                                                              0.9,
+                                                                          color: rememberPassword
+                                                                              ? Colors.blue
+                                                                              : const Color.fromARGB(120, 39, 64, 176)),
+                                                                    )
+                                                                  ],
+                                                                ),
+                                                                SizedBox(
+                                                                  height:
+                                                                      fontsz /
+                                                                          3,
+                                                                ),
+                                                                Row(
+                                                                  children: [
+                                                                    RoundCheckBox(
+                                                                        size: fontsz *
+                                                                            1.5,
+                                                                        checkedWidget:
+                                                                            Icon(
+                                                                          Icons
+                                                                              .check,
+                                                                          color:
+                                                                              Colors.white,
+                                                                          size:
+                                                                              fontsz,
+                                                                        ),
+                                                                        checkedColor:
+                                                                            Colors
+                                                                                .blue,
+                                                                        uncheckedColor:
+                                                                            Colors
+                                                                                .transparent,
+                                                                        border: Border.all(
+                                                                            color: Colors
+                                                                                .white,
+                                                                            width:
+                                                                                3),
+                                                                        isChecked:
+                                                                            bukao,
+                                                                        onTap:
+                                                                            (selected) {
+                                                                          bukao =
+                                                                              !bukao;
+                                                                          setState(
+                                                                              () {});
+                                                                        }),
+                                                                    SizedBox(
+                                                                      width:
+                                                                          fontsz /
+                                                                              2,
+                                                                    ),
+                                                                    Text(
+                                                                      "查看补考",
+                                                                      style: TextStyle(
+                                                                          fontSize: fontsz *
+                                                                              0.9,
+                                                                          color: bukao
+                                                                              ? Colors.blue
+                                                                              : const Color.fromARGB(120, 39, 64, 176)),
+                                                                    )
+                                                                  ],
+                                                                )
+                                                              ],
+                                                            ),
+                                                            Expanded(
+                                                                child: Padding(
+                                                                    padding:
+                                                                        const EdgeInsets
+                                                                            .all(
+                                                                            10),
+                                                                    child: TextButton(
+                                                                        onPressed: () async {
+                                                                          await Loginact();
+                                                                        },
+                                                                        child: state == false
+                                                                            ? Text(
+                                                                                "登录",
+                                                                                style: TextStyle(
+                                                                                  color: Colors.blue,
+                                                                                  fontSize: fontsz * 1.8,
+                                                                                ),
+                                                                              )
+                                                                            : loadanimation(
+                                                                                radius: fontsz * 3,
+                                                                              ))))
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Column(
+                                                      children: [
+                                                        const Text(
+                                                          "更新(Update)",
+                                                          style: TextStyle(
+                                                              fontSize: 20),
+                                                        ),
+                                                        SizedBox(
+                                                          height: fontsz * 3,
+                                                        ),
+                                                        Text(
+                                                          "${(_progressValue * 100).toStringAsFixed(1)}%",
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize: 75,
+                                                                  color: Colors
+                                                                      .blue),
+                                                        ),
+                                                        SizedBox(
+                                                          height: fontsz,
+                                                        ),
+                                                        ClipRRect(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(10),
+                                                          child:
+                                                              LinearProgressIndicator(
+                                                            minHeight: 10,
+                                                            value:
+                                                                _progressValue,
+                                                          ),
+                                                        ),
+                                                        const Expanded(
+                                                            child: SizedBox()),
+                                                        const Text(
+                                                          "你的更新，就是对grade开发者最大的认可。",
+                                                          style: TextStyle(
+                                                              fontSize: 12,
+                                                              color: Colors
+                                                                  .black45),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  ],
+                                                ))));
+                                  })
                             ],
-                          )),
-                      datedisplay
-                          ? DropdownList(
-                              startYear: startyear,
-                              size: fontsz,
-                            )
-                          : Container(),
-                    ],
-                  ),
-                ))),
-      ],
-    ));
+                          ),
+                          AnimatedBuilder(
+                            animation: initialanimation,
+                            builder: (context, child) {
+                              return SizedBox(
+                                height: fontsz * 5 -
+                                    fontsz * 4 * initialanimation.value,
+                              );
+                            },
+                          ),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(15),
+                            child: BackdropFilter(
+                                filter:
+                                    ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                                child: Container(
+                                    width: screenWidth * 0.65,
+                                    decoration: BoxDecoration(
+                                        color: Colors.grey.shade200
+                                            .withOpacity(0.9)),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                            child: Center(
+                                          child: Text(
+                                            currentlogindate,
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.black54,
+                                                fontSize: 20),
+                                          ),
+                                        )),
+                                        TextButton(
+                                            onPressed: () {
+                                              _handleInputFinished(true);
+                                            },
+                                            child: const Text(
+                                              "选择学期",
+                                              style: TextStyle(
+                                                  color: Colors.blue,
+                                                  fontSize: 16),
+                                            ))
+                                      ],
+                                    ))),
+                          ),
+                          const Expanded(child: SizedBox()),
+                          Container(
+                            margin: EdgeInsets.only(bottom: fontsz),
+                            child: const Text(
+                              "#Grade2 | @XiaoNaoWeiSuo | 2024",
+                              style: TextStyle(color: Colors.black54),
+                            ),
+                          )
+                          // ClipRRect(
+                          //     borderRadius: BorderRadius.circular(15),
+                          //     child: BackdropFilter(
+                          //         filter: ImageFilter.blur(
+                          //             sigmaX: 5.0, sigmaY: 5.0),
+                          //         child: Container(
+                          //             width: screenWidth * 0.65,
+                          //             decoration: BoxDecoration(
+                          //                 color: Colors.grey.shade200
+                          //                     .withOpacity(0.9)),
+                          //             child: Text("wawawaw"))))
+                        ],
+                      ),
+                    ))),
+          ],
+        ));
   }
 }
 
@@ -1065,8 +1389,11 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                       child: Stack(
                         children: [
                           Container(
+                              clipBehavior: Clip.hardEdge,
                               height: screenHeight,
-                              color: Colors.white,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(fontsz)),
+                              //color: Colors.white,
                               child: Imagepath != ""
                                   ? Image.file(
                                       File(Imagepath),
