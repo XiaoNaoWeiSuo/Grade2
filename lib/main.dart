@@ -979,8 +979,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                             child: BackdropFilter(
                                 filter:
                                     ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                        
                                 child: Container(
-                                    width: screenWidth * 0.65,
+                                    width: screenWidth * 0.7,
                                     decoration: BoxDecoration(
                                         color: Colors.grey.shade200
                                             .withOpacity(0.9)),
@@ -990,10 +991,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                             child: Center(
                                           child: Text(
                                             currentlogindate,
+                                            maxLines: 1,
                                             style: const TextStyle(
                                                 fontWeight: FontWeight.w500,
                                                 color: Colors.black54,
-                                                fontSize: 20),
+                                                fontSize: 18),
                                           ),
                                         )),
                                         TextButton(
