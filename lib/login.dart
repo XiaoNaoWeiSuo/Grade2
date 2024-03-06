@@ -1257,34 +1257,34 @@ class Requests {
   }
 }
 
-class SelectCourse {
-  //获取选课列表
-  Future<List<Map>> GetSelectList(Dio dio) async {
-    String url =
-        "http://jwc3.yangtzeu.edu.cn/eams/stdElectCourse.action?_=${DateTime.now().millisecondsSinceEpoch}";
-    Response response = await dio.get(url);
-    var document = parser.parse(response.data);
-    List<Map<String, String>> extractedData = [];
-    document
-        .querySelectorAll('.ajax_container > div[id^="electIndexNotice"]')
-        .forEach((container) {
-      String title = container.querySelector('h2')?.text ?? '';
-      String url = container.querySelector('a')?.attributes['href'] ?? '';
-      Map<String, String> outlineData = {
-        'title': title.split("-")[3],
-        'url': url,
-      };
-      extractedData.add(outlineData);
-    });
-    return extractedData;
-  }
-}
+// class SelectCourse {
+//   //获取选课列表
+//   Future<List<Map>> GetSelectList(Dio dio) async {
+//     String url =
+//         "http://jwc3.yangtzeu.edu.cn/eams/stdElectCourse.action?_=${DateTime.now().millisecondsSinceEpoch}";
+//     Response response = await dio.get(url);
+//     var document = parser.parse(response.data);
+//     List<Map<String, String>> extractedData = [];
+//     document
+//         .querySelectorAll('.ajax_container > div[id^="electIndexNotice"]')
+//         .forEach((container) {
+//       String title = container.querySelector('h2')?.text ?? '';
+//       String url = container.querySelector('a')?.attributes['href'] ?? '';
+//       Map<String, String> outlineData = {
+//         'title': title.split("-")[3],
+//         'url': url,
+//       };
+//       extractedData.add(outlineData);
+//     });
+//     return extractedData;
+//   }
+// }
 
 //日期计算器
 List<String> calculateDates(int currentWeek) {
   List<String> dates = [];
 
-  DateTime startDate = DateTime(2024, 2, 26); // 设置起始日期为 2023 年 8 月 28 日
+  DateTime startDate = DateTime(2024, 2, 26); // 设置起始日期为 2024 年 2 月 26 日
 
   for (int i = 0; i < 7; i++) {
     DateTime date = startDate.add(Duration(days: (currentWeek - 1) * 7 + i));

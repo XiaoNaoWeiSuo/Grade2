@@ -276,7 +276,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               setState(() {
                 currentlogindate = currentedg;
               });
-              // selectedOption = currentedg;
               ctrlFile.writeCounter(initdata);
               showModalBottomSheet(
                 context: context,
@@ -590,19 +589,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                                             const Expanded(
                                                                 child:
                                                                     SizedBox()),
-                                                            // Container(
-                                                            //   width: screenWidth / 5,
-                                                            //   height: screenHeight / 18,
-                                                            //   clipBehavior: Clip.hardEdge,
-                                                            //   decoration: BoxDecoration(
-                                                            //       borderRadius:
-                                                            //           BorderRadius.circular(30)),
-                                                            //   child: const Image(
-                                                            //     fit: BoxFit.fitHeight,
-                                                            //     image: NetworkImage(
-                                                            //         "https://assets.msn.cn/weathermapdata/1/static/background/v2.0/jpg/partlysunny_day.jpg"),
-                                                            //   ),
-                                                            // )
                                                           ],
                                                         ),
                                                         SizedBox(
@@ -658,9 +644,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                                               // ),
                                                               ),
                                                         ),
-                                                        SizedBox(
-                                                          height: fontsz,
-                                                        ),
+                                                        // SizedBox(
+                                                        //   height: fontsz,
+                                                        // ),
                                                         TextField(
                                                           obscureText:
                                                               _isObscure,
@@ -677,48 +663,28 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                                             color: Colors.black
                                                                 .withOpacity(
                                                                     0.7),
-                                                            fontSize: 26,
+                                                            fontSize: 20,
                                                           ),
-                                                          decoration: InputDecoration(
-                                                              label: Text(
-                                                                "密码",
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        fontsz),
-                                                              ),
-                                                              helperText: "password",
-                                                              // contentPadding:
-                                                              //     EdgeInsets.all(
-                                                              //         fontsz / 2),
-                                                              // filled: true,
-                                                              // fillColor: const Color.fromARGB(
-                                                              //     95, 129, 129, 129), // 背景颜色
-
-                                                              // hintText:
-                                                              //     'Enter password', // 提示文本
-                                                              // hintStyle: const TextStyle(
-                                                              //     color: Color.fromARGB(
-                                                              //         255,
-                                                              //         87,
-                                                              //         87,
-                                                              //         87)), // 提示文本颜色
-                                                              // border: OutlineInputBorder(
-                                                              //   // borderSide: const BorderSide(
-                                                              //   //     color: Colors.white,
-                                                              //   //     width: 3.0), // 边框颜色和宽度
-                                                              //   borderRadius:
-                                                              //       BorderRadius.circular(
-                                                              //           10.0), // 边框圆角
-                                                              // ),
-                                                              suffixIcon: IconButton(
-                                                                  icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility),
-                                                                  onPressed: () {
-                                                                    setState(
-                                                                        () {
-                                                                      _isObscure =
-                                                                          !_isObscure;
-                                                                    });
-                                                                  })),
+                                                          decoration:
+                                                              InputDecoration(
+                                                                  label: Text(
+                                                                    "密码",
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            fontsz),
+                                                                  ),
+                                                                  helperText:
+                                                                      "password",
+                                                                  suffixIcon:
+                                                                      IconButton(
+                                                                          icon: Icon(_isObscure
+                                                                              ? Icons.visibility_off
+                                                                              : Icons.visibility),
+                                                                          onPressed: () {
+                                                                            setState(() {
+                                                                              _isObscure = !_isObscure;
+                                                                            });
+                                                                          })),
                                                         ),
                                                         SizedBox(
                                                           height: screenHeight *
@@ -1104,10 +1070,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     _ChatLoadAnima =
         Tween<double>(begin: 0.0, end: 1.0).animate(_ChatLoadAnima);
     _ChatLoadAnimaController.forward();
-
-    DateTime startDate = DateTime.now().isAfter(DateTime(2024, 2, 26))
-        ? DateTime(2024, 2, 26)
-        : DateTime(2023, 8, 28);
+    DateTime startDate = DateTime(2024, 2, 26);
     // 获取当前日期
 
     // 计算当前日期与起始日期之间的差距（天数）
@@ -1138,7 +1101,8 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
         number = datalist["content"].length;
       });
     });
-    //debugPrint(currentWeek.toString());
+    // debugPrint("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa============" +
+    //     currentWeek.toString());
 
     //当时间间隔超过表格周数时，会出现严重的索引溢出bug,导致grade2软件崩溃
     if (currentWeek > widget.schedule.length) {
@@ -2404,10 +2368,10 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
         urls = value;
         setState(() {});
       });
-      SelectCourse().GetSelectList(netdata[0]).then((value) {
-        selectcourselist = value;
-        setState(() {});
-      });
+      // SelectCourse().GetSelectList(netdata[0]).then((value) {
+      //   selectcourselist = value;
+      //   setState(() {});
+      // });
     } catch (e) {
       Null;
     }
