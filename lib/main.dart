@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, must_be_immutable, library_private_types_in_public_api, prefer_typing_uninitialized_variables
 
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 import "package:flutter/services.dart";
 
 import 'package:path_provider/path_provider.dart';
@@ -26,6 +25,7 @@ void main() async {
     statusBarIconBrightness: Brightness.dark,
   ));
   runApp(const MyApp());
+
   if (Platform.isAndroid) {
     SystemUiOverlayStyle systemUiOverlayStyle = const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -555,7 +555,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                                               Radius.circular(
                                                                   fontsz * 2)),
                                                 ),
-                                                //clipBehavior: Clip.hardEdge,
                                                 alignment: Alignment.topLeft,
                                                 margin: EdgeInsets.only(
                                                     top: fontsz * 2),
@@ -979,7 +978,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                             child: BackdropFilter(
                                 filter:
                                     ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-                        
                                 child: Container(
                                     width: screenWidth * 0.7,
                                     decoration: BoxDecoration(
@@ -1394,8 +1392,10 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                               clipBehavior: Clip.hardEdge,
                               height: screenHeight,
                               decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(fontsz)),
-                              //color: Colors.white,
+                                  borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(fontsz),
+                                topRight: Radius.circular(fontsz),
+                              )),
                               child: Imagepath != ""
                                   ? Image.file(
                                       File(Imagepath),
@@ -1459,8 +1459,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                               color:
                                                   formattedDate == date[index]
                                                       ? Colors.blue
-                                                      : Colors.black
-                                                          .withOpacity(0.65),
+                                                      : dateColor,
                                               fontSize: fontsz * 0.9,
                                               fontWeight: FontWeight.bold),
                                         ),

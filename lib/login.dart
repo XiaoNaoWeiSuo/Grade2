@@ -1430,15 +1430,4 @@ String extractIdFromUrl(String url) {
 //   page = await lizi.GetData(insert[0]);
 //   List<Student> studentList = parseStudentTable(page);
 //   List<Course> courseList = parseCourseTable(page);
-
-//   // 打印解析后的学生信息和课程信息
-//   print('Student Information:');
-//   for (var student in studentList) {
-//     print(student.toString());
-//   }
-
-//   print('Course Information:');
-//   for (var course in courseList) {
-//     print(course.toString());
-//   }
-// }
+//}
