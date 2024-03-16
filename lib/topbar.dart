@@ -255,7 +255,7 @@ class ActivityTile extends StatelessWidget {
   }
 }
 
-class CalendarPage extends StatelessWidget {
+class CalendarPage extends StatefulWidget {
   var dat;
   double iteh;
 
@@ -270,8 +270,14 @@ class CalendarPage extends StatelessWidget {
       required this.dat,
       required this.iteh});
 
+  @override
+  State<StatefulWidget> createState() => CalendarPagestate();
+}
+
+class CalendarPagestate extends State<CalendarPage> {
   void _showPopup(
-      BuildContext context, size, classname, teachername, position) {
+      BuildContext context, size, classname, teachername, position, interval) {
+    List interlist = interval.split("");
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -310,6 +316,45 @@ class CalendarPage extends StatelessWidget {
                                     fontSize: size / 5,
                                     fontWeight: FontWeight.bold),
                               ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.5)),
+                                width: size * 3,
+                                height: size * 3 / interlist.length,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: interlist.length - 1,
+                                  itemBuilder: (context, index) {
+                                    return Container(
+                                      padding: const EdgeInsets.all(1),
+                                      width: size * 3 / (interlist.length - 1),
+                                      //height: 10,
+                                      child: Container(
+                                          height:
+                                              size * 3 / (interlist.length - 1),
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(3),
+                                              color: interlist[index + 1] == "0"
+                                                  ? Colors.grey
+                                                  : Colors.greenAccent),
+                                          child: Center(
+                                            child: Text(
+                                              (index + 1).toString(),
+                                              style: const TextStyle(
+                                                  color: Colors.blueGrey,
+                                                  fontSize: 10,
+                                                  wordSpacing: 1,
+                                                  height: 1),
+                                            ),
+                                          )),
+                                    );
+                                  },
+                                ),
+                              ),
                               const Expanded(child: SizedBox()),
                               TextButton(
                                 onPressed: () {
@@ -332,13 +377,13 @@ class CalendarPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var data;
-    double constiteh = iteh;
-    if (showstate) {
-      iteh = iteh / 8;
-      data = dat;
+    double constiteh = widget.iteh;
+    if (widget.showstate) {
+      widget.iteh = widget.iteh / 8;
+      data = widget.dat;
     } else {
-      iteh = iteh / 5;
-      data = processArray(dat);
+      widget.iteh = widget.iteh / 5;
+      data = processArray(widget.dat);
     }
     // 在这里创建你的日历 UI
     return MediaQuery.removePadding(
@@ -347,14 +392,15 @@ class CalendarPage extends StatelessWidget {
         child: GridView.builder(
           // controller: scrollController,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: showstate ? 7 : 5, // Number of columns
-            mainAxisExtent: iteh,
+            crossAxisCount: widget.showstate ? 7 : 5, // Number of columns
+            mainAxisExtent: widget.iteh,
             mainAxisSpacing: 1,
             crossAxisSpacing: 1,
-            childAspectRatio:
-                showstate ? 7 / 8 : 5 / 5, // Width-to-height ratio of each cell
+            childAspectRatio: widget.showstate
+                ? 7 / 8
+                : 5 / 5, // Width-to-height ratio of each cell
           ),
-          itemCount: showstate
+          itemCount: widget.showstate
               ? 56
               : 25, // Total number of cells (7 columns * 10 rows)
           itemBuilder: (BuildContext context, int index) {
@@ -363,11 +409,13 @@ class CalendarPage extends StatelessWidget {
                 return GestureDetector(
                     onTap: () {
                       _showPopup(
-                          context,
-                          constiteh / 6.5,
-                          data[index].courseName,
-                          data[index].teacherName,
-                          data[index].coursePeriod);
+                        context,
+                        constiteh / 6.5,
+                        data[index].courseName,
+                        data[index].teacherName,
+                        data[index].coursePeriod,
+                        data[index].interal,
+                      );
                     },
                     child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
@@ -380,7 +428,7 @@ class CalendarPage extends StatelessWidget {
                                 padding: const EdgeInsets.all(3),
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(10),
-                                    color: colorstate
+                                    color: widget.colorstate
                                         ? data[index].color
                                         : const Color.fromARGB(
                                             150, 255, 255, 255)),
@@ -388,8 +436,8 @@ class CalendarPage extends StatelessWidget {
                                   children: [
                                     Row(children: [
                                       SizedBox(
-                                        width: iteh / 8,
-                                        height: iteh * 0.75,
+                                        width: widget.iteh / 8,
+                                        height: widget.iteh * 0.75,
                                         child: Text(
                                           data[index].courseName,
 
@@ -398,7 +446,7 @@ class CalendarPage extends StatelessWidget {
                                           //overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
                                               height: 1.1,
-                                              fontSize: iteh / 9,
+                                              fontSize: widget.iteh / 9,
                                               fontWeight: FontWeight.bold,
                                               color: const Color.fromARGB(
                                                   255, 71, 71, 71)),
@@ -408,13 +456,13 @@ class CalendarPage extends StatelessWidget {
                                         width: 3,
                                       ),
                                       SizedBox(
-                                        width: iteh / 5,
+                                        width: widget.iteh / 5,
                                         child: Text(data[index].coursePeriod,
                                             overflow: TextOverflow.ellipsis,
                                             maxLines: 5,
                                             textAlign: TextAlign.left,
                                             style: TextStyle(
-                                                fontSize: iteh / 12,
+                                                fontSize: widget.iteh / 12,
                                                 color: const Color.fromARGB(
                                                     255, 80, 80, 80))),
                                       ),
@@ -422,7 +470,7 @@ class CalendarPage extends StatelessWidget {
                                     Text(
                                       data[index].teacherName,
                                       style: TextStyle(
-                                          fontSize: iteh / 10,
+                                          fontSize: widget.iteh / 10,
                                           color: const Color.fromARGB(
                                               255, 83, 83, 83)),
                                     ),

@@ -9,6 +9,7 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:enough_mail/enough_mail.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:permission_handler/permission_handler.dart';
 
 // 获取存储卡的路径
 // Future<void> update() async {
@@ -76,6 +77,8 @@ class ResultObject {
 
 //数据文件读写类
 class CounterStorage {
+  final String filename;
+  CounterStorage({required this.filename});
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
     return directory.path;
@@ -83,37 +86,7 @@ class CounterStorage {
 
   Future<File> get _localFile async {
     final path = await _localPath;
-    return File('$path/data.json');
-  }
-
-  Future<Map<String, dynamic>> readCounter() async {
-    try {
-      final file = await _localFile;
-      // Read the file
-      final contents = await file.readAsString();
-      return jsonDecode(contents);
-    } catch (e) {
-      // If encountering an error, return 0
-      return {};
-    }
-  }
-
-  Future<File> writeCounter(var counter) async {
-    final file = await _localFile;
-    // Write the file
-    return file.writeAsString(jsonEncode(counter));
-  }
-}
-
-class Appdata {
-  Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-    return directory.path;
-  }
-
-  Future<File> get _localFile async {
-    final path = await _localPath;
-    return File('$path/setting.json');
+    return File('$path/$filename');
   }
 
   Future<Map<String, dynamic>> readCounter() async {
@@ -195,4 +168,24 @@ bool isVersionGreaterThan(String version1, String version2) {
 String removeYear(String inputString) {
   final regex = RegExp(r'^\d{4}-');
   return inputString.replaceAll(regex, '');
+}
+
+void checkNotificationPermission() async {
+  // 检查通知权限
+  PermissionStatus status = await Permission.notification.status;
+  if (!status.isGranted) {
+    // 如果没有通知权限，请求权限
+    status = await Permission.notification.request();
+  } else {}
+}
+
+//获取始终权限
+void checkalarm() async {
+  // PermissionStatus status_cl = await Permission.scheduleExactAlarm.request();
+  // if (!status_cl.isGranted) {
+  //   status_cl = await Permission.scheduleExactAlarm.request();
+  //   // Schedule your alarm
+  // } else {
+  //   // Permission not granted, notify the user.
+  // }
 }

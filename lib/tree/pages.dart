@@ -17,7 +17,7 @@ import '../login.dart';
 import '../topbar.dart';
 
 class MyImagePicker extends StatefulWidget {
-  final Appdata appsetting = Appdata();
+  final CounterStorage appsetting = CounterStorage(filename: "setting.json");
 
   MyImagePicker({super.key});
   @override

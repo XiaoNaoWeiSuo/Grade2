@@ -232,8 +232,9 @@ class Coursesis {
   String classroomNumber;
   String coursePeriod; // 53位的字符串，0表示无排课，1表示排课
   String courseTimes;
-  List<int> coursePosition;
+  List coursePosition;
   Color color;
+  String interal;
   Coursesis(
       {required this.teacherName,
       required this.courseName,
@@ -241,7 +242,8 @@ class Coursesis {
       required this.coursePeriod,
       required this.courseTimes,
       required this.coursePosition,
-      required this.color});
+      required this.color,
+      required this.interal});
 
   @override
   String toString() {
@@ -293,9 +295,11 @@ class SourceAnalysis {
           coursePeriod: activity[3],
           courseTimes: activity[4],
           coursePosition: position,
-          color: const Color.fromARGB(255, 255, 255, 255));
+          color: const Color.fromARGB(255, 255, 255, 255),
+          interal: activity[4].substring(0, 20));
       result.add(course);
     });
+
     return result;
   }
 
@@ -357,6 +361,32 @@ class SourceAnalysis {
     }
     return [];
   }
+
+// //化简00001110000...   [4,6]
+//   List<int> findConsecutiveOnes(String shelf) {
+//     List<int> result = [];
+
+//     if (shelf.isEmpty) {
+//       return result;
+//     }
+
+//     int start = -1;
+//     for (int i = 0; i < shelf.length; i++) {
+//       if (shelf[i] == '1' && start == -1) {
+//         start = i;
+//       } else if (shelf[i] == '0' && start != -1) {
+//         result = [start, i - 1];
+//         start = -1;
+//       }
+//     }
+
+//     // Check if the last section ends with a '1'
+//     if (start != -1 && shelf[shelf.length - 1] == '1') {
+//       result = [start, shelf.length - 1];
+//     }
+
+//     return result;
+//   }
 
   List<int> extractposition(String input) {
     RegExp indexPattern =
@@ -1180,11 +1210,28 @@ class Requests {
     return input.replaceAll(" ", "");
   }
 
+  String xorMerge(String str1, String str2) {
+    if (str1.length != str2.length) {
+      throw ArgumentError('输入的两个字符串长度不相等');
+    }
+    List<String> result = [];
+    for (int i = 0; i < str1.length; i++) {
+      result.add(str1[i] == "1" || str2[i] == "1" ? '1' : '0');
+    }
+    return result.join('');
+  }
+
   List<Coursesis> updateColors(List<Coursesis> inputList) {
     List<Coursesis> resultList = [];
     Map<String, Color> colorMap = {};
-
+    Map<String, String>? weekmap = {};
     for (Coursesis model in inputList) {
+      if (weekmap[model.courseName] == null) {
+        weekmap[model.courseName] = model.interal;
+      } else {
+        weekmap[model.courseName] =
+            xorMerge(weekmap[model.courseName]!, model.interal);
+      }
       if (colorMap.containsKey(model.courseName)) {
         model.color = colorMap[model.courseName]!;
       } else {
@@ -1197,8 +1244,13 @@ class Requests {
       }
       resultList.add(model);
     }
+    List<Coursesis> finallist = [];
+    for (Coursesis model in resultList) {
+      model.interal = weekmap[model.courseName]!;
+      finallist.add(model);
+    }
 
-    return resultList;
+    return finallist;
   }
 
   Color _generateRandomColor() {
@@ -1214,6 +1266,7 @@ class Requests {
     List<List<Coursesis>> OneYear = List.generate(21, (index) => []);
 
     data = updateColors(data);
+
     for (Coursesis course in data) {
       int tip =
           coordinateToIndex(course.coursePosition[0], course.coursePosition[1]);
@@ -1223,9 +1276,11 @@ class Requests {
       course.courseName = name;
       String position = removespace(course.coursePeriod);
       course.coursePeriod = position;
+      //创建20个空周
       for (int i = 0; i < 21; i++) {
         if (course.courseTimes[i] == '1') {
           //course.courseTimes = "";
+
           OneYear[i].add(course);
         }
       }
@@ -1241,7 +1296,8 @@ class Requests {
               coursePeriod: "",
               courseTimes: "",
               coursePosition: [0, 0],
-              color: Colors.white));
+              color: Colors.white,
+              interal: ""));
       for (Coursesis result in value) {
         if (result.coursePosition[0] < 56) {
           conter[result.coursePosition[0]] = result;
@@ -1256,29 +1312,6 @@ class Requests {
     return OneYear;
   }
 }
-
-// class SelectCourse {
-//   //获取选课列表
-//   Future<List<Map>> GetSelectList(Dio dio) async {
-//     String url =
-//         "http://jwc3.yangtzeu.edu.cn/eams/stdElectCourse.action?_=${DateTime.now().millisecondsSinceEpoch}";
-//     Response response = await dio.get(url);
-//     var document = parser.parse(response.data);
-//     List<Map<String, String>> extractedData = [];
-//     document
-//         .querySelectorAll('.ajax_container > div[id^="electIndexNotice"]')
-//         .forEach((container) {
-//       String title = container.querySelector('h2')?.text ?? '';
-//       String url = container.querySelector('a')?.attributes['href'] ?? '';
-//       Map<String, String> outlineData = {
-//         'title': title.split("-")[3],
-//         'url': url,
-//       };
-//       extractedData.add(outlineData);
-//     });
-//     return extractedData;
-//   }
-// }
 
 //日期计算器
 List<String> calculateDates(int currentWeek) {

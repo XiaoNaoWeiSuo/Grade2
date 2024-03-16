@@ -19,7 +19,10 @@ import 'tree/pages.dart';
 List netdata = [];
 
 String enterkey = "";
+
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark,
@@ -45,7 +48,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         platform: TargetPlatform.android, // 或 TargetPlatform.android
       ),
-      home: LoginPage(CounterStorage(), true, true),
+      home: LoginPage(CounterStorage(filename: "data.json"), true, true),
     );
   }
 }
@@ -89,7 +92,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-
+    checkalarm();
     initailanime = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 1500))
       ..addStatusListener(
@@ -199,7 +202,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   }
 
   void _handleInputFinished(bool change) {
-    final CounterStorage ctrlFile = CounterStorage();
+    final CounterStorage ctrlFile = CounterStorage(filename: "data.json");
     GestureDetector buildCustomItem(String option) {
       return GestureDetector(
         child: Container(
@@ -280,11 +283,23 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               showModalBottomSheet(
                 context: context,
                 builder: (BuildContext builder) {
-                  return SizedBox(
-                    height: 300.0,
-                    child: ListView.builder(
+                  return Container(
+                    padding: const EdgeInsets.only(
+                        bottom: 20, top: 10, left: 10, right: 10),
+                    height: 260.0,
+                    child: GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2, // 设置列数为2
+                              crossAxisSpacing: 3.0, // 调整为较小的值
+                              mainAxisSpacing: 5.0, // 调整为较小的值
+                              mainAxisExtent: 50),
                       itemCount: semesters.length,
                       itemBuilder: (context, index) {
+                        // return Container(
+                        //   height: 10,
+                        //   color: Colors.red,
+                        // );
                         return buildCustomItem(semesters[index]);
                       },
                     ),
@@ -353,6 +368,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           var gradetable = await iTing.Getgrade(netdata[0], enterkey);
           var schedule = await iTing.GetSchedule(netdata[0], enterkey);
           var examlist = await iTing.GetExam(netdata[0], bukao);
+          // CounterStorage coursedata = CounterStorage(filename: "course.json");
+          // coursedata.writeCounter({"data": schedule});
           if (rememberPassword) {
             initdata["initial"] = account;
             initdata["goal"] = enterkey;
@@ -1013,7 +1030,7 @@ class MainPage extends StatefulWidget {
   MainPage(this.topdata, this.listdata, this.otherdata, this.schedule,
       this.userlist, this.examlist,
       {super.key});
-  Appdata appsetting = Appdata();
+  CounterStorage appsetting = CounterStorage(filename: "setting.json");
   @override
   _MainPageState createState() => _MainPageState();
 }
@@ -1025,7 +1042,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   late double screenWidth;
   late double screenHeight;
   late double fontsz;
-  CounterStorage ctrlFile = CounterStorage();
+  CounterStorage ctrlFile = CounterStorage(filename: "data.json");
   var datalist;
   bool blurstate = false;
   bool itemcolorstate = false;
@@ -1061,7 +1078,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    load();
+
     formattedDate = DateFormat('M/d').format(currentDate);
     _ChatLoadAnimaController = AnimationController(
         duration: const Duration(milliseconds: 1500), vsync: this);
@@ -1121,6 +1138,8 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
         todaytotalclass += 1;
       }
     }
+
+    load();
   }
 
   @override
@@ -1132,6 +1151,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
   void load() async {
     dayword = await gettext();
+    checkNotificationPermission();
   }
 
   void backlogin(String account) async {
@@ -1141,7 +1161,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       context,
       MaterialPageRoute(
         builder: (context) {
-          return LoginPage(CounterStorage(), true, false);
+          return LoginPage(CounterStorage(filename: "data.json"), true, false);
         },
       ),
     );
@@ -1152,7 +1172,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       context,
       MaterialPageRoute(
         builder: (context) {
-          return LoginPage(CounterStorage(), false, false);
+          return LoginPage(CounterStorage(filename: "data.json"), false, false);
         },
       ),
     );
@@ -1485,14 +1505,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                               _ChatLoadAnima.value,
                                           // height: fontsz * 2,
                                           decoration: BoxDecoration(
-                                              gradient: const LinearGradient(
-                                                  colors: [
-                                                    Color.fromARGB(
-                                                        255, 9, 136, 240),
-                                                    Color.fromARGB(
-                                                        255, 52, 129, 245)
-                                                  ],
-                                                  begin: Alignment.bottomRight),
+                                              color: Colors.white24,
                                               borderRadius: BorderRadius.only(
                                                   topRight: Radius.circular(
                                                       fontsz / 2),
@@ -1521,7 +1534,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                                     child: Icon(
                                                       Icons.settings,
                                                       size: fontsz * 2,
-                                                      color: Colors.blue,
+                                                      color: Colors.white54,
                                                     ),
                                                   )),
                                               onTap: () async {
@@ -2350,6 +2363,7 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
   bool teensource = false;
 
   late List<Map> selectcourselist = [{}];
+
   @override
   void initState() {
     super.initState();
@@ -3006,81 +3020,7 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
                             : Container()
                       ]),
                     ),
-                    // SizedBox(
-                    //   // width: screenWidth,
-                    //   //height: fontsz * 3,
-                    //   child: Stack(children: [
-                    //     Container(
-                    //         margin:
-                    //             EdgeInsets.only(left: fontsz, right: fontsz),
-                    //         padding: EdgeInsets.only(
-                    //             left: fontsz / 2,
-                    //             right: fontsz / 2,
-                    //             top: fontsz / 2),
-                    //         //  width: screenWidth,
-                    //         height: selectcourselist.isNotEmpty
-                    //             ? selectcourselist.length * fontsz * 4 -
-                    //                 fontsz / 2
-                    //             : fontsz * 3,
-                    //         decoration: BoxDecoration(
-                    //             color: Colors.blue,
-                    //             borderRadius: BorderRadius.circular(fontsz)),
-                    //         child: selectcourselist.isNotEmpty
-                    //             ? MediaQuery.removePadding(
-                    //                 context: context,
-                    //                 removeTop: true,
-                    //                 child: ListView.builder(
-                    //                   itemCount: selectcourselist.length,
-                    //                   itemBuilder: (context, index) {
-                    //                     return Container(
-                    //                         margin: EdgeInsets.only(
-                    //                             bottom: fontsz / 2),
-                    //                         height: fontsz * 3,
-                    //                         decoration: BoxDecoration(
-                    //                             color: Colors.white,
-                    //                             borderRadius:
-                    //                                 BorderRadius.circular(
-                    //                                     fontsz / 2)),
-                    //                         child: Row(
-                    //                           children: [
-                    //                             Expanded(
-                    //                               child: Center(
-                    //                                 child: Text(
-                    //                                   selectcourselist[index]
-                    //                                           ["title"]
-                    //                                       .toString(),
-                    //                                   //selectcourselist.toString(),
-                    //                                   style: const TextStyle(
-                    //                                       fontSize: 20,
-                    //                                       fontWeight:
-                    //                                           FontWeight.w600),
-                    //                                 ),
-                    //                               ),
-                    //                             ),
-                    //                             TextButton(
-                    //                                 onPressed: () {},
-                    //                                 child: const Text(
-                    //                                   "开选",
-                    //                                   style: TextStyle(
-                    //                                       fontSize: 18),
-                    //                                 ))
-                    //                           ],
-                    //                         ));
-                    //                   },
-                    //                 ))
-                    //             : const Center(
-                    //                 child: Text(
-                    //                   "=====================",
-                    //                   style: TextStyle(
-                    //                       color: Colors.white, fontSize: 20),
-                    //                 ),
-                    //               )),
-
-                    //     //,const Expanded(child: SizedBox())
-
-                    //     Container()
-                    //   ]),
-                    // ),
+                    TextButton(onPressed: () {}, child: Text("tongzhi")),
                     Center(
                       child: SizedBox(
                           width: screenWidth * 0.8,

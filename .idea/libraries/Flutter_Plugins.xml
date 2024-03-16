@@ -1,7 +1,6 @@
 <component name="libraryTable">
   <library name="Flutter Plugins" type="FlutterPluginsLibraryType">
     <CLASSES>
-      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/flutter_local_notifications-16.3.1" />
       <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/image_picker-1.0.7" />
       <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/path_provider_linux-2.2.1" />
       <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/path_provider_android-2.2.2" />
@@ -25,6 +24,11 @@
       <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/url_launcher_linux-3.1.1" />
       <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/url_launcher-6.2.3" />
       <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/url_launcher_macos-3.1.0" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/permission_handler-11.3.0" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/device_info_plus-10.0.0" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/flutter_local_notifications-9.9.1" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/permission_handler_html-0.1.1" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%47dart-pub%47/flutter_timezone-1.0.8" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
