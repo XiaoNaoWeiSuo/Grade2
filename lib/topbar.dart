@@ -428,8 +428,10 @@ class CalendarPagestate extends State<CalendarPage> {
                                 padding: const EdgeInsets.all(3),
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                        width: 0.8, color: Colors.black38),
+                                    border: widget.colorstate
+                                        ? Border.all(
+                                            width: 0.8, color: Colors.black38)
+                                        : null,
                                     color: widget.colorstate
                                         ? data[index].color
                                         : const Color.fromARGB(
@@ -665,7 +667,7 @@ class SubjectCreditsList extends StatelessWidget {
                     //     blurRadius: 5.0,
                     //   )
                     // ],
-                    color: const Color.fromARGB(180, 228, 227, 227)),
+                    color: const Color.fromARGB(61, 230, 226, 226)),
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

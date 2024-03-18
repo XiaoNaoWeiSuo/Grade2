@@ -436,6 +436,56 @@ class ExamData {
   }
 }
 
+class GradeAverange {
+  final int semester;
+  final int number;
+  final String year;
+  final double totalgrade;
+  final double averangegrade;
+  GradeAverange(
+      {required this.number,
+      required this.year,
+      required this.totalgrade,
+      required this.averangegrade,
+      required this.semester});
+  @override
+  String toString() {
+    return "年份:$year 学期:$semester 必修数:$number 总成绩:$totalgrade 平均成绩:$averangegrade";
+  }
+}
+
+class CourseTotal {
+  String academicYear; // 学年学期
+  String courseCode; // 课程代码
+  String courseNum; // 课程序号
+  String courseName; // 课程名称
+  String courseType; // 课程类别
+  double credit; // 学分
+  String reexamScore; // 补考成绩
+  int totalScore; // 总评成绩
+  int finalScore; // 最终成绩
+  String gradePoint; // 绩点
+
+  CourseTotal({
+    required this.academicYear,
+    required this.courseCode,
+    required this.courseNum,
+    required this.courseName,
+    required this.courseType,
+    required this.credit,
+    required this.reexamScore,
+    required this.totalScore,
+    required this.finalScore,
+    required this.gradePoint,
+  });
+  @override
+  String toString() {
+    return 'CourseModel{学年学期: $academicYear, 课程代码: $courseCode, 课程序号: $courseNum, '
+        '课程名称: $courseName, 课程类别: $courseType, 学分: $credit, 补考成绩: $reexamScore, '
+        '总评成绩: $totalScore, 最终: $finalScore, 绩点: $gradePoint}';
+  }
+}
+
 class Requests {
   String encryptPassword(String password, String hashkey) {
     String prefix = hashkey;
@@ -510,6 +560,70 @@ class Requests {
     );
     SourceAnalysis sourceanalysis = SourceAnalysis();
     return Dispose(sourceanalysis.Result(call.data));
+  }
+
+  //获取所有成绩
+  Future<List<dynamic>> GetAllGrade(Dio dio) async {
+    String url =
+        "http://jwc3.yangtzeu.edu.cn/eams/teach/grade/course/person!historyCourseGrade.action?projectType=MAJOR";
+
+    Response call = await dio.post(url);
+    // 解析HTML
+    var document = parser.parse(call.data);
+    // 找到所有的table标签
+    var tables = document.querySelectorAll('table');
+    return [gradeanlysis(tables[0]), courseanlysis(tables[1])];
+  }
+
+  List<GradeAverange> gradeanlysis(var table) {
+    var rows = table.querySelectorAll('tr');
+    rows.removeAt(0);
+    rows.removeAt(rows.length - 1);
+    rows.removeAt(rows.length - 1);
+    List<GradeAverange> gradedata = [];
+    for (var row in rows) {
+      var cells = row.querySelectorAll('td, th');
+      List items = [];
+      for (var cell in cells) {
+        items.add(cell.text);
+      }
+      GradeAverange item = GradeAverange(
+          year: items[0],
+          semester: int.parse(items[1]),
+          number: int.parse(items[2]),
+          totalgrade: double.parse(items[3]),
+          averangegrade: double.parse(items[4]));
+      gradedata.add(item);
+    }
+    return gradedata;
+  }
+
+  List<CourseTotal> courseanlysis(var table) {
+    var rows = table.querySelectorAll('tr');
+    rows.removeAt(0);
+
+    List<CourseTotal> data = [];
+    for (var row in rows) {
+      var cells = row.querySelectorAll('td, th');
+      List items = [];
+      for (var cell in cells) {
+        items.add(cell.text.replaceAll(" ", ""));
+      }
+      CourseTotal total = CourseTotal(
+          academicYear: items[0],
+          courseCode: items[1],
+          courseNum: items[2],
+          courseName: items[3],
+          courseType: items[4],
+          credit: double.parse(items[5]),
+          reexamScore: items[6].trim(),
+          totalScore: int.parse(items[7]),
+          finalScore: int.parse(items[8]),
+          gradePoint: items[9].trim());
+      //print(total.toString());
+      data.add(total);
+    }
+    return data;
   }
 
 //获取id属性

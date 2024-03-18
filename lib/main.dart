@@ -70,7 +70,6 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   String tip = "登录长江大学账号"; // 初始文本
-
   bool state = false;
   bool autoLogin = false;
   bool rememberPassword = false;
@@ -124,10 +123,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         currentlogindate = initdata["goal"];
         if (widget.intostate) {
           _numController.text = initdata["initial"];
-
           datedisplay = true;
           startYear = int.parse(initdata["initial"].substring(0, 4));
-
           _pwdController.text = initdata["content"][initdata["initial"]][0];
           rememberPassword = true;
           autoLogin = initdata["content"][initdata["initial"]][1] == "true"
@@ -373,6 +370,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           var gradetable = await iTing.Getgrade(netdata[0], enterkey);
           var schedule = await iTing.GetSchedule(netdata[0], enterkey);
           var examlist = await iTing.GetExam(netdata[0], bukao);
+          var allgradelist = await iTing.GetAllGrade(netdata[0]);
+
           // CounterStorage coursedata = CounterStorage(filename: "course.json");
           // coursedata.writeCounter({"data": schedule});
           if (rememberPassword) {
@@ -400,7 +399,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             MaterialPageRoute(
               builder: (context) {
                 return MainPage(maintable[0], maintable[1], gradetable,
-                    schedule, initdata, examlist);
+                    schedule, initdata, examlist, allgradelist);
               },
             ),
           );
@@ -452,36 +451,32 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     widthFactor: 2, // 宽度因子大于1，超出屏幕宽度
 
                     heightFactor: 1,
-                    child: AnimatedBuilder(
-                        animation: initialanimation,
-                        builder: (context, child) {
-                          return SizedBox(
-                              height: screenHeight,
-                              child: Container(
-                                color: const Color.fromARGB(255, 204, 220, 221),
-                                child: Image.asset(
-                                  "assets/data/icon.png",
-                                  height: screenHeight,
-                                ),
-                                // child: Column(
-                                //   //mainAxisAlignment: MainAxisAlignment.center,
-                                //   children: [
-                                //     SizedBox(
-                                //       height: screenHeight * 0.35,
-                                //     ),
-                                //     CircularProgressBar(
-                                //       progress: 1.0,
-                                //       radius: screenWidth,
-                                //       startAngle: 90 - 25 * initialanimation.value,
-                                //       endAngle: 90 + 25 * initialanimation.value,
-                                //       strokeWidth: fontsz,
-                                //       // beginCapRadius: fontsz,
-                                //       // endCapRadius: fontsz,
-                                //     )
-                                //   ],
-                                // ),
-                              ));
-                        }))),
+                    child: SizedBox(
+                        height: screenHeight,
+                        child: Container(
+                          color: const Color.fromARGB(255, 204, 220, 221),
+                          child: Image.asset(
+                            "assets/data/icon.png",
+                            height: screenHeight,
+                          ),
+                          // child: Column(
+                          //   //mainAxisAlignment: MainAxisAlignment.center,
+                          //   children: [
+                          //     SizedBox(
+                          //       height: screenHeight * 0.35,
+                          //     ),
+                          //     CircularProgressBar(
+                          //       progress: 1.0,
+                          //       radius: screenWidth,
+                          //       startAngle: 90 - 25 * initialanimation.value,
+                          //       endAngle: 90 + 25 * initialanimation.value,
+                          //       strokeWidth: fontsz,
+                          //       // beginCapRadius: fontsz,
+                          //       // endCapRadius: fontsz,
+                          //     )
+                          //   ],
+                          // ),
+                        )))),
             SingleChildScrollView(
                 child: SizedBox(
                     height: screenHeight,
@@ -1031,9 +1026,9 @@ class MainPage extends StatefulWidget {
   var schedule;
   var userlist;
   var examlist;
-
+  var allgradelist;
   MainPage(this.topdata, this.listdata, this.otherdata, this.schedule,
-      this.userlist, this.examlist,
+      this.userlist, this.examlist, this.allgradelist,
       {super.key});
   CounterStorage appsetting = CounterStorage(filename: "setting.json");
   @override
@@ -1330,7 +1325,17 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                 onPageChanged: (index) {
                   setState(() {});
                 },
-                children: [classPage(), HomoPage(), ExamPage(), updatePage()],
+                children: [
+                  classPage(),
+                  HomoPage(
+                    listdata: widget.listdata,
+                    otherdata: widget.otherdata,
+                    topdata: widget.topdata,
+                    allgradelist: widget.allgradelist,
+                  ),
+                  ExamPage(),
+                  updatePage()
+                ],
               ),
             ])));
   }
@@ -1395,21 +1400,21 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                   ?
                                   // decoration: BoxDecoration(
                                   //     borderRadius: BorderRadius.circular(fontsz)),
-                                  ClipRect(
+                                  ClipRRect(
+                                      borderRadius: BorderRadius.only(
+                                          topRight: Radius.circular(fontsz),
+                                          topLeft: Radius.circular(fontsz)),
                                       //使图片模糊区域仅在子组件区域中
                                       child: BackdropFilter(
                                         //背景过滤器
                                         filter: ImageFilter.blur(
-                                            sigmaX: 50.0,
-                                            sigmaY: 50.0), //设置图片模糊度
-                                        child: Opacity(
-                                          //悬浮的内容
-                                          opacity: 0.1,
-                                          child: Container(
-                                            height: screenHeight,
-                                            width: screenWidth,
-                                            color: Colors.grey.shade200,
-                                          ),
+                                            sigmaX: 25.0,
+                                            sigmaY: 25.0), //设置图片模糊度
+                                        child: Container(
+                                          height: screenHeight,
+                                          width: screenWidth,
+                                          color: Colors.grey.shade200
+                                              .withOpacity(0.8),
                                         ),
                                       ),
                                     )
@@ -1509,7 +1514,8 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                               _ChatLoadAnima.value,
                                           // height: fontsz * 2,
                                           decoration: BoxDecoration(
-                                              color: Colors.white24,
+                                              color: const ui.Color.fromARGB(
+                                                  60, 141, 141, 141),
                                               borderRadius: BorderRadius.only(
                                                   topRight: Radius.circular(
                                                       fontsz / 2),
@@ -1538,7 +1544,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                                     child: Icon(
                                                       Icons.settings,
                                                       size: fontsz * 2,
-                                                      color: Colors.white54,
+                                                      color: const ui
+                                                          .Color.fromARGB(
+                                                          60, 141, 141, 141),
                                                     ),
                                                   )),
                                               onTap: () async {
@@ -2144,198 +2152,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
             //         )))
             ));
   }
-
-  Widget HomoPage() {
-    List<bool> datalist = [];
-    for (var num in widget.listdata) {
-      if (num.isPassed == "是") {
-        datalist.add(true);
-      } else {
-        datalist.add(false);
-      }
-    }
-    int pubulicsession = 0;
-    int pravitesession = 0;
-    for (int a = 0; a < widget.otherdata.length; a++) {
-      if (widget.otherdata[a].courseType == "公选") {
-        pubulicsession += 1;
-      } else {
-        pravitesession += 1;
-      }
-    }
-    return PopScope(
-        // 禁用返回按钮
-        canPop: false,
-        child: Scaffold(
-          body: Center(
-            child: Container(
-              decoration: const BoxDecoration(
-                  //color: Color.fromARGB(255, 207, 84, 84),
-                  ),
-              //padding: const EdgeInsets.all(10),
-              // decoration:
-              //     const BoxDecoration(color: Color.fromARGB(255, 255, 255, 255)),
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: statusBarHeight,
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: Container(
-                      margin: EdgeInsets.all(fontsz / 3),
-                      padding: EdgeInsets.all(fontsz / 3),
-                      decoration: const BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(30))),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                margin:
-                                    const EdgeInsets.only(left: 5, right: 5),
-                                width: 4,
-                                height: fontsz * 3,
-                                decoration: BoxDecoration(
-                                    color: Colors.blue,
-                                    borderRadius: BorderRadius.circular(5)),
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    widget.topdata[0].name,
-                                    style: TextStyle(
-                                        fontSize: fontsz,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.blue),
-                                    textAlign: TextAlign.left,
-                                  ),
-                                  // const SizedBox(
-                                  //   width: 5,
-                                  // ),
-                                  Text(
-                                    widget.topdata[0].studentId,
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.normal,
-                                        fontSize: fontsz * 0.7,
-                                        color: Colors.blue),
-                                  ),
-                                  // const SizedBox(
-                                  //   width: 5,
-                                  // ),
-                                  Text(
-                                    widget.topdata[0].department,
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.normal,
-                                        fontSize: fontsz * 0.7,
-                                        color: Colors.blue),
-                                  )
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  widgetshow(
-                                    name: "GPA",
-                                    value: widget.topdata[0].gpa,
-                                    fill: 10,
-                                    size: fontsz,
-                                  ),
-                                  widgetshow(
-                                    name: "Credits",
-                                    value: widget.topdata[0].earnedCredits,
-                                    fill: widget.topdata[0].requiredCredits,
-                                    size: fontsz,
-                                  )
-                                ],
-                              ),
-                            ],
-                          ),
-                          Text(
-                            "培养计划预览",
-                            style: TextStyle(
-                                color: Colors.blue, fontSize: fontsz * 0.8),
-                          ),
-                          ContributionGraph(
-                            activityData: datalist,
-                            size: fontsz / 10,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Container(
-                    height: fontsz,
-                    width: screenWidth * 0.7,
-                    decoration: const BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(8),
-                            topRight: Radius.circular(8))),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "已考【公选：$pubulicsession",
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                        SizedBox(
-                          width: fontsz,
-                        ),
-                        Text(
-                          "必修：$pravitesession】",
-                          style: const TextStyle(color: Colors.white),
-                        )
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                      child: Container(
-                    decoration: const BoxDecoration(
-                        border: Border(
-                            top: BorderSide(width: 3, color: Colors.blue))),
-                    // width: screenWidth * 0.95,
-                    // height: screenHeight * 0.5,
-                    child: (pravitesession + pubulicsession) == 0
-                        ? Column(
-                            children: [
-                              SizedBox(
-                                height: fontsz * 3,
-                              ),
-                              SizedBox(
-                                height: screenWidth * 0.6,
-                                width: screenWidth,
-                                child: Image.asset('assets/data/icon.png'),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(3),
-                                decoration: BoxDecoration(
-                                    color: const Color.fromARGB(
-                                        255, 194, 194, 194),
-                                    borderRadius:
-                                        BorderRadius.circular(fontsz / 4)),
-                                child: Text(
-                                  "本学期暂无考试成绩",
-                                  style: TextStyle(
-                                      fontSize: fontsz,
-                                      color: Colors.white,
-                                      height: 1),
-                                ),
-                              )
-                            ],
-                          )
-                        : SubjectCreditsList(
-                            courseList: widget.otherdata,
-                            size: fontsz,
-                          ),
-                  ))
-                ],
-              ),
-            ),
-          ),
-        ));
-  }
 }
 
 class updatePage extends StatefulWidget {
@@ -2371,7 +2187,7 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
   late List<Map> selectcourselist = [{}];
 
   TextEditingController qrcodect =
-      TextEditingController(text: "我向未知走的太深，最后却白白浪费了时间——Grade2.4.9");
+      TextEditingController(text: "早睡早起身体好噢！——Grade2.4.10");
   GlobalKey globalKey = GlobalKey();
 
   Future<void> _saveQRCode(String data) async {

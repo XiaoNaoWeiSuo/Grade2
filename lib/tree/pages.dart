@@ -143,23 +143,25 @@ class _MyImagePickerState extends State<MyImagePicker> {
                 Center(
                     child: blur
                         ? Container(
-                            clipBehavior: Clip.hardEdge,
+                            height: screenHeight / 5,
+                            width: screenWidth * 0.9,
+                            //clipBehavior: Clip.hardEdge,
                             decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(fontsz)),
-                            child: ClipRect(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(fontsz),
+                              // borderRadius: BorderRadius.only(
+                              //     topRight: Radius.circular(fontsz),
+                              //     topLeft: Radius.circular(fontsz)),
                               //使图片模糊区域仅在子组件区域中
                               child: BackdropFilter(
                                 //背景过滤器
                                 filter: ImageFilter.blur(
-                                    sigmaX: 50.0, sigmaY: 50.0), //设置图片模糊度
-                                child: Opacity(
-                                  //悬浮的内容
-                                  opacity: 0.1,
-                                  child: Container(
-                                    height: screenHeight / 5,
-                                    width: screenWidth * 0.9,
-                                    color: Colors.grey.shade200,
-                                  ),
+                                    sigmaX: 25.0, sigmaY: 25.0), //设置图片模糊度
+                                child: Container(
+                                  height: screenHeight,
+                                  width: screenWidth,
+                                  color: Colors.grey.shade200.withOpacity(0.8),
                                 ),
                               ),
                             ),
@@ -1700,5 +1702,671 @@ class DaxuexiPage extends StatelessWidget {
         ))
       ],
     ));
+  }
+}
+
+class HomoPage extends StatefulWidget {
+  final List listdata;
+  final List otherdata;
+  final List topdata;
+  final List allgradelist;
+  const HomoPage(
+      {super.key,
+      required this.listdata,
+      required this.otherdata,
+      required this.topdata,
+      required this.allgradelist});
+  @override
+  State<StatefulWidget> createState() => HomoPageState();
+}
+
+class HomoPageState extends State<HomoPage> with TickerProviderStateMixin {
+  List<bool> datalist = [];
+  int pubulicsession = 0;
+  int pravitesession = 0;
+  int othersession = 0;
+  late AnimationController initailanime;
+  late Animation<double> initialanimation;
+  bool isexpanded = false;
+  PageController homopagectl = PageController();
+  int basepage = 0;
+  @override
+  void initState() {
+    super.initState();
+    initailanime = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1500))
+      ..addStatusListener(
+        (status) {},
+      );
+    initialanimation =
+        CurvedAnimation(parent: initailanime, curve: Curves.easeOutQuint);
+    initialanimation = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(initialanimation);
+    initailanime.forward();
+
+    if (widget.otherdata.length == 0) {
+      basepage = 1;
+      anysi2();
+    } else {
+      basepage = 0;
+      anysi1();
+    }
+    homopagectl = PageController(initialPage: basepage);
+  }
+
+  void anysi2() {
+    pubulicsession = 0;
+    pravitesession = 0;
+    othersession = 0;
+    for (var item in widget.allgradelist[1]) {
+      switch (item.courseType) {
+        case "必修":
+          pravitesession += 1;
+          break;
+        case "选修":
+          pubulicsession += 1;
+          break;
+        default:
+          othersession += 1;
+      }
+    }
+  }
+
+  void anysi1() {
+    pubulicsession = 0;
+    pravitesession = 0;
+    othersession = 0;
+    for (var num in widget.listdata) {
+      if (num.isPassed == "是") {
+        datalist.add(true);
+      } else {
+        datalist.add(false);
+      }
+    }
+    for (int a = 0; a < widget.otherdata.length; a++) {
+      if (widget.otherdata[a].courseType == "公选") {
+        pubulicsession += 1;
+      } else if (widget.otherdata[a].courseType == "必修") {
+        pravitesession += 1;
+      } else {
+        othersession += 1;
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mediaQueryData = MediaQuery.of(context);
+    final double statusBarHeight = mediaQueryData.padding.top;
+    final screenWidth = mediaQueryData.size.width;
+    final screenHeight = mediaQueryData.size.height;
+    double fontsz = screenWidth * 0.045;
+    return PopScope(
+        // 禁用返回按钮
+        canPop: false,
+        child: Scaffold(
+            body: AnimatedBuilder(
+                animation: initialanimation,
+                builder: (context, child) {
+                  return Stack(children: [
+                    Column(
+                      children: [
+                        SizedBox(
+                          height: statusBarHeight,
+                        ),
+                        // Align(
+                        //   alignment: Alignment.center,
+                        //   child: Container(
+                        //     margin: EdgeInsets.all(fontsz / 3),
+                        //     padding: EdgeInsets.all(fontsz / 3),
+                        //     decoration: const BoxDecoration(
+                        //         borderRadius: BorderRadius.all(Radius.circular(30))),
+                        //     child: Column(
+                        //       children: [
+                        //         Row(
+                        //           children: [
+                        //             Container(
+                        //               margin:
+                        //                   const EdgeInsets.only(left: 5, right: 5),
+                        //               width: 4,
+                        //               height: fontsz * 2,
+                        //               decoration: BoxDecoration(
+                        //                   color: Colors.blue,
+                        //                   borderRadius: BorderRadius.circular(5)),
+                        //             ),
+                        //             Column(
+                        //               crossAxisAlignment: CrossAxisAlignment.start,
+                        //               children: [
+                        //                 Text(
+                        //                   widget.topdata[0].name,
+                        //                   style: TextStyle(
+                        //                       fontSize: fontsz,
+                        //                       fontWeight: FontWeight.bold,
+                        //                       color: Colors.blue),
+                        //                   textAlign: TextAlign.left,
+                        //                 ),
+                        //                 Text(
+                        //                   widget.topdata[0].department,
+                        //                   style: TextStyle(
+                        //                       fontWeight: FontWeight.normal,
+                        //                       fontSize: fontsz * 0.7,
+                        //                       color: Colors.blue),
+                        //                 )
+                        //               ],
+                        //             ),
+                        //             // Row(
+                        //             //   children: [
+                        //             //     widgetshow(
+                        //             //       name: "GPA",
+                        //             //       value: widget.topdata[0].gpa,
+                        //             //       fill: 10,
+                        //             //       size: fontsz,
+                        //             //     ),
+                        //             //     widgetshow(
+                        //             //       name: "Credits",
+                        //             //       value: widget.topdata[0].earnedCredits,
+                        //             //       fill: widget.topdata[0].requiredCredits,
+                        //             //       size: fontsz,
+                        //             //     )
+                        //             //   ],
+                        //             // ),
+                        //           ],
+                        //         ),
+                        //         // Text(
+                        //         //   "培养计划预览",
+                        //         //   style: TextStyle(
+                        //         //       color: Colors.blue, fontSize: fontsz * 0.8),
+                        //         // ),
+                        //         // ContributionGraph(
+                        //         //   activityData: datalist,
+                        //         //   size: fontsz / 10,
+                        //         // ),
+                        //       ],
+                        //     ),
+                        //   ),
+                        // ),
+                        SizedBox(
+                            height: fontsz * 6,
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: screenWidth * 0.2,
+                                  child: Column(
+                                    children: [
+                                      SizedBox(
+                                          height: fontsz * 2,
+                                          child: const Center(
+                                              child: Text(
+                                            "门        数",
+                                            style: TextStyle(
+                                                color: Colors.black54),
+                                          ))),
+                                      SizedBox(
+                                          height: fontsz * 2,
+                                          child: const Center(
+                                              child: Text(
+                                            "总  学  分",
+                                            style: TextStyle(
+                                                color: Colors.black54),
+                                          ))),
+                                      SizedBox(
+                                          height: fontsz * 2,
+                                          child: const Center(
+                                              child: Text(
+                                            "平均绩点",
+                                            style: TextStyle(
+                                                color: Colors.black54),
+                                          ))),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                    child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: 8,
+                                  itemBuilder: (context, index) {
+                                    if (widget.allgradelist[0].length > index) {
+                                      return Container(
+                                        // margin: EdgeInsets.only(
+                                        //     left: initailanime.value),
+                                        // // padding: EdgeInsets.all(1),
+                                        decoration: const BoxDecoration(
+                                            border: Border(
+                                                left: BorderSide(
+                                                    width: 1,
+                                                    color: Colors.blueAccent))),
+                                        width: screenWidth * 0.1,
+                                        height: fontsz * 6,
+                                        child: Column(
+                                          children: [
+                                            SizedBox(
+                                                height: fontsz * 2,
+                                                child: Center(
+                                                    child: Text(
+                                                        "${widget.allgradelist[0][index].number}"))),
+                                            SizedBox(
+                                                height: fontsz * 2,
+                                                child: Center(
+                                                    child: Text(
+                                                        "${widget.allgradelist[0][index].totalgrade}"))),
+                                            SizedBox(
+                                                height: fontsz * 2,
+                                                child: Center(
+                                                    child: Text(
+                                                        "${widget.allgradelist[0][index].averangegrade}"))),
+                                          ],
+                                        ),
+                                      );
+                                    } else {
+                                      return Container(
+                                        //padding: EdgeInsets.all(1),
+                                        decoration: const BoxDecoration(
+                                            border: Border(
+                                                left: BorderSide(
+                                                    width: 1,
+                                                    color: Colors.black12))),
+                                        width: screenWidth * 0.1,
+                                        height: 20,
+                                      );
+                                    }
+                                  },
+                                ))
+                              ],
+                            )),
+                        Container(
+                          // padding: EdgeInsets.all(5),
+                          margin: const EdgeInsets.all(5),
+                          height: fontsz * 2,
+                          //width: screenWidth * 0.7,
+                          // decoration: const BoxDecoration(
+                          //     color: Colors.blue,
+                          //     borderRadius: BorderRadius.only(
+                          //         topLeft: Radius.circular(8),
+                          //         topRight: Radius.circular(8))),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                  height: fontsz * 2,
+                                  width: screenWidth * 0.6,
+                                  decoration: const BoxDecoration(
+                                      color: Colors.green,
+                                      borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(10),
+                                          bottomLeft: Radius.circular(10))),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "公选:$pubulicsession  |  ",
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                      ),
+                                      // SizedBox(
+                                      //   width: fontsz,
+                                      // ),
+                                      Text(
+                                        "必修:$pravitesession  |  ",
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                      ),
+                                      // SizedBox(
+                                      //   width: fontsz,
+                                      // ),
+                                      Text(
+                                        "其它:$othersession",
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                      ),
+                                    ],
+                                  )),
+                              GestureDetector(
+                                  onTap: () {
+                                    basepage = basepage == 1 ? 0 : 1;
+
+                                    homopagectl.animateToPage(basepage,
+                                        duration: Durations.medium1,
+                                        curve: Curves.easeInQuint);
+                                    setState(() {
+                                      if (basepage == 1) {
+                                        anysi2();
+                                      } else {
+                                        anysi1();
+                                      }
+                                    });
+                                  },
+                                  child: Container(
+                                    height: fontsz * 2,
+                                    width: fontsz * 3,
+                                    decoration: BoxDecoration(
+                                        borderRadius: const BorderRadius.only(
+                                            topRight: Radius.circular(10),
+                                            bottomRight: Radius.circular(10)),
+                                        color: Colors.black.withOpacity(0.1)),
+                                    child: Icon(
+                                      const IconData(0xe647,
+                                          fontFamily: "GradeIcon"),
+                                      size: fontsz * 1.5,
+                                      color: Colors.blue,
+                                    ),
+                                  ))
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                            child: Container(
+                                decoration: const BoxDecoration(
+                                    border: Border(
+                                        top: BorderSide(
+                                            width: 3, color: Colors.blue))),
+                                // width: screenWidth * 0.95,
+                                // height: screenHeight * 0.5,
+                                child: PageView(
+                                  controller: homopagectl,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  children: [
+                                    widget.otherdata.length == 0
+                                        ? Column(
+                                            children: [
+                                              SizedBox(
+                                                height: fontsz * 3,
+                                              ),
+                                              SizedBox(
+                                                height: screenWidth * 0.6,
+                                                width: screenWidth,
+                                                child: Image.asset(
+                                                    'assets/data/icon.png'),
+                                              ),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.all(3),
+                                                decoration: BoxDecoration(
+                                                    color: const Color.fromARGB(
+                                                        255, 194, 194, 194),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            fontsz / 4)),
+                                                child: Text(
+                                                  "本学期暂无考试成绩",
+                                                  style: TextStyle(
+                                                      fontSize: fontsz,
+                                                      color: Colors.white,
+                                                      height: 1),
+                                                ),
+                                              )
+                                            ],
+                                          )
+                                        : SubjectCreditsList(
+                                            courseList: widget.otherdata,
+                                            size: fontsz,
+                                          ),
+                                    MediaQuery.removePadding(
+                                        context: context,
+                                        removeTop: true,
+                                        child: Scrollbar(
+                                          child: ListView.builder(
+                                            itemCount:
+                                                widget.allgradelist[1].length,
+                                            itemBuilder: (context, index) {
+                                              return Container(
+                                                padding:
+                                                    const EdgeInsets.all(3),
+                                                margin:
+                                                    const EdgeInsets.fromLTRB(
+                                                        5, 5, 5, 0),
+                                                decoration: const BoxDecoration(
+                                                    //color: Colors.white,
+                                                    border: Border(
+                                                        bottom: BorderSide(
+                                                            width: 1,
+                                                            color: Colors
+                                                                .black12))),
+                                                height: fontsz * 3,
+                                                child: Row(
+                                                  children: [
+                                                    SizedBox(
+                                                      width: screenWidth * 0.6,
+                                                      child: Column(
+                                                        children: [
+                                                          Row(
+                                                            children: [
+                                                              Text(
+                                                                widget
+                                                                    .allgradelist[
+                                                                        1]
+                                                                        [index]
+                                                                    .courseName,
+                                                                maxLines: 1,
+                                                                style: TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    fontSize:
+                                                                        fontsz,
+                                                                    color: Colors
+                                                                        .black
+                                                                        .withOpacity(
+                                                                            0.7),
+                                                                    height:
+                                                                        1.2),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          const Expanded(
+                                                              child:
+                                                                  SizedBox()),
+                                                          Row(
+                                                            children: [
+                                                              Text("类别:",
+                                                                  style: TextStyle(
+                                                                      color: Colors
+                                                                          .black54,
+                                                                      fontSize:
+                                                                          fontsz *
+                                                                              0.7,
+                                                                      height:
+                                                                          1)),
+                                                              Text(
+                                                                  "${widget.allgradelist[1][index].courseType}",
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          fontsz *
+                                                                              0.7,
+                                                                      height:
+                                                                          1)),
+                                                              Text(
+                                                                "  序号:",
+                                                                style: TextStyle(
+                                                                    color: Colors
+                                                                        .black54,
+                                                                    fontSize:
+                                                                        fontsz *
+                                                                            0.7,
+                                                                    height: 1),
+                                                              ),
+                                                              Text(
+                                                                "${widget.allgradelist[1][index].courseNum}",
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        fontsz *
+                                                                            0.7,
+                                                                    height: 1),
+                                                              ),
+                                                              Text(
+                                                                "  绩点:",
+                                                                style: TextStyle(
+                                                                    color: Colors
+                                                                        .black54,
+                                                                    fontSize:
+                                                                        fontsz *
+                                                                            0.7,
+                                                                    height: 1),
+                                                              ),
+                                                              Text(
+                                                                " ${widget.allgradelist[1][index].gradePoint}",
+                                                                style: TextStyle(
+                                                                    color: Colors
+                                                                        .blue,
+                                                                    fontSize:
+                                                                        fontsz *
+                                                                            0.9,
+                                                                    height: 1),
+                                                              )
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        Column(
+                                                          children: [
+                                                            Row(
+                                                              children: [
+                                                                SizedBox(
+                                                                  height:
+                                                                      fontsz,
+                                                                  child: Text(
+                                                                    "  学分:",
+                                                                    style: TextStyle(
+                                                                        color: Colors
+                                                                            .black54,
+                                                                        fontSize:
+                                                                            fontsz *
+                                                                                0.7,
+                                                                        height:
+                                                                            1),
+                                                                  ),
+                                                                ),
+                                                                SizedBox(
+                                                                    height:
+                                                                        fontsz,
+                                                                    child: Text(
+                                                                      " ${widget.allgradelist[1][index].credit}",
+                                                                      style: TextStyle(
+                                                                          color: Colors
+                                                                              .blue,
+                                                                          fontSize: fontsz *
+                                                                              0.8,
+                                                                          height:
+                                                                              1),
+                                                                    ))
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: [
+                                                                SizedBox(
+                                                                    height:
+                                                                        fontsz,
+                                                                    child: Text(
+                                                                      "  补考:",
+                                                                      style: TextStyle(
+                                                                          color: Colors
+                                                                              .black54,
+                                                                          fontSize: fontsz *
+                                                                              0.7,
+                                                                          height:
+                                                                              1),
+                                                                    )),
+                                                                SizedBox(
+                                                                    height:
+                                                                        fontsz,
+                                                                    child: Text(
+                                                                      " ${widget.allgradelist[1][index].reexamScore}",
+                                                                      style: TextStyle(
+                                                                          color: Colors
+                                                                              .blue,
+                                                                          fontSize: fontsz *
+                                                                              0.8,
+                                                                          height:
+                                                                              1),
+                                                                    ))
+                                                              ],
+                                                            )
+                                                          ],
+                                                        ),
+                                                        Column(
+                                                          children: [
+                                                            Row(
+                                                              children: [
+                                                                SizedBox(
+                                                                    height:
+                                                                        fontsz,
+                                                                    child: Text(
+                                                                      "  总评:",
+                                                                      style: TextStyle(
+                                                                          color: Colors
+                                                                              .black54,
+                                                                          fontSize: fontsz *
+                                                                              0.7,
+                                                                          height:
+                                                                              1),
+                                                                    )),
+                                                                SizedBox(
+                                                                    height:
+                                                                        fontsz,
+                                                                    child: Text(
+                                                                      " ${widget.allgradelist[1][index].totalScore}",
+                                                                      style: TextStyle(
+                                                                          color: Colors
+                                                                              .blue,
+                                                                          fontSize: fontsz *
+                                                                              0.8,
+                                                                          height:
+                                                                              1),
+                                                                    ))
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: [
+                                                                SizedBox(
+                                                                    height:
+                                                                        fontsz,
+                                                                    child: Text(
+                                                                      "  最终:",
+                                                                      style: TextStyle(
+                                                                          color: Colors
+                                                                              .black54,
+                                                                          fontSize: fontsz *
+                                                                              0.7,
+                                                                          height:
+                                                                              1),
+                                                                    )),
+                                                                SizedBox(
+                                                                    height:
+                                                                        fontsz,
+                                                                    child: Text(
+                                                                      " ${widget.allgradelist[1][index].finalScore}",
+                                                                      style: TextStyle(
+                                                                          color: Colors
+                                                                              .blue,
+                                                                          fontSize: fontsz *
+                                                                              0.8,
+                                                                          height:
+                                                                              1),
+                                                                    ))
+                                                              ],
+                                                            )
+                                                          ],
+                                                        )
+                                                      ],
+                                                    )
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ))
+                                  ],
+                                )))
+                      ],
+                    ),
+                  ]);
+                })));
   }
 }
