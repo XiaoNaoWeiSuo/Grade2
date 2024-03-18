@@ -9,7 +9,6 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:enough_mail/enough_mail.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:permission_handler/permission_handler.dart';
 
 // 获取存储卡的路径
 // Future<void> update() async {
@@ -170,22 +169,22 @@ String removeYear(String inputString) {
   return inputString.replaceAll(regex, '');
 }
 
-void checkNotificationPermission() async {
-  // 检查通知权限
-  PermissionStatus status = await Permission.notification.status;
-  if (!status.isGranted) {
-    // 如果没有通知权限，请求权限
-    status = await Permission.notification.request();
-  } else {}
-}
+// void checkNotificationPermission() async {
+//   // 检查通知权限
+//   PermissionStatus status = await Permission.notification.status;
+//   if (!status.isGranted) {
+//     // 如果没有通知权限，请求权限
+//     status = await Permission.notification.request();
+//   } else {}
+// }
 
 //获取始终权限
-void checkalarm() async {
-  // PermissionStatus status_cl = await Permission.scheduleExactAlarm.request();
-  // if (!status_cl.isGranted) {
-  //   status_cl = await Permission.scheduleExactAlarm.request();
-  //   // Schedule your alarm
-  // } else {
-  //   // Permission not granted, notify the user.
-  // }
-}
+// void checkalarm() async {
+//   // PermissionStatus status_cl = await Permission.scheduleExactAlarm.request();
+//   // if (!status_cl.isGranted) {
+//   //   status_cl = await Permission.scheduleExactAlarm.request();
+//   //   // Schedule your alarm
+//   // } else {
+//   //   // Permission not granted, notify the user.
+//   // }
+// }

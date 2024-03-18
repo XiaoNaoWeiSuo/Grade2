@@ -394,8 +394,8 @@ class CalendarPagestate extends State<CalendarPage> {
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: widget.showstate ? 7 : 5, // Number of columns
             mainAxisExtent: widget.iteh,
-            mainAxisSpacing: 1,
-            crossAxisSpacing: 1,
+            // mainAxisSpacing: 1,
+            // crossAxisSpacing: 1,
             childAspectRatio: widget.showstate
                 ? 7 / 8
                 : 5 / 5, // Width-to-height ratio of each cell
@@ -424,10 +424,12 @@ class CalendarPagestate extends State<CalendarPage> {
                             child: Container(
                                 //duration: const Duration(milliseconds: 500),
                                 //clipBehavior: Clip.hardEdge,
-                                //margin: const EdgeInsets.all(1),
+                                margin: const EdgeInsets.all(0.5),
                                 padding: const EdgeInsets.all(3),
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                        width: 0.8, color: Colors.black38),
                                     color: widget.colorstate
                                         ? data[index].color
                                         : const Color.fromARGB(
@@ -1193,3 +1195,20 @@ Future<bool?> showTextDialog(BuildContext context, String text) async {
     },
   );
 }
+
+// class QrContainer extends StatefulWidget {
+//   @override
+//   State<StatefulWidget> createState() => QrContainerState();
+// }
+
+// class QrContainerState extends State<QrContainer> {
+//   @override
+//   void initState() {
+//     super.initState();
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(width:,);
+//   }
+// }

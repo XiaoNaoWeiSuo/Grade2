@@ -1,15 +1,22 @@
 // ignore_for_file: use_build_context_synchronously, must_be_immutable, library_private_types_in_public_api, prefer_typing_uninitialized_variables
 
+import 'dart:io';
+import 'dart:ui' as ui;
+import 'dart:ui';
 import 'package:dio/dio.dart';
+import 'package:flutter/rendering.dart';
 import "package:flutter/services.dart";
 
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import "package:roundcheckbox/roundcheckbox.dart";
 import "package:flutter/material.dart";
 import 'package:intl/intl.dart';
-import 'dart:ui';
-import "dart:io";
+
 import 'package:install_plugin/install_plugin.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import "login.dart";
 import "topbar.dart";
@@ -21,8 +28,6 @@ List netdata = [];
 String enterkey = "";
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark,
@@ -92,7 +97,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    checkalarm();
+
     initailanime = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 1500))
       ..addStatusListener(
@@ -1151,7 +1156,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
   void load() async {
     dayword = await gettext();
-    checkNotificationPermission();
   }
 
   void backlogin(String account) async {
@@ -2118,11 +2122,11 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                         padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
                             color: const Color.fromARGB(255, 194, 194, 194),
-                            borderRadius: BorderRadius.circular(fontsz / 2)),
+                            borderRadius: BorderRadius.circular(fontsz / 4)),
                         child: Text(
                           "本学期暂无考试安排",
-                          style:
-                              TextStyle(fontSize: fontsz, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: fontsz, color: Colors.white, height: 1),
                         ),
                       )
                     ],
@@ -2310,11 +2314,13 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                     color: const Color.fromARGB(
                                         255, 194, 194, 194),
                                     borderRadius:
-                                        BorderRadius.circular(fontsz / 2)),
+                                        BorderRadius.circular(fontsz / 4)),
                                 child: Text(
                                   "本学期暂无考试成绩",
                                   style: TextStyle(
-                                      fontSize: fontsz, color: Colors.white),
+                                      fontSize: fontsz,
+                                      color: Colors.white,
+                                      height: 1),
                                 ),
                               )
                             ],
@@ -2363,6 +2369,34 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
   bool teensource = false;
 
   late List<Map> selectcourselist = [{}];
+
+  TextEditingController qrcodect =
+      TextEditingController(text: "我向未知走的太深，最后却白白浪费了时间——Grade2.4.9");
+  GlobalKey globalKey = GlobalKey();
+
+  Future<void> _saveQRCode(String data) async {
+    PermissionStatus status = await Permission.storage.status;
+    if (!status.isGranted) {
+      status = await Permission.storage.request();
+    } else {}
+    try {
+      RenderRepaintBoundary? boundary = globalKey.currentContext!
+          .findRenderObject() as RenderRepaintBoundary?;
+      ui.Image image = await boundary!.toImage();
+      ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+      await ImageGallerySaver.saveImage(byteData!.buffer.asUint8List());
+    } catch (e) {}
+
+    Fluttertoast.showToast(
+        msg: "二维码保存成功",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.blue,
+        textColor: Colors.white,
+        fontSize: 16.0);
+  }
 
   @override
   void initState() {
@@ -3020,7 +3054,102 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
                             : Container()
                       ]),
                     ),
-                    TextButton(onPressed: () {}, child: Text("tongzhi")),
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: fontsz),
+                      padding: EdgeInsets.all(fontsz / 2),
+                      width: screenWidth,
+                      height: screenWidth / 2.5,
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                                color: const Color.fromARGB(255, 236, 236, 236),
+                                blurRadius: fontsz)
+                          ],
+                          borderRadius: BorderRadius.circular(fontsz)),
+                      child: Row(
+                        children: [
+                          Expanded(
+                              child: Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                border:
+                                    Border.all(width: 1, color: Colors.black12),
+                                borderRadius: BorderRadius.circular(10)),
+                            // width: screenWidth * 0.55,
+                            height: screenWidth / 2,
+                            child: TextField(
+                              onEditingComplete: () => setState(() {}),
+                              controller: qrcodect,
+                              maxLines: null,
+                              style: const TextStyle(height: 1, fontSize: 14),
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.all(0),
+                                //helperText: "输入内容转换为二维码",
+                              ),
+                            ),
+                          )),
+                          Column(
+                            children: [
+                              RepaintBoundary(
+                                  key: globalKey,
+                                  child: Container(
+                                      color: Colors.white,
+                                      child: QrImageView(
+                                        data: qrcodect.text,
+                                        version: QrVersions.auto,
+                                        eyeStyle: const QrEyeStyle(
+                                          color: Colors.black,
+                                        ),
+                                        dataModuleStyle:
+                                            const QrDataModuleStyle(
+                                          color: Colors.black,
+                                          dataModuleShape: QrDataModuleShape
+                                              .circle, // 将二维码点设置为圆形
+                                        ),
+                                        size: screenWidth * 0.3,
+                                      ))),
+                              Row(
+                                children: [
+                                  GestureDetector(
+                                      onTap: () {
+                                        Fluttertoast.showToast(
+                                            msg: "刷新成功",
+                                            toastLength: Toast.LENGTH_SHORT,
+                                            gravity: ToastGravity.CENTER,
+                                            timeInSecForIosWeb: 1,
+                                            backgroundColor: Colors.blue,
+                                            textColor: Colors.white,
+                                            fontSize: 16.0);
+                                        setState(() {});
+                                      },
+                                      child: const Text(
+                                        "刷新",
+                                        style: TextStyle(color: Colors.blue),
+                                      )),
+                                  SizedBox(
+                                    width: fontsz,
+                                  ),
+                                  GestureDetector(
+                                      onTap: () {
+                                        _saveQRCode(qrcodect.text);
+                                      },
+                                      child: const Text(
+                                        "保存",
+                                        style: TextStyle(color: Colors.green),
+                                      ))
+                                ],
+                              )
+                            ],
+                          )
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: fontsz,
+                    ),
                     Center(
                       child: SizedBox(
                           width: screenWidth * 0.8,
