@@ -460,10 +460,10 @@ class CourseTotal {
   String courseNum; // 课程序号
   String courseName; // 课程名称
   String courseType; // 课程类别
-  double credit; // 学分
-  String reexamScore; // 补考成绩
-  int totalScore; // 总评成绩
-  int finalScore; // 最终成绩
+  String credit; // 学分
+  String? reexamScore; // 补考成绩
+  String totalScore; // 总评成绩
+  String finalScore; // 最终成绩
   String gradePoint; // 绩点
 
   CourseTotal({
@@ -473,10 +473,10 @@ class CourseTotal {
     required this.courseName,
     required this.courseType,
     required this.credit,
-    required this.reexamScore,
     required this.totalScore,
     required this.finalScore,
     required this.gradePoint,
+    this.reexamScore,
   });
   @override
   String toString() {
@@ -609,17 +609,32 @@ class Requests {
       for (var cell in cells) {
         items.add(cell.text.replaceAll(" ", ""));
       }
-      CourseTotal total = CourseTotal(
-          academicYear: items[0],
-          courseCode: items[1],
-          courseNum: items[2],
-          courseName: items[3],
-          courseType: items[4],
-          credit: double.parse(items[5]),
-          reexamScore: items[6].trim(),
-          totalScore: int.parse(items[7]),
-          finalScore: int.parse(items[8]),
-          gradePoint: items[9].trim());
+      CourseTotal total;
+      if (items.length == 10) {
+        total = CourseTotal(
+            academicYear: items[0],
+            courseCode: items[1],
+            courseNum: items[2],
+            courseName: items[3],
+            courseType: items[4],
+            credit: items[5].trim(),
+            reexamScore: items[6].trim(),
+            totalScore: items[7].trim(),
+            finalScore: items[8].trim(),
+            gradePoint: items[9].trim());
+      } else {
+        total = CourseTotal(
+            academicYear: items[0],
+            courseCode: items[1],
+            courseNum: items[2],
+            courseName: items[3],
+            courseType: items[4],
+            credit: items[5].trim(),
+            //reexamScore: items[6].trim(),
+            totalScore: items[6].trim(),
+            finalScore: items[7].trim(),
+            gradePoint: items[8].trim());
+      }
       //print(total.toString());
       data.add(total);
     }
