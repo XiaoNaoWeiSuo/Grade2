@@ -288,6 +288,14 @@ packages:
       url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub/"
     source: hosted
     version: "8.2.4"
+  home_widget:
+    dependency: "direct main"
+    description:
+      name: home_widget
+      sha256: c58a9e6d3b94490f1a8d5ddcbeeeeebc79abd0befe5889c26b0713fb09be6857
+      url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub/"
+    source: hosted
+    version: "0.4.1"
   html:
     dependency: "direct main"
     description:

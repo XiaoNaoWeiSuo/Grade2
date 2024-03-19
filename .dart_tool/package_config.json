@@ -224,6 +224,12 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "home_widget",
+      "rootUri": "file:///C:/Users/35170/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%2547dart-pub%2547/home_widget-0.4.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "html",
       "rootUri": "file:///C:/Users/35170/AppData/Local/Pub/Cache/hosted/mirrors.tuna.tsinghua.edu.cn%2547dart-pub%2547/html-0.15.4",
       "packageUri": "lib/",
@@ -632,7 +638,7 @@
       "languageVersion": "3.2"
     }
   ],
-  "generated": "2024-03-18T17:06:45.618429Z",
+  "generated": "2024-03-19T10:42:48.487007Z",
   "generator": "pub",
   "generatorVersion": "3.2.6"
 }
