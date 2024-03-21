@@ -524,9 +524,14 @@ class _Auther extends State<AutherPage> {
   String downloadMessage = "";
   String logtext = "";
   String logdate = "";
+  String online = "";
+  Map rootdata = {};
+  bool isonline = false;
+  CounterStorage rootfile = CounterStorage(filename: "data.json");
   @override
   void initState() {
     super.initState();
+
     load();
   }
 
@@ -540,6 +545,9 @@ class _Auther extends State<AutherPage> {
     versionserive = await getversion();
     versionapp = await getVersionapp();
     List source = await getlog();
+    rootdata = await rootfile.readCounter();
+    online = rootdata["setting"] ?? "OFF";
+    isonline = online == "ON" ? true : false;
     logtext = source[1];
     logdate = source[0];
     setState(() {});
@@ -749,7 +757,6 @@ class _Auther extends State<AutherPage> {
                 ),
               ),
             ),
-
             GestureDetector(
               onTap: () {
                 if (advicecontrol.text != "") {
@@ -871,13 +878,37 @@ class _Auther extends State<AutherPage> {
                           )
                   ],
                 )),
-            // Align(
-            //   alignment: Alignment.centerLeft,
-            //   child: Text(
-            //     "  反馈建议",
-            //     style: TextStyle(fontSize: fontsz),
-            //   ),
-            // ),
+            Container(
+              margin: EdgeInsets.only(top: fontsz),
+              height: fontsz * 3,
+              padding: EdgeInsets.only(left: fontsz, right: fontsz),
+              decoration: BoxDecoration(
+                  color: Colors.amber,
+                  borderRadius: BorderRadius.circular(fontsz)),
+              child: Row(
+                children: [
+                  const Text(
+                    "在线模式(Online Mode)",
+                    style: TextStyle(
+                        color: Colors.black54,
+                        height: 2,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600),
+                  ),
+                  const Expanded(child: SizedBox()),
+                  Switch(
+                      value: isonline,
+                      onChanged: (value) {
+                        setState(() {
+                          isonline = value;
+                        });
+                        rootdata["setting"] = value ? "ON" : "OFF";
+                        rootfile.writeCounter(rootdata).then((value) => null);
+                        debugPrint(rootdata.toString());
+                      })
+                ],
+              ),
+            )
           ],
         ),
       )),

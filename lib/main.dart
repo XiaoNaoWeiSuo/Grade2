@@ -32,6 +32,7 @@ void main() async {
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark,
   ));
+
   runApp(const MyApp());
 
   if (Platform.isAndroid) {
@@ -45,15 +46,176 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
+    //debugPrint("很显然，我们执行了什么？2$mode");
     return MaterialApp(
       title: "Grade",
       theme: ThemeData(
         platform: TargetPlatform.android, // 或 TargetPlatform.android
       ),
-      home: LoginPage(CounterStorage(filename: "data.json"), true, true),
+      home: Loadpage(),
+    );
+  }
+}
+
+class Loadpage extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => LoadpageState();
+}
+
+class LoadpageState extends State<Loadpage> with TickerProviderStateMixin {
+  bool mode = true;
+  List<dynamic> maintable = [[], []];
+  List<CourseDataModel> gradetable = [];
+  List<List<Coursesis>> schedule = [];
+  List<ExamData> examlist = [];
+  List<dynamic> allgradelist = [[], []];
+  Map initdata = {};
+  late AnimationController initailanime;
+  late Animation<double> initialanimation;
+  @override
+  void initState() {
+    super.initState();
+    load();
+    initailanime = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 400))
+      ..addStatusListener(
+        (status) {},
+      );
+    initialanimation =
+        CurvedAnimation(parent: initailanime, curve: Curves.easeOutCubic);
+    initialanimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(initialanimation);
+    initailanime.forward();
+  }
+
+  void load() async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    CounterStorage rootfile = CounterStorage(filename: "data.json");
+    Map data = await rootfile.readCounter();
+    if (data.containsKey("setting")) {
+      if (data["setting"] == "ON") {
+        //debugPrint("initiallllllllllllllllllllllllllllllll");
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return LoginPage(
+                  CounterStorage(filename: "data.json"), true, true);
+            },
+          ),
+        );
+      } else {
+        mode = false;
+        debugPrint("很显然，我们执行了什么？1$mode");
+        initdata = data;
+        // 从文件读取 rootData
+        CounterStorage rootfile = CounterStorage(filename: "root.json");
+        Map rootData = await rootfile.readCounter();
+
+        // 解析 rootData 并转换为对应的数据模型
+
+        // 解析 maintable
+        for (var a in rootData["maintable"][0]) {
+          maintable[0].add(Student.fromJson(a));
+        }
+        for (var a in rootData["maintable"][1]) {
+          maintable[1].add(Course.fromJson(a));
+        }
+
+        // 解析 gradetable
+        for (var a in rootData["gradetable"]) {
+          gradetable.add(CourseDataModel.fromJson(a));
+        }
+
+        // 解析 schedule
+        for (var a in rootData["schedule"]) {
+          List<Coursesis> item = [];
+          for (var b in a) {
+            item.add(Coursesis.fromJson(b));
+          }
+          schedule.add(item);
+        }
+
+        // 解析 examlist
+        for (var a in rootData["examlist"]) {
+          examlist.add(ExamData.fromJson(a));
+        }
+
+        // 解析 allgradelist
+        for (var a in rootData["allgradelist"][0]) {
+          //debugPrint(a);
+          allgradelist[0].add(GradeAverange.fromJson(a));
+        }
+        for (var a in rootData["allgradelist"][1]) {
+          allgradelist[1].add(CourseTotal.fromJson(a));
+        }
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return MainPage(maintable[0], maintable[1], gradetable, schedule,
+                  initdata, examlist, allgradelist);
+            },
+          ),
+        );
+      }
+    } else {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) {
+            return LoginPage(CounterStorage(filename: "data.json"), true, true);
+          },
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: AnimatedBuilder(
+          animation: initialanimation,
+          builder: (context, child) {
+            return Stack(
+              children: [
+                const Positioned(
+                    child: Column(
+                  children: [
+                    SizedBox(
+                      height: 400,
+                      child: Center(
+                        child: Text(
+                          "STABLE-GRADE",
+                          style: TextStyle(
+                              color: Colors.blue,
+                              fontSize: 40,
+                              fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    )
+                  ],
+                )),
+                Positioned(
+                    child: Center(
+                  child: SizedBox(
+                    width: 30 + 300 * initialanimation.value,
+                    child: Opacity(
+                      opacity: 1 - initialanimation.value,
+                      child: Image.asset("assets/data/icon.png"),
+                    ),
+                  ),
+                ))
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 }
@@ -80,7 +242,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   final TextEditingController _numController = TextEditingController();
   final TextEditingController _pwdController = TextEditingController();
   bool loginState = false;
-  Map initdata = {"initial": "", "content": {}, "goal": ""};
+  Map initdata = {"initial": "", "content": {}, "goal": "", "setting": ""};
   bool datedisplay = false;
   late int startYear;
 
@@ -118,8 +280,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     widget.ctrlFile.readCounter().then((value) {
       if (value.isEmpty) {
         widget.ctrlFile.writeCounter(initdata);
+        debugPrint("成功运行初始化");
+        debugPrint(initdata.toString());
       } else {
         initdata = value;
+        // if (!initdata.containsKey('setting')) {
+        //   initdata["setting"] = "OFF";
+        // }
+        debugPrint(initdata.toString());
         currentlogindate = initdata["goal"];
         if (widget.intostate) {
           _numController.text = initdata["initial"];
@@ -363,20 +531,70 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       while (true) {
         netdata = await iTing.Login(account, password);
         if (netdata[1] == 302) {
+          late String setting;
           widget.ctrlFile.readCounter().then((value) {
             enterkey = value["goal"];
+            setting = value["setting"];
           });
-          List maintable = await iTing.GetData(netdata[0]);
-          var gradetable = await iTing.Getgrade(netdata[0], enterkey);
-          var schedule = await iTing.GetSchedule(netdata[0], enterkey);
-          var examlist = await iTing.GetExam(netdata[0], bukao);
-          var allgradelist = await iTing.GetAllGrade(netdata[0]);
-
+          List<dynamic> maintable = await iTing.GetData(netdata[0]);
+          List<CourseDataModel> gradetable =
+              await iTing.Getgrade(netdata[0], enterkey);
+          List<List<Coursesis>> schedule =
+              await iTing.GetSchedule(netdata[0], enterkey);
+          List<ExamData> examlist = await iTing.GetExam(netdata[0], bukao);
+          List<dynamic> allgradelist = await iTing.GetAllGrade(netdata[0]);
+          Map rootData = {
+            "state": "ON",
+            "maintable": [[], []], //
+            "gradetable": [],
+            "schedule": [],
+            "examlist": [],
+            "allgradelist": [[], []]
+          };
+          //List<Student>
+          for (var a in maintable[0]) {
+            rootData["maintable"][0].add(a.toJson());
+          }
+          //List<Course>
+          for (var a in maintable[1]) {
+            rootData["maintable"][1].add(a.toJson());
+          }
+          //List<CourseDataModel>
+          for (var a in gradetable) {
+            rootData["gradetable"].add(a.toJson());
+          }
+          //List<List<Coursesis>>
+          for (var a in schedule) {
+            //周
+            List item = [];
+            for (var b in a) {
+              //节
+              item.add(b.toJson());
+            }
+            rootData["schedule"].add(item);
+          }
+          //List<ExamData>
+          for (var a in examlist) {
+            rootData["examlist"].add(a.toJson());
+          }
+          //List<GradeAverange>
+          for (var a in allgradelist[0]) {
+            rootData["allgradelist"][0].add(a.toJson());
+          }
+          //List<CourseTotal>
+          for (var a in allgradelist[1]) {
+            rootData["allgradelist"][1].add(a.toJson());
+          }
+          //
+          CounterStorage rootfile = CounterStorage(filename: "root.json");
+          rootfile.writeCounter(rootData);
           // CounterStorage coursedata = CounterStorage(filename: "course.json");
           // coursedata.writeCounter({"data": schedule});
           if (rememberPassword) {
             initdata["initial"] = account;
             initdata["goal"] = enterkey;
+            initdata["setting"] = setting;
+            debugPrint(initdata.toString());
             initdata["content"][account] = [
               password,
               autoLogin.toString(),

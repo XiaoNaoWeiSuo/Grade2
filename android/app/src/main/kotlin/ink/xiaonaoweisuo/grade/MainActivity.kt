@@ -1,4 +1,4 @@
-package com.example.xiaonaoweisuo.grade2.grade2
+package ink.xiaonaoweisuo.grade
 
 import io.flutter.embedding.android.FlutterActivity
 

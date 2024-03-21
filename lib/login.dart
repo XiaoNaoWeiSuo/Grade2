@@ -70,6 +70,7 @@ Future<List> getpass() async {
   }
 }
 
+//学号数据标准模型
 class Student {
   String studentId;
   String name;
@@ -85,7 +86,6 @@ class Student {
   DateTime auditTime;
   String auditor;
   String remark;
-
   Student({
     required this.studentId,
     required this.name,
@@ -102,6 +102,44 @@ class Student {
     required this.auditor,
     required this.remark,
   });
+  Map<String, dynamic> toJson() {
+    return {
+      'studentId': studentId,
+      'name': name,
+      'grade': grade,
+      'educationLevel': educationLevel,
+      'studentCategory': studentCategory,
+      'department': department,
+      'major': major,
+      'requiredCredits': requiredCredits.toString(),
+      'earnedCredits': earnedCredits.toString(),
+      'gpa': gpa.toString(),
+      'auditResult': auditResult,
+      'auditTime': auditTime.toIso8601String(),
+      'auditor': auditor,
+      'remark': remark,
+    };
+  }
+
+  factory Student.fromJson(Map<String, dynamic> json) {
+    return Student(
+      studentId: json['studentId'],
+      name: json['name'],
+      grade: json['grade'],
+      educationLevel: json['educationLevel'],
+      studentCategory: json['studentCategory'],
+      department: json['department'],
+      major: json['major'],
+      requiredCredits: double.parse(json['requiredCredits']),
+      earnedCredits: double.parse(json['earnedCredits']),
+      gpa: double.parse(json['gpa']),
+      auditResult: json['auditResult'],
+      auditTime: DateTime.parse(json['auditTime']),
+      auditor: json['auditor'],
+      remark: json['remark'],
+    );
+  }
+
   @override
   String toString() {
     return 'Student('
@@ -123,6 +161,7 @@ class Student {
   }
 }
 
+//计划完成情况模型
 class Course {
   int serialNumber;
   String courseCode;
@@ -147,6 +186,36 @@ class Course {
     required this.isPassed,
     required this.remark,
   });
+  Map<String, dynamic> toJson() {
+    return {
+      'serialNumber': serialNumber,
+      'courseCode': courseCode,
+      'courseName': courseName,
+      'requiredCredits': requiredCredits,
+      'earnedCredits': earnedCredits,
+      'score': score,
+      'isCompulsory': isCompulsory,
+      'isDegreeCourse': isDegreeCourse,
+      'isPassed': isPassed,
+      'remark': remark,
+    };
+  }
+
+  factory Course.fromJson(Map<String, dynamic> json) {
+    return Course(
+      serialNumber: json['serialNumber'],
+      courseCode: json['courseCode'],
+      courseName: json['courseName'],
+      requiredCredits: json['requiredCredits'],
+      earnedCredits: json['earnedCredits'],
+      score: json['score'],
+      isCompulsory: json['isCompulsory'],
+      isDegreeCourse: json['isDegreeCourse'],
+      isPassed: json['isPassed'],
+      remark: json['remark'],
+    );
+  }
+
   @override
   String toString() {
     return 'Course('
@@ -164,6 +233,7 @@ class Course {
   }
 }
 
+//课程模型
 class CourseDataModel {
   String courseCode;
   String courseName;
@@ -180,6 +250,27 @@ class CourseDataModel {
     required this.score,
     required this.gradePoint,
   });
+  Map<String, dynamic> toJson() {
+    return {
+      'courseCode': courseCode,
+      'courseName': courseName,
+      'courseType': courseType,
+      'credit': credit.toString(),
+      'score': score.toString(),
+      'gradePoint': gradePoint.toString(),
+    };
+  }
+
+  factory CourseDataModel.fromJson(Map<String, dynamic> json) {
+    return CourseDataModel(
+      courseCode: json['courseCode'],
+      courseName: json['courseName'],
+      courseType: json['courseType'],
+      credit: double.parse(json['credit']),
+      score: double.parse(json['score']),
+      gradePoint: double.parse(json['gradePoint']),
+    );
+  }
 
   @override
   String toString() {
@@ -187,6 +278,7 @@ class CourseDataModel {
   }
 }
 
+//模型中间件
 class TaskActivity {
   final List<String> actTeacherId;
   final List<String> actTeacherName;
@@ -205,27 +297,7 @@ class TaskActivity {
   }
 }
 
-class Courseresult {
-  String teacherName;
-  String courseName;
-  String classroomNumber;
-  String coursePeriod; // 53位的字符串，0表示无排课，1表示排课
-  List<int> coursePosition;
-
-  Courseresult({
-    required this.teacherName,
-    required this.courseName,
-    required this.classroomNumber,
-    required this.coursePeriod,
-    required this.coursePosition,
-  });
-
-  @override
-  String toString() {
-    return 'Courseresult { teacherName: $teacherName, courseName: $courseName, classroomNumber: $classroomNumber, coursePeriod: $coursePeriod, coursePosition: $coursePosition }';
-  }
-}
-
+//课程表根模型
 class Coursesis {
   String teacherName;
   String courseName;
@@ -244,6 +316,32 @@ class Coursesis {
       required this.coursePosition,
       required this.color,
       required this.interal});
+  Map<String, dynamic> toJson() {
+    return {
+      'teacherName': teacherName,
+      'courseName': courseName,
+      'classroomNumber': classroomNumber,
+      'coursePeriod': coursePeriod,
+      'courseTimes': courseTimes,
+      'coursePosition': coursePosition,
+      'color': color.toString(),
+      'interal': interal,
+    };
+  }
+
+  factory Coursesis.fromJson(Map<String, dynamic> json) {
+    return Coursesis(
+      teacherName: json['teacherName'],
+      courseName: json['courseName'],
+      classroomNumber: json['classroomNumber'],
+      coursePeriod: json['coursePeriod'],
+      courseTimes: json['courseTimes'],
+      coursePosition: List.from(json['coursePosition']),
+      color: Color(
+          int.parse(json['color'].split('(0x')[1].split(')')[0], radix: 16)),
+      interal: json['interal'],
+    );
+  }
 
   @override
   String toString() {
@@ -251,6 +349,7 @@ class Coursesis {
   }
 }
 
+//评教模型
 class Evaluate {
   String url;
   String name;
@@ -265,6 +364,172 @@ class Evaluate {
       required this.type,
       required this.state,
       required this.id});
+}
+
+//全部成绩页模型
+class GradeAverange {
+  final int semester;
+  final int number;
+  final String year;
+  final double totalgrade;
+  final double averangegrade;
+  GradeAverange(
+      {required this.number,
+      required this.year,
+      required this.totalgrade,
+      required this.averangegrade,
+      required this.semester});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'number': number.toString(),
+      'year': year,
+      'totalgrade': totalgrade.toString(),
+      'averangegrade': averangegrade.toString(),
+      'semester': semester.toString(),
+    };
+  }
+
+  factory GradeAverange.fromJson(Map<String, dynamic> json) {
+    return GradeAverange(
+      number: int.parse(json['number']),
+      year: json['year'],
+      totalgrade: double.parse(json['totalgrade']),
+      averangegrade: double.parse(json['averangegrade']),
+      semester: int.parse(json['semester']),
+    );
+  }
+
+  @override
+  String toString() {
+    return "年份:$year 学期:$semester 必修数:$number 总成绩:$totalgrade 平均成绩:$averangegrade";
+  }
+}
+
+//考试模型
+class ExamData {
+  final int id;
+  final String courseName;
+  final String examType;
+  final String examDate;
+  final String examTime;
+  final String examRoom;
+  final int capacity;
+  final String examFormat;
+  final String status;
+  final bool ispass;
+
+  ExamData({
+    required this.id,
+    required this.courseName,
+    required this.examType,
+    required this.examDate,
+    required this.examTime,
+    required this.examRoom,
+    required this.capacity,
+    required this.examFormat,
+    required this.status,
+    required this.ispass,
+  });
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'courseName': courseName,
+      'examType': examType,
+      'examDate': examDate,
+      'examTime': examTime,
+      'examRoom': examRoom,
+      'capacity': capacity,
+      'examFormat': examFormat,
+      'status': status,
+      'ispass': ispass,
+    };
+  }
+
+  factory ExamData.fromJson(Map<String, dynamic> json) {
+    return ExamData(
+      id: json['id'],
+      courseName: json['courseName'],
+      examType: json['examType'],
+      examDate: json['examDate'],
+      examTime: json['examTime'],
+      examRoom: json['examRoom'],
+      capacity: json['capacity'],
+      examFormat: json['examFormat'],
+      status: json['status'],
+      ispass: json['ispass'],
+    );
+  }
+
+  @override
+  String toString() {
+    return 'ExamData(id: $id, courseName: $courseName, examType: $examType, '
+        'examDate: $examDate, examTime: $examTime, examRoom: $examRoom, '
+        'capacity: $capacity, examFormat: $examFormat, status: $status, ispass: $ispass)';
+  }
+}
+
+//课程成绩模型
+class CourseTotal {
+  String academicYear; // 学年学期
+  String courseCode; // 课程代码
+  String courseNum; // 课程序号
+  String courseName; // 课程名称
+  String courseType; // 课程类别
+  String credit; // 学分
+  String? reexamScore; // 补考成绩
+  String totalScore; // 总评成绩
+  String finalScore; // 最终成绩
+  String gradePoint; // 绩点
+
+  CourseTotal({
+    required this.academicYear,
+    required this.courseCode,
+    required this.courseNum,
+    required this.courseName,
+    required this.courseType,
+    required this.credit,
+    required this.totalScore,
+    required this.finalScore,
+    required this.gradePoint,
+    this.reexamScore,
+  });
+  Map<String, dynamic> toJson() {
+    return {
+      'academicYear': academicYear,
+      'courseCode': courseCode,
+      'courseNum': courseNum,
+      'courseName': courseName,
+      'courseType': courseType,
+      'credit': credit,
+      'reexamScore': reexamScore,
+      'totalScore': totalScore,
+      'finalScore': finalScore,
+      'gradePoint': gradePoint,
+    };
+  }
+
+  factory CourseTotal.fromJson(Map<String, dynamic> json) {
+    return CourseTotal(
+      academicYear: json['academicYear'],
+      courseCode: json['courseCode'],
+      courseNum: json['courseNum'],
+      courseName: json['courseName'],
+      courseType: json['courseType'],
+      credit: json['credit'],
+      reexamScore: json['reexamScore'],
+      totalScore: json['totalScore'],
+      finalScore: json['finalScore'],
+      gradePoint: json['gradePoint'],
+    );
+  }
+
+  @override
+  String toString() {
+    return 'CourseModel{学年学期: $academicYear, 课程代码: $courseCode, 课程序号: $courseNum, '
+        '课程名称: $courseName, 课程类别: $courseType, 学分: $credit, 补考成绩: $reexamScore, '
+        '总评成绩: $totalScore, 最终: $finalScore, 绩点: $gradePoint}';
+  }
 }
 
 class SourceAnalysis {
@@ -403,89 +668,6 @@ class SourceAnalysis {
   }
 }
 
-class ExamData {
-  final int id;
-  final String courseName;
-  final String examType;
-  final String examDate;
-  final String examTime;
-  final String examRoom;
-  final int capacity;
-  final String examFormat;
-  final String status;
-  final bool ispass;
-
-  ExamData({
-    required this.id,
-    required this.courseName,
-    required this.examType,
-    required this.examDate,
-    required this.examTime,
-    required this.examRoom,
-    required this.capacity,
-    required this.examFormat,
-    required this.status,
-    required this.ispass,
-  });
-
-  @override
-  String toString() {
-    return 'ExamData(id: $id, courseName: $courseName, examType: $examType, '
-        'examDate: $examDate, examTime: $examTime, examRoom: $examRoom, '
-        'capacity: $capacity, examFormat: $examFormat, status: $status, ispass: $ispass)';
-  }
-}
-
-class GradeAverange {
-  final int semester;
-  final int number;
-  final String year;
-  final double totalgrade;
-  final double averangegrade;
-  GradeAverange(
-      {required this.number,
-      required this.year,
-      required this.totalgrade,
-      required this.averangegrade,
-      required this.semester});
-  @override
-  String toString() {
-    return "年份:$year 学期:$semester 必修数:$number 总成绩:$totalgrade 平均成绩:$averangegrade";
-  }
-}
-
-class CourseTotal {
-  String academicYear; // 学年学期
-  String courseCode; // 课程代码
-  String courseNum; // 课程序号
-  String courseName; // 课程名称
-  String courseType; // 课程类别
-  String credit; // 学分
-  String? reexamScore; // 补考成绩
-  String totalScore; // 总评成绩
-  String finalScore; // 最终成绩
-  String gradePoint; // 绩点
-
-  CourseTotal({
-    required this.academicYear,
-    required this.courseCode,
-    required this.courseNum,
-    required this.courseName,
-    required this.courseType,
-    required this.credit,
-    required this.totalScore,
-    required this.finalScore,
-    required this.gradePoint,
-    this.reexamScore,
-  });
-  @override
-  String toString() {
-    return 'CourseModel{学年学期: $academicYear, 课程代码: $courseCode, 课程序号: $courseNum, '
-        '课程名称: $courseName, 课程类别: $courseType, 学分: $credit, 补考成绩: $reexamScore, '
-        '总评成绩: $totalScore, 最终: $finalScore, 绩点: $gradePoint}';
-  }
-}
-
 class Requests {
   String encryptPassword(String password, String hashkey) {
     String prefix = hashkey;
@@ -566,7 +748,6 @@ class Requests {
   Future<List<dynamic>> GetAllGrade(Dio dio) async {
     String url =
         "http://jwc3.yangtzeu.edu.cn/eams/teach/grade/course/person!historyCourseGrade.action?projectType=MAJOR";
-
     Response call = await dio.post(url);
     // 解析HTML
     var document = parser.parse(call.data);
