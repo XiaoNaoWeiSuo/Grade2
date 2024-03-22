@@ -1,0 +1,91 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="230dp"
+    android:layout_height="160dp"
+    android:padding="10dp"
+    android:background="@drawable/widget_background"
+    android:orientation="vertical"
+    android:gravity="center">
+    <LinearLayout
+        android:layout_width="210dp"
+        android:layout_height="75dp"
+        android:background="@drawable/second"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:paddingStart="10dp"
+        android:gravity="center">
+        <!-- 左侧时间 -->
+        <TextView
+            android:id="@+id/FirstTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="10:05\n11:40"
+            android:textColor="@android:color/white"
+            android:textSize="14sp" />
+        <!-- 右侧垂直布局 -->
+        <LinearLayout
+            android:layout_width="76dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <!-- 课程名称 -->
+            <TextView
+                android:id="@+id/FirstCourseName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:text="体育羽毛球"
+                android:textColor="@android:color/white"
+                android:textSize="16sp" />
+            <!-- 上课地点 -->
+            <TextView
+                android:id="@+id/FirstPosition"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="万玉玲 | 羽毛球体育馆"
+                android:textColor="@android:color/white"
+                android:textSize="10sp" />
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="210dp"
+        android:layout_height="75dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:paddingStart="10dp"
+        android:gravity="center">
+        <!-- 左侧时间 -->
+        <TextView
+            android:id="@+id/SecondTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="14:00\n15:35"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="14sp" />
+        <!-- 右侧垂直布局 -->
+        <LinearLayout
+            android:layout_width="76dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <!-- 课程名称 -->
+            <TextView
+                android:id="@+id/SecondCourseName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:text="计算机辅助设计"
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
+            <!-- 上课地点 -->
+            <TextView
+                android:id="@+id/SecondPosition"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="裘晓菲 | 武教B-302"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="10sp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
