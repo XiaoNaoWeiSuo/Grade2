@@ -2059,7 +2059,6 @@ class HomoPageState extends State<HomoPage> with TickerProviderStateMixin {
                               GestureDetector(
                                   onTap: () {
                                     basepage = basepage == 1 ? 0 : 1;
-
                                     homopagectl.animateToPage(basepage,
                                         duration: Durations.medium1,
                                         curve: Curves.easeInQuint);
@@ -2160,6 +2159,9 @@ class HomoPageState extends State<HomoPage> with TickerProviderStateMixin {
                                                 height: fontsz * 3,
                                                 child: Row(
                                                   children: [
+                                                    SizedBox(
+                                                      width: fontsz * 0.7,
+                                                    ),
                                                     SizedBox(
                                                       width: screenWidth * 0.6,
                                                       child: Column(
