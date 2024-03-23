@@ -543,7 +543,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               await iTing.GetSchedule(netdata[0], enterkey);
           List<ExamData> examlist = await iTing.GetExam(netdata[0], bukao);
           List<dynamic> allgradelist = await iTing.GetAllGrade(netdata[0]);
-          Map rootData = {
+          Map? rootData = {
             "state": "ON",
             "maintable": [[], []], //
             "gradetable": [],
@@ -563,16 +563,29 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           for (var a in gradetable) {
             rootData["gradetable"].add(a.toJson());
           }
-          //List<List<Coursesis>>
+          Map appWidgetData = {
+            "startdate": [2024, 2, 26],
+            "schedule": []
+          };
+          // List<List<Coursesis>>
           for (var a in schedule) {
             //周
             List item = [];
+            List obj = [];
             for (var b in a) {
               //节
               item.add(b.toJson());
             }
+
             rootData["schedule"].add(item);
+            obj = item.sublist(0, 36) + item.sublist(49 + 1);
+            appWidgetData["schedule"].add(obj);
           }
+
+          CounterStorage appwidgetfile =
+              CounterStorage(filename: "appwidget.json");
+          appwidgetfile.writeCounter(appWidgetData);
+          //app_widget_data=null;
           //List<ExamData>
           for (var a in examlist) {
             rootData["examlist"].add(a.toJson());
@@ -588,6 +601,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           //
           CounterStorage rootfile = CounterStorage(filename: "root.json");
           rootfile.writeCounter(rootData);
+          //rootData=null;
           // CounterStorage coursedata = CounterStorage(filename: "course.json");
           // coursedata.writeCounter({"data": schedule});
           if (rememberPassword) {

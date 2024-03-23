@@ -302,7 +302,7 @@ class Coursesis {
   String teacherName;
   String courseName;
   String classroomNumber;
-  String coursePeriod; // 53位的字符串，0表示无排课，1表示排课
+  String coursePeriod;
   String courseTimes;
   List coursePosition;
   Color color;

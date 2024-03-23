@@ -18,7 +18,7 @@
             android:id="@+id/FirstTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="10:05\n11:40"
+            android:text="=="
             android:textColor="@android:color/white"
             android:textSize="14sp" />
         <!-- 右侧垂直布局 -->
@@ -34,7 +34,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
-                android:text="体育羽毛球"
+                android:text="暂无数据"
                 android:textColor="@android:color/white"
                 android:textSize="16sp" />
             <!-- 上课地点 -->
@@ -42,7 +42,7 @@
                 android:id="@+id/FirstPosition"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="万玉玲 | 羽毛球体育馆"
+                android:text="========="
                 android:textColor="@android:color/white"
                 android:textSize="10sp" />
         </LinearLayout>
@@ -59,7 +59,7 @@
             android:id="@+id/SecondTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="14:00\n15:35"
+            android:text="=="
             android:textColor="@android:color/darker_gray"
             android:textSize="14sp" />
         <!-- 右侧垂直布局 -->
@@ -75,7 +75,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
-                android:text="计算机辅助设计"
+                android:text="暂无数据"
                 android:textColor="@android:color/black"
                 android:textSize="16sp" />
             <!-- 上课地点 -->
@@ -83,7 +83,7 @@
                 android:id="@+id/SecondPosition"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="裘晓菲 | 武教B-302"
+                android:text="========="
                 android:textColor="@android:color/darker_gray"
                 android:textSize="10sp" />
         </LinearLayout>
