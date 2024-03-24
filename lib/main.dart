@@ -691,23 +691,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                             "assets/data/icon.png",
                             height: screenHeight,
                           ),
-                          // child: Column(
-                          //   //mainAxisAlignment: MainAxisAlignment.center,
-                          //   children: [
-                          //     SizedBox(
-                          //       height: screenHeight * 0.35,
-                          //     ),
-                          //     CircularProgressBar(
-                          //       progress: 1.0,
-                          //       radius: screenWidth,
-                          //       startAngle: 90 - 25 * initialanimation.value,
-                          //       endAngle: 90 + 25 * initialanimation.value,
-                          //       strokeWidth: fontsz,
-                          //       // beginCapRadius: fontsz,
-                          //       // endCapRadius: fontsz,
-                          //     )
-                          //   ],
-                          // ),
                         )))),
             SingleChildScrollView(
                 child: SizedBox(
@@ -2419,7 +2402,7 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
   late List<Map> selectcourselist = [{}];
 
   TextEditingController qrcodect =
-      TextEditingController(text: "早睡早起身体好噢！——Grade2.4.10");
+      TextEditingController(text: "同志们喝口水——Grade2.5.0");
   GlobalKey globalKey = GlobalKey();
 
   Future<void> _saveQRCode(String data) async {

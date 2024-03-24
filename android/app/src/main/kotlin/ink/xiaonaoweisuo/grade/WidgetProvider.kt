@@ -14,6 +14,9 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 import java.time.DayOfWeek
+import android.app.PendingIntent
+import android.content.Intent
+import ink.xiaonaoweisuo.grade.MainActivity
 //这个函数我是想它用来返回课程时间对应的序数，但是似乎效果不理想
 fun getTimePosition(): Int {
     val targetTimes = listOf(
@@ -79,6 +82,19 @@ class WidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         for (widgetId in appWidgetIds) {
             updateAppWidget(context, appWidgetManager, widgetId)
+            // // 创建一个启动应用程序的Intent
+            // val intent = Intent(context, MainActivity::class.java)
+            // // 如果您的应用程序有任何参数需要传递，可以在这里添加额外的信息到Intent中
+
+            // // 创建一个PendingIntent，当用户点击小部件时触发该Intent
+            // val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+
+            // // 获取远程视图对象
+            // val views = RemoteViews(context.packageName, R.layout.app_widget)
+
+            // // 将PendingIntent关联到小部件的点击事件
+            // views.setOnClickPendingIntent(R.id.mainwidget, pendingIntent)
+            
         }
     }
 

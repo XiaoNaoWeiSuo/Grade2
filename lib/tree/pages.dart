@@ -1832,7 +1832,7 @@ class HomoPageState extends State<HomoPage> with TickerProviderStateMixin {
     final mediaQueryData = MediaQuery.of(context);
     final double statusBarHeight = mediaQueryData.padding.top;
     final screenWidth = mediaQueryData.size.width;
-    final screenHeight = mediaQueryData.size.height;
+    //final screenHeight = mediaQueryData.size.height;
     double fontsz = screenWidth * 0.045;
     return PopScope(
         // 禁用返回按钮
