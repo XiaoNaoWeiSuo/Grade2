@@ -114,7 +114,7 @@ class WidgetProvider : AppWidgetProvider() {
         val Timelist = arrayOf("8:00\n9:35", "10:05\n11:40", "14:00\n15:35", "16:05\n17:40", "19:00\n20:35", "20:45\n22:20")
 
         if (time != 6) {  // 课上完之前
-            val positionKey = (time * 7 + daynum - 1)
+            val positionKey = time * 7 + daynum
 
             //val seccourse = weekSchedule[positionKey+1] as Map<String, Any>
             views.setTextViewText(R.id.FirstTime, Timelist[time])
@@ -137,10 +137,10 @@ class WidgetProvider : AppWidgetProvider() {
                 views.setTextViewText(R.id.FirstPosition, "去做点自己喜欢的事吧")
             }
             if(positionKey!=41) {//周课表的数量是0-41
-                val secondcourse = weekSchedule[positionKey+1] as Map<String, Any>
+                val secondcourse = weekSchedule[positionKey+7] as Map<String, Any>
                 if (secondcourse["courseName"].toString() != "") {
                     views.setTextViewText(
-                        R.id.FirstCourseName,
+                        R.id.SecondCourseName,
                         secondcourse["courseName"].toString()
                     )
                     val ps = secondcourse["coursePeriod"].toString()
@@ -155,7 +155,6 @@ class WidgetProvider : AppWidgetProvider() {
                 views.setTextViewText(R.id.SecondTime, "==\n==")
                 views.setTextViewText(R.id.SecondPosition, "赌赢了帮我补作业")
             }
-
         }else{//全部课上完以后
             views.setTextViewText(R.id.FirstCourseName, "看啥？没课了")
             views.setTextViewText(R.id.FirstTime, "==\n==")
