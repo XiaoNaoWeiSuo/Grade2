@@ -307,6 +307,11 @@ class Coursesis {
   List coursePosition;
   Color color;
   String interal;
+  bool state;
+  String? sonName = "";
+  String? sonTeac = "";
+  String? sonInter = "";
+  String? sonPeriod = "";
   Coursesis(
       {required this.teacherName,
       required this.courseName,
@@ -315,7 +320,12 @@ class Coursesis {
       required this.courseTimes,
       required this.coursePosition,
       required this.color,
-      required this.interal});
+      required this.interal,
+      this.sonTeac,
+      this.sonName,
+      this.sonInter,
+      this.sonPeriod,
+      required this.state});
   Map<String, dynamic> toJson() {
     return {
       'teacherName': teacherName,
@@ -326,21 +336,30 @@ class Coursesis {
       'coursePosition': coursePosition,
       'color': color.toString(),
       'interal': interal,
+      'state': state.toString(),
+      'sonName': sonName,
+      'sonTeac': sonTeac,
+      'sonInter': sonInter,
+      'sonPeriod': sonPeriod
     };
   }
 
   factory Coursesis.fromJson(Map<String, dynamic> json) {
     return Coursesis(
-      teacherName: json['teacherName'],
-      courseName: json['courseName'],
-      classroomNumber: json['classroomNumber'],
-      coursePeriod: json['coursePeriod'],
-      courseTimes: json['courseTimes'],
-      coursePosition: List.from(json['coursePosition']),
-      color: Color(
-          int.parse(json['color'].split('(0x')[1].split(')')[0], radix: 16)),
-      interal: json['interal'],
-    );
+        teacherName: json['teacherName'],
+        courseName: json['courseName'],
+        classroomNumber: json['classroomNumber'],
+        coursePeriod: json['coursePeriod'],
+        courseTimes: json['courseTimes'],
+        coursePosition: List.from(json['coursePosition']),
+        color: Color(
+            int.parse(json['color'].split('(0x')[1].split(')')[0], radix: 16)),
+        interal: json['interal'],
+        state: bool.parse(json['state']),
+        sonName: json['sonName'],
+        sonTeac: json['sonTeac'],
+        sonInter: json['sonInter'],
+        sonPeriod: json['sonPeriod']);
   }
 
   @override
@@ -560,6 +579,7 @@ class SourceAnalysis {
           coursePeriod: activity[3],
           courseTimes: activity[4],
           coursePosition: position,
+          state: false,
           color: const Color.fromARGB(255, 255, 255, 255),
           interal: activity[4].substring(0, 20));
       result.add(course);
@@ -1574,14 +1594,11 @@ class Requests {
 
   List<List<Coursesis>> Dispose(List<Coursesis> data) {
     List<List<Coursesis>> OneYear = List.generate(21, (index) => []);
-
     data = updateColors(data);
-
     for (Coursesis course in data) {
       int tip =
           coordinateToIndex(course.coursePosition[0], course.coursePosition[1]);
       course.coursePosition[0] = tip;
-
       String name = removeParentheses(course.courseName);
       course.courseName = name;
       String position = removespace(course.coursePeriod);
@@ -1607,10 +1624,19 @@ class Requests {
               courseTimes: "",
               coursePosition: [0, 0],
               color: Colors.white,
+              state: false,
               interal: ""));
       for (Coursesis result in value) {
         if (result.coursePosition[0] < 56) {
-          conter[result.coursePosition[0]] = result;
+          if (conter[result.coursePosition[0]].courseName == "") {
+            conter[result.coursePosition[0]] = result;
+          } else {
+            conter[result.coursePosition[0]].state = true;
+            conter[result.coursePosition[0]].sonName = result.courseName;
+            conter[result.coursePosition[0]].sonInter = result.interal;
+            conter[result.coursePosition[0]].sonPeriod = result.coursePeriod;
+            conter[result.coursePosition[0]].sonTeac = result.teacherName;
+          }
         } else {
           null;
         }

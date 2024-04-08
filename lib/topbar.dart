@@ -390,6 +390,7 @@ class CalendarPagestate extends State<CalendarPage> {
         context: context,
         removeTop: true,
         child: GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
           // controller: scrollController,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: widget.showstate ? 7 : 5, // Number of columns
@@ -416,6 +417,19 @@ class CalendarPagestate extends State<CalendarPage> {
                         data[index].coursePeriod,
                         data[index].interal,
                       );
+                    },
+                    onLongPress: () {
+                      if (data[index].state) {
+                        HapticFeedback.mediumImpact();
+                        _showPopup(
+                          context,
+                          constiteh / 6.5,
+                          data[index].sonName,
+                          data[index].sonTeac,
+                          data[index].sonPeriod,
+                          data[index].sonInter,
+                        );
+                      }
                     },
                     child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
@@ -444,7 +458,6 @@ class CalendarPagestate extends State<CalendarPage> {
                                         height: widget.iteh * 0.75,
                                         child: Text(
                                           data[index].courseName,
-
                                           textAlign: TextAlign.center,
                                           //maxLines: 2,
                                           //overflow: TextOverflow.ellipsis,
@@ -460,15 +473,68 @@ class CalendarPagestate extends State<CalendarPage> {
                                         width: 3,
                                       ),
                                       SizedBox(
-                                        width: widget.iteh / 5,
-                                        child: Text(data[index].coursePeriod,
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 5,
-                                            textAlign: TextAlign.left,
-                                            style: TextStyle(
-                                                fontSize: widget.iteh / 12,
-                                                color: const Color.fromARGB(
-                                                    255, 80, 80, 80))),
+                                        width: widget.iteh / 4,
+                                        height: widget.iteh * 0.75,
+                                        child: Stack(
+                                          children: [
+                                            data[index].state
+                                                ? Align(
+                                                    alignment:
+                                                        Alignment.topCenter,
+                                                    child: GestureDetector(
+                                                        onTap: () {
+                                                          _showPopup(
+                                                            context,
+                                                            constiteh / 6.5,
+                                                            data[index].sonName,
+                                                            data[index].sonTeac,
+                                                            data[index]
+                                                                .sonPeriod,
+                                                            data[index]
+                                                                .sonInter,
+                                                          );
+                                                        },
+                                                        child: Container(
+                                                          child: Center(
+                                                            child: Text(
+                                                              "重修",
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize: 9),
+                                                            ),
+                                                          ),
+                                                          width:
+                                                              widget.iteh / 4,
+                                                          height: 15,
+                                                          decoration: BoxDecoration(
+                                                              color: Colors.red,
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          5)),
+                                                        )),
+                                                  )
+                                                : Container(),
+                                            Center(
+                                              child: Text(
+                                                  data[index].coursePeriod,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 5,
+                                                  textAlign: TextAlign.left,
+                                                  style: TextStyle(
+                                                      fontSize:
+                                                          widget.iteh / 12,
+                                                      color:
+                                                          const Color.fromARGB(
+                                                              255,
+                                                              80,
+                                                              80,
+                                                              80))),
+                                            )
+                                          ],
+                                        ),
                                       ),
                                     ]),
                                     Text(
