@@ -1761,35 +1761,46 @@ int getCurrentTimeSlot() {
 Future<List> TeenStudy() async {
   List urls = [];
   String url = "https://h5.cyol.com/special/daxuexi/daxuexiall19/m.html?t=1";
+  int label = 0;
   try {
     Response response = await Dio().get(url);
     var document = parser.parse(response.data);
+
+    RegExp exp =
+        RegExp(r'<div class="(\w+)"></div>(?![\s\S]*?<!--[\s\S]*?-->)');
+    Iterable<Match> matches0 = exp.allMatches(response.data);
+
+    List<String> validParts = [];
+    for (Match m in matches0) {
+      validParts.add(m.group(0)!);
+    }
+    RegExp exp1 = RegExp(r'<div class="w(\d+)"></div>');
+    Match? match = exp1.firstMatch(validParts[0]);
+    String number = match!.group(1)!;
+    label = int.parse(number) - 3;
+
     var scriptTags = document.querySelectorAll('script');
     var pattern = RegExp(r"location\.href='(.*?)';");
     String data = scriptTags[11].innerHtml;
     var matches = pattern.allMatches(data);
-
     for (var match in matches) {
       var locationHrefValue = match.group(1);
-      //print('Location.href value: $locationHrefValue');
       urls.add(locationHrefValue);
     }
   } catch (e) {
     Null;
   }
-  return urls;
+  return [urls, label];
 }
 
 String extractIdFromUrl(String url) {
   var pattern = RegExp(r"/daxuexi/(\w+)/m.html");
-
   var match = pattern.firstMatch(url);
-
   if (match != null) {
     var id = match.group(1);
     return id.toString();
   } else {
-    return ""; // 如果没有匹配到，返回null或其他你认为合适的值
+    return "";
   }
 }
 // void main() async {
