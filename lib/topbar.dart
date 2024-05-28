@@ -495,15 +495,6 @@ class CalendarPagestate extends State<CalendarPage> {
                                                           );
                                                         },
                                                         child: Container(
-                                                          child: Center(
-                                                            child: Text(
-                                                              "重修",
-                                                              style: TextStyle(
-                                                                  color: Colors
-                                                                      .white,
-                                                                  fontSize: 9),
-                                                            ),
-                                                          ),
                                                           width:
                                                               widget.iteh / 4,
                                                           height: 15,
@@ -513,6 +504,15 @@ class CalendarPagestate extends State<CalendarPage> {
                                                                   BorderRadius
                                                                       .circular(
                                                                           5)),
+                                                          child: const Center(
+                                                            child: Text(
+                                                              "重修",
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize: 9),
+                                                            ),
+                                                          ),
                                                         )),
                                                   )
                                                 : Container(),

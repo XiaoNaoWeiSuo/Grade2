@@ -6,6 +6,7 @@ import 'dart:ui';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:grade2/rewidget.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:install_plugin/install_plugin.dart';
 import 'package:path_provider/path_provider.dart';
@@ -97,357 +98,386 @@ class _MyImagePickerState extends State<MyImagePicker> {
     double screenHeight = mediaQueryData.size.height;
     double fontsz = screenWidth * 0.045;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('课程表设置'),
-        foregroundColor: Colors.blue,
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(
-                context,
-                ResultObject(Imagepath, blur, dateColor, timeColor, bgColor,
-                    itemcolorstate)); // 传递参数并返回
-          },
+        appBar: AppBar(
+          title: const Text('课程表设置'),
+          foregroundColor: Colors.blue,
+          backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(
+                  context,
+                  ResultObject(Imagepath, blur, dateColor, timeColor, bgColor,
+                      itemcolorstate)); // 传递参数并返回
+            },
+          ),
         ),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(fontsz),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Stack(
+        body: PopScope(
+          canPop: false,
+          onPopInvoked: (bool didPop) {
+            if (!didPop) {
+              Navigator.pop(
+                  context,
+                  ResultObject(Imagepath, blur, dateColor, timeColor, bgColor,
+                      itemcolorstate));
+            }
+          },
+          child: Padding(
+            padding: EdgeInsets.all(fontsz),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Center(
-                  child: Container(
-                    clipBehavior: Clip.hardEdge,
-                    height: screenHeight / 5,
-                    width: screenWidth * 0.9,
-                    decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 230, 230, 230),
-                        borderRadius: BorderRadius.circular(fontsz)),
-                    child: Imagepath != ""
-                        ? Image.file(
-                            File(Imagepath),
-                            fit: BoxFit.cover,
-                          )
-                        : Container(
-                            decoration: BoxDecoration(
-                                color: const Color.fromARGB(255, 201, 201, 201),
-                                borderRadius: BorderRadius.circular(fontsz)),
-                            width: screenWidth * 0.9,
-                            height: screenHeight / 5,
-                          ),
-                  ),
-                ),
-                Center(
-                    child: blur
-                        ? Container(
-                            height: screenHeight / 5,
-                            width: screenWidth * 0.9,
-                            //clipBehavior: Clip.hardEdge,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(fontsz)),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(fontsz),
-                              // borderRadius: BorderRadius.only(
-                              //     topRight: Radius.circular(fontsz),
-                              //     topLeft: Radius.circular(fontsz)),
-                              //使图片模糊区域仅在子组件区域中
-                              child: BackdropFilter(
-                                //背景过滤器
-                                filter: ImageFilter.blur(
-                                    sigmaX: 25.0, sigmaY: 25.0), //设置图片模糊度
-                                child: Container(
-                                  height: screenHeight,
-                                  width: screenWidth,
-                                  color: Colors.grey.shade200.withOpacity(0.8),
-                                ),
-                              ),
-                            ),
-                          )
-                        : Container()),
-                Column(
+                Stack(
                   children: [
-                    Text(
-                      "课程表背景",
-                      style: TextStyle(
-                          fontSize: fontsz,
-                          color: Colors.white,
-                          shadows: const [
-                            BoxShadow(color: Colors.black, blurRadius: 20)
-                          ]),
+                    Center(
+                      child: Container(
+                        clipBehavior: Clip.hardEdge,
+                        height: screenHeight / 5,
+                        width: screenWidth * 0.9,
+                        decoration: BoxDecoration(
+                            color: const Color.fromARGB(255, 230, 230, 230),
+                            borderRadius: BorderRadius.circular(fontsz)),
+                        child: Imagepath != ""
+                            ? Image.file(
+                                File(Imagepath),
+                                fit: BoxFit.cover,
+                              )
+                            : Container(
+                                decoration: BoxDecoration(
+                                    color: const Color.fromARGB(
+                                        255, 201, 201, 201),
+                                    borderRadius:
+                                        BorderRadius.circular(fontsz)),
+                                width: screenWidth * 0.9,
+                                height: screenHeight / 5,
+                              ),
+                      ),
                     ),
-                    SizedBox(
-                      width: screenWidth * 0.9,
-                      height: screenHeight / 9,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                    Center(
+                        child: blur
+                            ? Container(
+                                height: screenHeight / 5,
+                                width: screenWidth * 0.9,
+                                //clipBehavior: Clip.hardEdge,
+                                decoration: BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.circular(fontsz)),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(fontsz),
+                                  // borderRadius: BorderRadius.only(
+                                  //     topRight: Radius.circular(fontsz),
+                                  //     topLeft: Radius.circular(fontsz)),
+                                  //使图片模糊区域仅在子组件区域中
+                                  child: BackdropFilter(
+                                    //背景过滤器
+                                    filter: ImageFilter.blur(
+                                        sigmaX: 25.0, sigmaY: 25.0), //设置图片模糊度
+                                    child: Container(
+                                      height: screenHeight,
+                                      width: screenWidth,
+                                      color:
+                                          Colors.grey.shade200.withOpacity(0.8),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : Container()),
+                    Column(
                       children: [
-                        SizedBox(
-                          width: fontsz,
-                        ),
-                        RoundCheckBox(
-                          size: fontsz * 1.5,
-                          checkedWidget: Icon(
-                            Icons.check,
-                            color: Colors.white,
-                            size: fontsz,
-                          ),
-                          checkedColor: Colors.blue,
-                          uncheckedColor: Colors.transparent,
-                          border: Border.all(color: Colors.white, width: 3),
-                          onTap: (selected) {
-                            isUse = !isUse;
-                            Imagepath = "";
-                            initdata["classimage"] = Imagepath;
-                            initdata["blur"] = blur.toString();
-                            widget.appsetting.writeCounter(initdata);
-                            setState(() {});
-                          },
-                          isChecked: isUse,
-                        ),
-                        Text("  启用背景  ",
-                            style: TextStyle(
-                                fontSize: fontsz * 0.9,
-                                color: Colors.white,
-                                shadows: const [
-                                  BoxShadow(color: Colors.black, blurRadius: 20)
-                                ])),
-                        RoundCheckBox(
-                          size: fontsz * 1.5,
-                          checkedWidget: Icon(
-                            Icons.check,
-                            color: Colors.white,
-                            size: fontsz,
-                          ),
-                          checkedColor: Colors.blue,
-                          uncheckedColor: Colors.transparent,
-                          border: Border.all(color: Colors.white, width: 3),
-                          onTap: (selected) {
-                            _blurchange();
-                          },
-                          isChecked: blur,
-                        ),
                         Text(
-                          "  亚克力遮罩  ",
+                          "课程表背景",
                           style: TextStyle(
-                              fontSize: fontsz * 0.9,
+                              fontSize: fontsz,
                               color: Colors.white,
                               shadows: const [
                                 BoxShadow(color: Colors.black, blurRadius: 20)
                               ]),
                         ),
-                        const Expanded(child: SizedBox()),
-                        TextButton(
-                          // style: ButtonStyle(
-                          //     backgroundColor:
-                          //         MaterialStatePropertyAll(Colors.amber)),
-                          onPressed: _pickImage,
-                          child: Text(
-                            '选择图片',
-                            style: TextStyle(
-                                fontSize: fontsz * 0.9,
-                                color: const Color.fromARGB(255, 183, 219, 247),
-                                shadows: const [
-                                  BoxShadow(color: Colors.black, blurRadius: 10)
-                                ]),
-                          ),
-                        ),
                         SizedBox(
-                          width: fontsz,
+                          width: screenWidth * 0.9,
+                          height: screenHeight / 9,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            SizedBox(
+                              width: fontsz,
+                            ),
+                            RoundCheckBox(
+                              size: fontsz * 1.5,
+                              checkedWidget: Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: fontsz,
+                              ),
+                              checkedColor: Colors.blue,
+                              uncheckedColor: Colors.transparent,
+                              border: Border.all(color: Colors.white, width: 3),
+                              onTap: (selected) {
+                                isUse = !isUse;
+                                Imagepath = "";
+                                initdata["classimage"] = Imagepath;
+                                initdata["blur"] = blur.toString();
+                                widget.appsetting.writeCounter(initdata);
+                                setState(() {});
+                              },
+                              isChecked: isUse,
+                            ),
+                            Text("  启用背景  ",
+                                style: TextStyle(
+                                    fontSize: fontsz * 0.9,
+                                    color: Colors.white,
+                                    shadows: const [
+                                      BoxShadow(
+                                          color: Colors.black, blurRadius: 20)
+                                    ])),
+                            RoundCheckBox(
+                              size: fontsz * 1.5,
+                              checkedWidget: Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: fontsz,
+                              ),
+                              checkedColor: Colors.blue,
+                              uncheckedColor: Colors.transparent,
+                              border: Border.all(color: Colors.white, width: 3),
+                              onTap: (selected) {
+                                _blurchange();
+                              },
+                              isChecked: blur,
+                            ),
+                            Text(
+                              "  亚克力遮罩  ",
+                              style: TextStyle(
+                                  fontSize: fontsz * 0.9,
+                                  color: Colors.white,
+                                  shadows: const [
+                                    BoxShadow(
+                                        color: Colors.black, blurRadius: 20)
+                                  ]),
+                            ),
+                            const Expanded(child: SizedBox()),
+                            TextButton(
+                              // style: ButtonStyle(
+                              //     backgroundColor:
+                              //         MaterialStatePropertyAll(Colors.amber)),
+                              onPressed: _pickImage,
+                              child: Text(
+                                '选择图片',
+                                style: TextStyle(
+                                    fontSize: fontsz * 0.9,
+                                    color: const Color.fromARGB(
+                                        255, 183, 219, 247),
+                                    shadows: const [
+                                      BoxShadow(
+                                          color: Colors.black, blurRadius: 10)
+                                    ]),
+                              ),
+                            ),
+                            SizedBox(
+                              width: fontsz,
+                            ),
+                          ],
                         ),
                       ],
-                    ),
+                    )
                   ],
+                ),
+                //SizedBox(height: fontsz / 2),
+                SizedBox(
+                  height: fontsz,
+                ),
+                Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(fontsz)),
+                  child: Row(
+                    children: [
+                      Expanded(
+                          child: Column(
+                        children: [
+                          Text(
+                            "日期标尺色",
+                            style: TextStyle(
+                                fontSize: fontsz * 0.7, color: Colors.white),
+                          ),
+                          GestureDetector(
+                            onTap: () async {
+                              dateColor = await showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return ColorPickerDialog(
+                                      initialColor: dateColor);
+                                },
+                              );
+                              initdata["weekbarcolor"] =
+                                  dateColor.value.toRadixString(16);
+                              widget.appsetting.writeCounter(initdata);
+                              setState(() {});
+                            },
+                            child: Container(
+                              margin: EdgeInsets.all(fontsz / 3),
+                              width: fontsz * 3,
+                              height: fontsz * 3,
+                              decoration: BoxDecoration(
+                                  border:
+                                      Border.all(color: Colors.white, width: 3),
+                                  color: dateColor,
+                                  borderRadius:
+                                      BorderRadius.circular(fontsz * 2)),
+                            ),
+                          )
+                        ],
+                      )),
+                      Expanded(
+                          child: Column(
+                        children: [
+                          Text(
+                            "时间标尺色",
+                            style: TextStyle(
+                                fontSize: fontsz * 0.7, color: Colors.white),
+                          ),
+                          GestureDetector(
+                            onTap: () async {
+                              timeColor = await showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return ColorPickerDialog(
+                                      initialColor: timeColor);
+                                },
+                              );
+                              initdata["timebarcolor"] =
+                                  timeColor.value.toRadixString(16);
+                              widget.appsetting.writeCounter(initdata);
+                              setState(() {});
+                            },
+                            child: Container(
+                              margin: EdgeInsets.all(fontsz / 3),
+                              width: fontsz * 3,
+                              height: fontsz * 3,
+                              decoration: BoxDecoration(
+                                  border:
+                                      Border.all(color: Colors.white, width: 3),
+                                  color: timeColor,
+                                  borderRadius:
+                                      BorderRadius.circular(fontsz * 2)),
+                            ),
+                          )
+                        ],
+                      )),
+                      Expanded(
+                          child: Column(
+                        children: [
+                          Text(
+                            "背景主题色",
+                            style: TextStyle(
+                                fontSize: fontsz * 0.7, color: Colors.white),
+                          ),
+                          GestureDetector(
+                            onTap: () async {
+                              bgColor = await showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return ColorPickerDialog(
+                                      initialColor: bgColor);
+                                },
+                              );
+                              initdata["bgcolor"] =
+                                  bgColor.value.toRadixString(16);
+                              widget.appsetting.writeCounter(initdata);
+                              setState(() {});
+                            },
+                            child: Container(
+                              margin: EdgeInsets.all(fontsz / 3),
+                              width: fontsz * 3,
+                              height: fontsz * 3,
+                              decoration: BoxDecoration(
+                                  border:
+                                      Border.all(color: Colors.white, width: 3),
+                                  color: bgColor,
+                                  borderRadius:
+                                      BorderRadius.circular(fontsz * 2)),
+                            ),
+                          ),
+                        ],
+                      )),
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.only(top: fontsz),
+                  padding: EdgeInsets.symmetric(
+                      vertical: fontsz / 2, horizontal: fontsz),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(fontsz),
+                      border: Border.all(color: Colors.black54, width: 5)),
+                  child: Column(children: [
+                    Text(
+                      "单元格颜色",
+                      style:
+                          TextStyle(fontSize: fontsz * 0.7, color: Colors.blue),
+                    ),
+                    SizedBox(
+                        //decoration: const BoxDecoration(color: Colors.black12),
+                        height: fontsz * 2,
+                        child: Row(
+                          //crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: RoundCheckBox(
+                                onTap: (selected) {
+                                  itemcolorstate = !itemcolorstate;
+                                  initdata["itemcolorstate"] =
+                                      itemcolorstate.toString();
+                                  widget.appsetting.writeCounter(initdata);
+                                  setState(() {});
+                                },
+                                size: fontsz * 1.4,
+                                isChecked: itemcolorstate,
+                              ),
+                            ),
+                            SizedBox(
+                              width: fontsz,
+                            ),
+                            Expanded(
+                              child: RoundCheckBox(
+                                onTap: (selected) {
+                                  itemcolorstate = !itemcolorstate;
+                                  initdata["itemcolorstate"] =
+                                      itemcolorstate.toString();
+                                  widget.appsetting.writeCounter(initdata);
+                                  setState(() {});
+                                },
+                                size: fontsz * 1.4,
+                                isChecked: !itemcolorstate,
+                              ),
+                            )
+                          ],
+                        )),
+                    SizedBox(
+                      height: fontsz,
+                      child: const Row(
+                        children: [
+                          Expanded(
+                              child: Align(
+                            alignment: Alignment.topCenter,
+                            child: Text("区分色"),
+                          )),
+                          Expanded(
+                              child: Align(
+                            alignment: Alignment.topCenter,
+                            child: Text("亚克力白"),
+                          ))
+                        ],
+                      ),
+                    )
+                  ]),
                 )
               ],
             ),
-            //SizedBox(height: fontsz / 2),
-            SizedBox(
-              height: fontsz,
-            ),
-            Container(
-              padding: const EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(fontsz)),
-              child: Row(
-                children: [
-                  Expanded(
-                      child: Column(
-                    children: [
-                      Text(
-                        "日期标尺色",
-                        style: TextStyle(
-                            fontSize: fontsz * 0.7, color: Colors.white),
-                      ),
-                      GestureDetector(
-                        onTap: () async {
-                          dateColor = await showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return ColorPickerDialog(initialColor: dateColor);
-                            },
-                          );
-                          initdata["weekbarcolor"] =
-                              dateColor.value.toRadixString(16);
-                          widget.appsetting.writeCounter(initdata);
-                          setState(() {});
-                        },
-                        child: Container(
-                          margin: EdgeInsets.all(fontsz / 3),
-                          width: fontsz * 3,
-                          height: fontsz * 3,
-                          decoration: BoxDecoration(
-                              border: Border.all(color: Colors.white, width: 3),
-                              color: dateColor,
-                              borderRadius: BorderRadius.circular(fontsz * 2)),
-                        ),
-                      )
-                    ],
-                  )),
-                  Expanded(
-                      child: Column(
-                    children: [
-                      Text(
-                        "时间标尺色",
-                        style: TextStyle(
-                            fontSize: fontsz * 0.7, color: Colors.white),
-                      ),
-                      GestureDetector(
-                        onTap: () async {
-                          timeColor = await showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return ColorPickerDialog(initialColor: timeColor);
-                            },
-                          );
-                          initdata["timebarcolor"] =
-                              timeColor.value.toRadixString(16);
-                          widget.appsetting.writeCounter(initdata);
-                          setState(() {});
-                        },
-                        child: Container(
-                          margin: EdgeInsets.all(fontsz / 3),
-                          width: fontsz * 3,
-                          height: fontsz * 3,
-                          decoration: BoxDecoration(
-                              border: Border.all(color: Colors.white, width: 3),
-                              color: timeColor,
-                              borderRadius: BorderRadius.circular(fontsz * 2)),
-                        ),
-                      )
-                    ],
-                  )),
-                  Expanded(
-                      child: Column(
-                    children: [
-                      Text(
-                        "背景主题色",
-                        style: TextStyle(
-                            fontSize: fontsz * 0.7, color: Colors.white),
-                      ),
-                      GestureDetector(
-                        onTap: () async {
-                          bgColor = await showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return ColorPickerDialog(initialColor: bgColor);
-                            },
-                          );
-                          initdata["bgcolor"] = bgColor.value.toRadixString(16);
-                          widget.appsetting.writeCounter(initdata);
-                          setState(() {});
-                        },
-                        child: Container(
-                          margin: EdgeInsets.all(fontsz / 3),
-                          width: fontsz * 3,
-                          height: fontsz * 3,
-                          decoration: BoxDecoration(
-                              border: Border.all(color: Colors.white, width: 3),
-                              color: bgColor,
-                              borderRadius: BorderRadius.circular(fontsz * 2)),
-                        ),
-                      ),
-                    ],
-                  )),
-                ],
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.only(top: fontsz),
-              padding: EdgeInsets.symmetric(
-                  vertical: fontsz / 2, horizontal: fontsz),
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(fontsz),
-                  border: Border.all(color: Colors.black54, width: 5)),
-              child: Column(children: [
-                Text(
-                  "单元格颜色",
-                  style: TextStyle(fontSize: fontsz * 0.7, color: Colors.blue),
-                ),
-                SizedBox(
-                    //decoration: const BoxDecoration(color: Colors.black12),
-                    height: fontsz * 2,
-                    child: Row(
-                      //crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: RoundCheckBox(
-                            onTap: (selected) {
-                              itemcolorstate = !itemcolorstate;
-                              initdata["itemcolorstate"] =
-                                  itemcolorstate.toString();
-                              widget.appsetting.writeCounter(initdata);
-                              setState(() {});
-                            },
-                            size: fontsz * 1.4,
-                            isChecked: itemcolorstate,
-                          ),
-                        ),
-                        SizedBox(
-                          width: fontsz,
-                        ),
-                        Expanded(
-                          child: RoundCheckBox(
-                            onTap: (selected) {
-                              itemcolorstate = !itemcolorstate;
-                              initdata["itemcolorstate"] =
-                                  itemcolorstate.toString();
-                              widget.appsetting.writeCounter(initdata);
-                              setState(() {});
-                            },
-                            size: fontsz * 1.4,
-                            isChecked: !itemcolorstate,
-                          ),
-                        )
-                      ],
-                    )),
-                SizedBox(
-                  height: fontsz,
-                  child: const Row(
-                    children: [
-                      Expanded(
-                          child: Align(
-                        alignment: Alignment.topCenter,
-                        child: Text("区分色"),
-                      )),
-                      Expanded(
-                          child: Align(
-                        alignment: Alignment.topCenter,
-                        child: Text("亚克力白"),
-                      ))
-                    ],
-                  ),
-                )
-              ]),
-            )
-          ],
-        ),
-      ),
-    );
+          ),
+        ));
   }
 }
 
@@ -1684,53 +1714,128 @@ class DaxuexiPage extends StatelessWidget {
     final mediaQueryData = MediaQuery.of(context);
     double statusBarHeight = mediaQueryData.padding.top;
     double screenWidth = mediaQueryData.size.width;
+    double screenHeight = mediaQueryData.size.height;
     double fontsz = screenWidth * 0.045;
     return Scaffold(
-        body: Column(
+        body: Stack(
       children: [
-        Container(
-          padding: EdgeInsets.all(fontsz / 2),
-          color: const Color.fromARGB(255, 218, 217, 217),
-          width: screenWidth,
-          height: statusBarHeight + fontsz * 2.5,
-          child: Column(
-            children: [
-              SizedBox(
-                height: statusBarHeight,
-              ),
-              //Expanded(child: SizedBox()),
-              Row(
+        Column(
+          children: [
+            Container(
+              padding: EdgeInsets.all(fontsz / 2),
+              color: const Color.fromARGB(255, 218, 217, 217),
+              width: screenWidth,
+              height: statusBarHeight + fontsz * 2.5,
+              child: Column(
                 children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: Icon(
-                      Icons.close,
-                      size: fontsz * 1.5,
-                    ),
+                  SizedBox(
+                    height: statusBarHeight,
                   ),
-                  Expanded(
-                      child: Center(
-                    child: Text(
-                      "“青年大学习”${data[0]}",
-                      style: TextStyle(fontSize: fontsz * 1),
-                    ),
-                  )),
-                  Icon(
-                    Icons.more_horiz,
-                    size: fontsz * 1.5,
+                  //Expanded(child: SizedBox()),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                        child: Icon(
+                          Icons.close,
+                          size: fontsz * 1.5,
+                        ),
+                      ),
+                      Expanded(
+                          child: Center(
+                        child: Text(
+                          "“青年大学习”${data[0]}",
+                          style: TextStyle(fontSize: fontsz * 1),
+                        ),
+                      )),
+                      Icon(
+                        Icons.more_horiz,
+                        size: fontsz * 1.5,
+                      )
+                    ],
                   )
                 ],
-              )
-            ],
-          ),
+              ),
+            ),
+            Expanded(
+                child: Image.network(
+              data[1],
+              fit: BoxFit.fill,
+            ))
+          ],
         ),
-        Expanded(
-            child: Image.network(
-          data[1],
-          fit: BoxFit.fill,
-        ))
+        Column(
+          //mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              height: screenHeight * 0.58,
+            ),
+            Container(
+                margin: const EdgeInsets.symmetric(horizontal: 50),
+                width: screenWidth,
+                height: 60,
+                // color: Colors.black,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: 5,
+                  itemBuilder: (context, index) {
+                    return Polygonal(
+                      size: (screenWidth - 100) / 5,
+                      bigR: 20,
+                      smallR: 10,
+                      color: Colors.yellow,
+                      count: 5,
+                      isFill: true,
+                    );
+                  },
+                )),
+            const SizedBox(
+              height: 20,
+            ),
+            Container(
+              width: screenWidth * 0.33,
+              height: 45,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  gradient: const LinearGradient(colors: [
+                    Color.fromARGB(255, 225, 93, 55),
+                    Color.fromARGB(255, 242, 133, 104),
+                  ], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
+              child: const Center(
+                child: Text(
+                  "确 定",
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 130,
+            ),
+            Container(
+              width: screenWidth * 0.33,
+              height: 75,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  gradient: const LinearGradient(colors: [
+                    Color.fromARGB(255, 225, 93, 55),
+                    Color.fromARGB(255, 242, 133, 104),
+                  ], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
+              child: const Center(
+                child: Text(
+                  "支持单位\n中国青少年发展基金会\n(点击进入官网)",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600),
+                ),
+              ),
+            )
+          ],
+        )
       ],
     ));
   }

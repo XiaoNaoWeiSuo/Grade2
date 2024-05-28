@@ -1777,7 +1777,7 @@ Future<List> TeenStudy() async {
     RegExp exp1 = RegExp(r'<div class="w(\d+)"></div>');
     Match? match = exp1.firstMatch(validParts[0]);
     String number = match!.group(1)!;
-    label = int.parse(number) - 3;
+    label = int.parse(number) - 2;
 
     var scriptTags = document.querySelectorAll('script');
     var pattern = RegExp(r"location\.href='(.*?)';");

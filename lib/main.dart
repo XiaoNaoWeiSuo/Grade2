@@ -79,12 +79,12 @@ class LoadpageState extends State<Loadpage> with TickerProviderStateMixin {
     super.initState();
     load();
     initailanime = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1400))
+        vsync: this, duration: const Duration(milliseconds: 1000))
       ..addStatusListener(
         (status) {},
       );
     initialanimation =
-        CurvedAnimation(parent: initailanime, curve: Curves.easeOutCubic);
+        CurvedAnimation(parent: initailanime, curve: Curves.easeOutQuart);
     initialanimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -93,77 +93,12 @@ class LoadpageState extends State<Loadpage> with TickerProviderStateMixin {
   }
 
   void load() async {
-    await Future.delayed(const Duration(milliseconds: 400));
+    await Future.delayed(const Duration(milliseconds: 1000));
     CounterStorage rootfile = CounterStorage(filename: "data.json");
-    Map data = await rootfile.readCounter();
-    if (data.containsKey("setting")) {
-      if (data["setting"] == "ON") {
-        //debugPrint("initiallllllllllllllllllllllllllllllll");
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) {
-              return LoginPage(
-                  CounterStorage(filename: "data.json"), true, true);
-            },
-          ),
-        );
-      } else {
-        try {
-          mode = false;
-          //debugPrint("很显然，我们执行了什么？1$mode");
-          initdata = data;
-          // 从文件读取 rootData
-          CounterStorage rootfile = CounterStorage(filename: "root.json");
-          Map rootData = await rootfile.readCounter();
-
-          // 解析 rootData 并转换为对应的数据模型
-
-          // 解析 maintable
-          for (var a in rootData["maintable"][0]) {
-            maintable[0].add(Student.fromJson(a));
-          }
-          for (var a in rootData["maintable"][1]) {
-            maintable[1].add(Course.fromJson(a));
-          }
-
-          // 解析 gradetable
-          for (var a in rootData["gradetable"]) {
-            gradetable.add(CourseDataModel.fromJson(a));
-          }
-
-          // 解析 schedule
-          for (var a in rootData["schedule"]) {
-            List<Coursesis> item = [];
-            for (var b in a) {
-              item.add(Coursesis.fromJson(b));
-            }
-            schedule.add(item);
-          }
-
-          // 解析 examlist
-          for (var a in rootData["examlist"]) {
-            examlist.add(ExamData.fromJson(a));
-          }
-
-          // 解析 allgradelist
-          for (var a in rootData["allgradelist"][0]) {
-            //debugPrint(a);
-            allgradelist[0].add(GradeAverange.fromJson(a));
-          }
-          for (var a in rootData["allgradelist"][1]) {
-            allgradelist[1].add(CourseTotal.fromJson(a));
-          }
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) {
-                return MainPage(maintable[0], maintable[1], gradetable,
-                    schedule, initdata, examlist, allgradelist);
-              },
-            ),
-          );
-        } catch (e) {
+    getversion().then((value) {
+      getVersionapp().then((value2) async {
+        bool result = isVersionGreaterThan(value, value2);
+        if (result) {
           await Navigator.push(
             context,
             MaterialPageRoute(
@@ -173,18 +108,101 @@ class LoadpageState extends State<Loadpage> with TickerProviderStateMixin {
               },
             ),
           );
+        } else {
+          Map data = await rootfile.readCounter();
+          if (data.containsKey("setting")) {
+            if (data["setting"] == "ON") {
+              //debugPrint("initiallllllllllllllllllllllllllllllll");
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) {
+                    return LoginPage(
+                        CounterStorage(filename: "data.json"), true, true);
+                  },
+                ),
+              );
+            } else {
+              try {
+                mode = false;
+                //debugPrint("很显然，我们执行了什么？1$mode");
+                initdata = data;
+                // 从文件读取 rootData
+                CounterStorage rootfile = CounterStorage(filename: "root.json");
+                Map rootData = await rootfile.readCounter();
+
+                // 解析 rootData 并转换为对应的数据模型
+
+                // 解析 maintable
+                for (var a in rootData["maintable"][0]) {
+                  maintable[0].add(Student.fromJson(a));
+                }
+                for (var a in rootData["maintable"][1]) {
+                  maintable[1].add(Course.fromJson(a));
+                }
+
+                // 解析 gradetable
+                for (var a in rootData["gradetable"]) {
+                  gradetable.add(CourseDataModel.fromJson(a));
+                }
+
+                // 解析 schedule
+                for (var a in rootData["schedule"]) {
+                  List<Coursesis> item = [];
+                  for (var b in a) {
+                    item.add(Coursesis.fromJson(b));
+                  }
+                  schedule.add(item);
+                }
+
+                // 解析 examlist
+                for (var a in rootData["examlist"]) {
+                  examlist.add(ExamData.fromJson(a));
+                }
+
+                // 解析 allgradelist
+                for (var a in rootData["allgradelist"][0]) {
+                  //debugPrint(a);
+                  allgradelist[0].add(GradeAverange.fromJson(a));
+                }
+                for (var a in rootData["allgradelist"][1]) {
+                  allgradelist[1].add(CourseTotal.fromJson(a));
+                }
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return MainPage(maintable[0], maintable[1], gradetable,
+                          schedule, initdata, examlist, allgradelist);
+                    },
+                  ),
+                );
+              } catch (e) {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return LoginPage(
+                          CounterStorage(filename: "data.json"), true, true);
+                    },
+                  ),
+                );
+              }
+            }
+          } else {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) {
+                  return LoginPage(
+                      CounterStorage(filename: "data.json"), true, true);
+                },
+              ),
+            );
+          }
         }
-      }
-    } else {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) {
-            return LoginPage(CounterStorage(filename: "data.json"), true, true);
-          },
-        ),
-      );
-    }
+      });
+    });
   }
 
   @override
@@ -196,32 +214,37 @@ class LoadpageState extends State<Loadpage> with TickerProviderStateMixin {
           builder: (context, child) {
             return Stack(
               children: [
-                const Positioned(
+                Positioned(
                     child: Column(
                   children: [
                     SizedBox(
-                      height: 400,
-                      child: Center(
-                        child: Text(
-                          "STABLE-GRADE",
-                          style: TextStyle(
-                              color: Colors.blue,
-                              fontSize: 40,
-                              fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                    )
+                        height: 400,
+                        child: Center(
+                          child: Opacity(
+                            //  opacity: 0.6 * initailanime.value + 0.4,
+                            opacity: initialanimation.value,
+                            child: const Text(
+                              "-Grade-",
+                              style: TextStyle(
+                                  color: Colors.blue,
+                                  fontSize: 40,
+                                  fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ))
                   ],
                 )),
                 Positioned(
                     child: Center(
                   child: SizedBox(
-                    width: 30 + 300 * initialanimation.value,
-                    child: Opacity(
-                      opacity: 1 - initialanimation.value,
-                      child: Image.asset("assets/data/icon.png"),
-                    ),
-                  ),
+                      width: 400,
+                      child: Transform.translate(
+                          offset: Offset(80 - 80 * initialanimation.value, 0),
+                          child: Opacity(
+                            //  opacity: 0.6 * initailanime.value + 0.4,
+                            opacity: initialanimation.value,
+                            child: Image.asset("assets/data/icon.png"),
+                          ))),
                 ))
               ],
             );
@@ -270,20 +293,18 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-
     initailanime = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 1500))
       ..addStatusListener(
         (status) {},
       );
     initialanimation =
-        CurvedAnimation(parent: initailanime, curve: Curves.easeOutCubic);
+        CurvedAnimation(parent: initailanime, curve: Curves.easeInOutExpo);
     initialanimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
     ).animate(initialanimation);
     initailanime.forward();
-
     gettext().then((value) {
       tell = value;
       setState(() {});
@@ -781,396 +802,345 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               AnimatedBuilder(
                                   animation: initialanimation,
                                   builder: (context, child) {
-                                    return ClipRect(
-                                        child: BackdropFilter(
-                                            filter: ImageFilter.blur(
-                                                sigmaX: 25.0, sigmaY: 25.0),
-                                            child: Container(
-                                                decoration: BoxDecoration(
-                                                  color: Colors.grey.shade200
-                                                      .withOpacity(0.8),
-                                                  borderRadius:
-                                                      BorderRadius.only(
-                                                          bottomRight:
-                                                              Radius.circular(
-                                                                  fontsz * 2),
-                                                          topRight:
-                                                              Radius.circular(
-                                                                  fontsz * 2)),
-                                                ),
-                                                alignment: Alignment.topLeft,
-                                                margin: EdgeInsets.only(
-                                                    top: fontsz * 2),
-                                                padding: EdgeInsets.all(fontsz),
-                                                width: screenWidth *
-                                                    0.85 *
-                                                    initialanimation.value,
-                                                height: screenHeight * 0.5,
-                                                child: PageView(
-                                                  controller: updatepagecheck,
-                                                  physics:
-                                                      const NeverScrollableScrollPhysics(),
-                                                  children: [
-                                                    Column(
-                                                      children: [
-                                                        Row(
-                                                          children: [
-                                                            Align(
-                                                              alignment: Alignment
-                                                                  .centerLeft,
-                                                              child: Text(
-                                                                tip,
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontSize:
+                                    return Transform.translate(
+                                        offset: Offset(
+                                            -120 + 120 * initialanimation.value,
+                                            0),
+                                        child: Opacity(
+                                            opacity:
+                                                0.2 * initialanimation.value +
+                                                    0.8,
+                                            child: ClipRect(
+                                                child: BackdropFilter(
+                                                    filter: ImageFilter.blur(
+                                                        sigmaX: 25.0,
+                                                        sigmaY: 25.0),
+                                                    child: Container(
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: Colors
+                                                              .grey.shade200
+                                                              .withOpacity(0.8),
+                                                          borderRadius: BorderRadius.only(
+                                                              bottomRight: Radius
+                                                                  .circular(
                                                                       fontsz *
-                                                                          1.2,
-                                                                  color: Colors
-                                                                      .blue,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            const Expanded(
-                                                                child:
-                                                                    SizedBox()),
-                                                          ],
+                                                                          2),
+                                                              topRight: Radius
+                                                                  .circular(
+                                                                      fontsz *
+                                                                          2)),
                                                         ),
-                                                        SizedBox(
-                                                          height: fontsz,
-                                                        ),
-                                                        TextField(
-                                                          keyboardType:
-                                                              TextInputType
-                                                                  .number,
+                                                        alignment:
+                                                            Alignment.topLeft,
+                                                        margin: EdgeInsets.only(
+                                                            top: fontsz * 2),
+                                                        padding: EdgeInsets.all(
+                                                            fontsz),
+                                                        width:
+                                                            screenWidth * 0.85,
+                                                        height:
+                                                            screenHeight * 0.5,
+                                                        child: PageView(
                                                           controller:
-                                                              _numController,
-                                                          onEditingComplete:
-                                                              () {
-                                                            _handleInputFinished(
-                                                                false);
-                                                          },
-                                                          onTap: _editingyear,
-                                                          style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                              color: Colors
-                                                                  .black
-                                                                  .withOpacity(
-                                                                      0.7),
-                                                              fontSize: 28,
-                                                              fontFamily:
-                                                                  "Consolas"),
-                                                          decoration: InputDecoration(
-                                                              label: Text(
-                                                                "学号",
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        fontsz),
-                                                              ),
-                                                              helperText: "account"
-                                                              // contentPadding:
-                                                              //     EdgeInsets.all(fontsz / 2),
-                                                              //filled: true,
-                                                              // fillColor:
-                                                              //     Color.fromARGB(91, 155, 39, 176), // 背景颜色
-                                                              // hintText:
-                                                              //     'Enter account', // 提示文本
-                                                              // hintStyle: const TextStyle(
-                                                              //     color:
-                                                              //         Colors.white), // 提示文本颜色
-                                                              // border: OutlineInputBorder(
-                                                              //   // borderSide:
-                                                              //   //     const BorderSide(width: 2), // 边框颜色和宽度
-                                                              //   borderRadius:
-                                                              //       BorderRadius.circular(
-                                                              //           10.0), // 边框圆角
-                                                              // ),
-                                                              ),
-                                                        ),
-                                                        // SizedBox(
-                                                        //   height: fontsz,
-                                                        // ),
-                                                        TextField(
-                                                          obscureText:
-                                                              _isObscure,
-                                                          obscuringCharacter:
-                                                              "◍",
-                                                          controller:
-                                                              _pwdController,
-                                                          onTap: () {
-                                                            _handleInputFinished(
-                                                                false);
-                                                          },
-                                                          style: TextStyle(
-                                                            // fontWeight: FontWeight.w600,
-                                                            color: Colors.black
-                                                                .withOpacity(
-                                                                    0.7),
-                                                            fontSize: 20,
-                                                          ),
-                                                          decoration:
-                                                              InputDecoration(
-                                                                  label: Text(
-                                                                    "密码",
-                                                                    style: TextStyle(
-                                                                        fontSize:
-                                                                            fontsz),
-                                                                  ),
-                                                                  helperText:
-                                                                      "password",
-                                                                  suffixIcon:
-                                                                      IconButton(
-                                                                          icon: Icon(_isObscure
-                                                                              ? Icons.visibility_off
-                                                                              : Icons.visibility),
-                                                                          onPressed: () {
-                                                                            setState(() {
-                                                                              _isObscure = !_isObscure;
-                                                                            });
-                                                                          })),
-                                                        ),
-                                                        SizedBox(
-                                                          height: screenHeight *
-                                                              0.03,
-                                                        ),
-                                                        Row(
+                                                              updatepagecheck,
+                                                          physics:
+                                                              const NeverScrollableScrollPhysics(),
                                                           children: [
                                                             Column(
                                                               children: [
                                                                 Row(
                                                                   children: [
-                                                                    RoundCheckBox(
-                                                                        size: fontsz *
-                                                                            1.5,
-                                                                        checkedWidget:
-                                                                            Icon(
-                                                                          Icons
-                                                                              .check,
+                                                                    Align(
+                                                                      alignment:
+                                                                          Alignment
+                                                                              .centerLeft,
+                                                                      child:
+                                                                          Text(
+                                                                        tip,
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontSize:
+                                                                              fontsz * 1.2,
                                                                           color:
-                                                                              Colors.white,
-                                                                          size:
-                                                                              fontsz,
+                                                                              Colors.blue,
                                                                         ),
-                                                                        checkedColor:
-                                                                            Colors
-                                                                                .blue,
-                                                                        uncheckedColor:
-                                                                            Colors
-                                                                                .transparent,
-                                                                        border: Border.all(
-                                                                            color: Colors
-                                                                                .white,
-                                                                            width:
-                                                                                3),
-                                                                        isChecked:
-                                                                            autoLogin,
-                                                                        onTap:
-                                                                            (selected) {
-                                                                          autoLogin =
-                                                                              !autoLogin;
+                                                                      ),
+                                                                    ),
+                                                                    const Expanded(
+                                                                        child:
+                                                                            SizedBox()),
+                                                                  ],
+                                                                ),
+                                                                SizedBox(
+                                                                  height:
+                                                                      fontsz,
+                                                                ),
+                                                                TextField(
+                                                                  keyboardType:
+                                                                      TextInputType
+                                                                          .number,
+                                                                  controller:
+                                                                      _numController,
+                                                                  onEditingComplete:
+                                                                      () {
+                                                                    _handleInputFinished(
+                                                                        false);
+                                                                  },
+                                                                  onTap:
+                                                                      _editingyear,
+                                                                  style: TextStyle(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w600,
+                                                                      color: Colors
+                                                                          .black
+                                                                          .withOpacity(
+                                                                              0.7),
+                                                                      fontSize:
+                                                                          28,
+                                                                      fontFamily:
+                                                                          "Consolas"),
+                                                                  decoration: InputDecoration(
+                                                                      label: Text(
+                                                                        "学号",
+                                                                        style: TextStyle(
+                                                                            fontSize:
+                                                                                fontsz),
+                                                                      ),
+                                                                      helperText: "account"
+                                                                      // contentPadding:
+                                                                      //     EdgeInsets.all(fontsz / 2),
+                                                                      //filled: true,
+                                                                      // fillColor:
+                                                                      //     Color.fromARGB(91, 155, 39, 176), // 背景颜色
+                                                                      // hintText:
+                                                                      //     'Enter account', // 提示文本
+                                                                      // hintStyle: const TextStyle(
+                                                                      //     color:
+                                                                      //         Colors.white), // 提示文本颜色
+                                                                      // border: OutlineInputBorder(
+                                                                      //   // borderSide:
+                                                                      //   //     const BorderSide(width: 2), // 边框颜色和宽度
+                                                                      //   borderRadius:
+                                                                      //       BorderRadius.circular(
+                                                                      //           10.0), // 边框圆角
+                                                                      // ),
+                                                                      ),
+                                                                ),
+                                                                // SizedBox(
+                                                                //   height: fontsz,
+                                                                // ),
+                                                                TextField(
+                                                                  obscureText:
+                                                                      _isObscure,
+                                                                  obscuringCharacter:
+                                                                      "◍",
+                                                                  controller:
+                                                                      _pwdController,
+                                                                  onTap: () {
+                                                                    _handleInputFinished(
+                                                                        false);
+                                                                  },
+                                                                  style:
+                                                                      TextStyle(
+                                                                    // fontWeight: FontWeight.w600,
+                                                                    color: Colors
+                                                                        .black
+                                                                        .withOpacity(
+                                                                            0.7),
+                                                                    fontSize:
+                                                                        20,
+                                                                  ),
+                                                                  decoration: InputDecoration(
+                                                                      label: Text(
+                                                                        "密码",
+                                                                        style: TextStyle(
+                                                                            fontSize:
+                                                                                fontsz),
+                                                                      ),
+                                                                      helperText: "password",
+                                                                      suffixIcon: IconButton(
+                                                                          icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility),
+                                                                          onPressed: () {
+                                                                            setState(() {
+                                                                              _isObscure = !_isObscure;
+                                                                            });
+                                                                          })),
+                                                                ),
+                                                                SizedBox(
+                                                                  height:
+                                                                      screenHeight *
+                                                                          0.03,
+                                                                ),
+                                                                Row(
+                                                                  children: [
+                                                                    Column(
+                                                                      children: [
+                                                                        Row(
+                                                                          children: [
+                                                                            RoundCheckBox(
+                                                                                size: fontsz * 1.5,
+                                                                                checkedWidget: Icon(
+                                                                                  Icons.check,
+                                                                                  color: Colors.white,
+                                                                                  size: fontsz,
+                                                                                ),
+                                                                                checkedColor: Colors.blue,
+                                                                                uncheckedColor: Colors.transparent,
+                                                                                border: Border.all(color: Colors.white, width: 3),
+                                                                                isChecked: autoLogin,
+                                                                                onTap: (selected) {
+                                                                                  autoLogin = !autoLogin;
 
-                                                                          setState(
-                                                                              () {});
-                                                                        }),
-                                                                    SizedBox(
-                                                                      width:
-                                                                          fontsz /
-                                                                              2,
-                                                                    ),
-                                                                    Text(
-                                                                      "自动登录",
-                                                                      style: TextStyle(
-                                                                          fontSize: fontsz *
-                                                                              0.9,
-                                                                          color: autoLogin
-                                                                              ? Colors.blue
-                                                                              : const Color.fromARGB(120, 39, 64, 176)),
-                                                                    )
-                                                                  ],
-                                                                ),
-                                                                SizedBox(
-                                                                  height:
-                                                                      fontsz /
-                                                                          3,
-                                                                ),
-                                                                Row(
-                                                                  children: [
-                                                                    RoundCheckBox(
-                                                                        size: fontsz *
-                                                                            1.5,
-                                                                        checkedWidget:
-                                                                            Icon(
-                                                                          Icons
-                                                                              .check,
-                                                                          color:
-                                                                              Colors.white,
-                                                                          size:
-                                                                              fontsz,
+                                                                                  setState(() {});
+                                                                                }),
+                                                                            SizedBox(
+                                                                              width: fontsz / 2,
+                                                                            ),
+                                                                            Text(
+                                                                              "自动登录",
+                                                                              style: TextStyle(fontSize: fontsz * 0.9, color: autoLogin ? Colors.blue : const Color.fromARGB(120, 39, 64, 176)),
+                                                                            )
+                                                                          ],
                                                                         ),
-                                                                        checkedColor:
-                                                                            Colors
-                                                                                .blue,
-                                                                        uncheckedColor:
-                                                                            Colors
-                                                                                .transparent,
-                                                                        border: Border.all(
-                                                                            color: Colors
-                                                                                .white,
-                                                                            width:
-                                                                                3),
-                                                                        isChecked:
-                                                                            rememberPassword,
-                                                                        onTap:
-                                                                            (selected) {
-                                                                          rememberPassword =
-                                                                              !rememberPassword;
-                                                                          setState(
-                                                                              () {});
-                                                                        }),
-                                                                    SizedBox(
-                                                                      width:
-                                                                          fontsz /
-                                                                              2,
-                                                                    ),
-                                                                    Text(
-                                                                      "保存账号",
-                                                                      style: TextStyle(
-                                                                          fontSize: fontsz *
-                                                                              0.9,
-                                                                          color: rememberPassword
-                                                                              ? Colors.blue
-                                                                              : const Color.fromARGB(120, 39, 64, 176)),
-                                                                    )
-                                                                  ],
-                                                                ),
-                                                                SizedBox(
-                                                                  height:
-                                                                      fontsz /
-                                                                          3,
-                                                                ),
-                                                                Row(
-                                                                  children: [
-                                                                    RoundCheckBox(
-                                                                        size: fontsz *
-                                                                            1.5,
-                                                                        checkedWidget:
-                                                                            Icon(
-                                                                          Icons
-                                                                              .check,
-                                                                          color:
-                                                                              Colors.white,
-                                                                          size:
-                                                                              fontsz,
+                                                                        SizedBox(
+                                                                          height:
+                                                                              fontsz / 3,
                                                                         ),
-                                                                        checkedColor:
-                                                                            Colors
-                                                                                .blue,
-                                                                        uncheckedColor:
-                                                                            Colors
-                                                                                .transparent,
-                                                                        border: Border.all(
-                                                                            color: Colors
-                                                                                .white,
-                                                                            width:
-                                                                                3),
-                                                                        isChecked:
-                                                                            bukao,
-                                                                        onTap:
-                                                                            (selected) {
-                                                                          bukao =
-                                                                              !bukao;
-                                                                          setState(
-                                                                              () {});
-                                                                        }),
-                                                                    SizedBox(
-                                                                      width:
-                                                                          fontsz /
-                                                                              2,
+                                                                        Row(
+                                                                          children: [
+                                                                            RoundCheckBox(
+                                                                                size: fontsz * 1.5,
+                                                                                checkedWidget: Icon(
+                                                                                  Icons.check,
+                                                                                  color: Colors.white,
+                                                                                  size: fontsz,
+                                                                                ),
+                                                                                checkedColor: Colors.blue,
+                                                                                uncheckedColor: Colors.transparent,
+                                                                                border: Border.all(color: Colors.white, width: 3),
+                                                                                isChecked: rememberPassword,
+                                                                                onTap: (selected) {
+                                                                                  rememberPassword = !rememberPassword;
+                                                                                  setState(() {});
+                                                                                }),
+                                                                            SizedBox(
+                                                                              width: fontsz / 2,
+                                                                            ),
+                                                                            Text(
+                                                                              "保存账号",
+                                                                              style: TextStyle(fontSize: fontsz * 0.9, color: rememberPassword ? Colors.blue : const Color.fromARGB(120, 39, 64, 176)),
+                                                                            )
+                                                                          ],
+                                                                        ),
+                                                                        SizedBox(
+                                                                          height:
+                                                                              fontsz / 3,
+                                                                        ),
+                                                                        Row(
+                                                                          children: [
+                                                                            RoundCheckBox(
+                                                                                size: fontsz * 1.5,
+                                                                                checkedWidget: Icon(
+                                                                                  Icons.check,
+                                                                                  color: Colors.white,
+                                                                                  size: fontsz,
+                                                                                ),
+                                                                                checkedColor: Colors.blue,
+                                                                                uncheckedColor: Colors.transparent,
+                                                                                border: Border.all(color: Colors.white, width: 3),
+                                                                                isChecked: bukao,
+                                                                                onTap: (selected) {
+                                                                                  bukao = !bukao;
+                                                                                  setState(() {});
+                                                                                }),
+                                                                            SizedBox(
+                                                                              width: fontsz / 2,
+                                                                            ),
+                                                                            Text(
+                                                                              "查看补考",
+                                                                              style: TextStyle(fontSize: fontsz * 0.9, color: bukao ? Colors.blue : const Color.fromARGB(120, 39, 64, 176)),
+                                                                            )
+                                                                          ],
+                                                                        )
+                                                                      ],
                                                                     ),
-                                                                    Text(
-                                                                      "查看补考",
-                                                                      style: TextStyle(
-                                                                          fontSize: fontsz *
-                                                                              0.9,
-                                                                          color: bukao
-                                                                              ? Colors.blue
-                                                                              : const Color.fromARGB(120, 39, 64, 176)),
-                                                                    )
+                                                                    Expanded(
+                                                                        child: Padding(
+                                                                            padding: const EdgeInsets.all(10),
+                                                                            child: TextButton(
+                                                                                onPressed: () async {
+                                                                                  await Loginact();
+                                                                                },
+                                                                                child: state == false
+                                                                                    ? Text(
+                                                                                        "登录",
+                                                                                        style: TextStyle(
+                                                                                          color: Colors.blue,
+                                                                                          fontSize: fontsz * 1.8,
+                                                                                        ),
+                                                                                      )
+                                                                                    : loadanimation(
+                                                                                        radius: fontsz * 3,
+                                                                                      ))))
                                                                   ],
-                                                                )
+                                                                ),
                                                               ],
                                                             ),
-                                                            Expanded(
-                                                                child: Padding(
-                                                                    padding:
-                                                                        const EdgeInsets
-                                                                            .all(
-                                                                            10),
-                                                                    child: TextButton(
-                                                                        onPressed: () async {
-                                                                          await Loginact();
-                                                                        },
-                                                                        child: state == false
-                                                                            ? Text(
-                                                                                "登录",
-                                                                                style: TextStyle(
-                                                                                  color: Colors.blue,
-                                                                                  fontSize: fontsz * 1.8,
-                                                                                ),
-                                                                              )
-                                                                            : loadanimation(
-                                                                                radius: fontsz * 3,
-                                                                              ))))
+                                                            Column(
+                                                              children: [
+                                                                const Text(
+                                                                  "更新(Update)",
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          20),
+                                                                ),
+                                                                SizedBox(
+                                                                  height:
+                                                                      fontsz *
+                                                                          3,
+                                                                ),
+                                                                Text(
+                                                                  "${(_progressValue * 100).toStringAsFixed(1)}%",
+                                                                  style: const TextStyle(
+                                                                      fontSize:
+                                                                          75,
+                                                                      color: Colors
+                                                                          .blue),
+                                                                ),
+                                                                SizedBox(
+                                                                  height:
+                                                                      fontsz,
+                                                                ),
+                                                                ClipRRect(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              10),
+                                                                  child:
+                                                                      LinearProgressIndicator(
+                                                                    minHeight:
+                                                                        10,
+                                                                    value:
+                                                                        _progressValue,
+                                                                  ),
+                                                                ),
+                                                                const Expanded(
+                                                                    child:
+                                                                        SizedBox()),
+                                                                const Text(
+                                                                  "你的更新，就是对grade开发者最大的认可。",
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          12,
+                                                                      color: Colors
+                                                                          .black45),
+                                                                ),
+                                                              ],
+                                                            )
                                                           ],
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    Column(
-                                                      children: [
-                                                        const Text(
-                                                          "更新(Update)",
-                                                          style: TextStyle(
-                                                              fontSize: 20),
-                                                        ),
-                                                        SizedBox(
-                                                          height: fontsz * 3,
-                                                        ),
-                                                        Text(
-                                                          "${(_progressValue * 100).toStringAsFixed(1)}%",
-                                                          style:
-                                                              const TextStyle(
-                                                                  fontSize: 75,
-                                                                  color: Colors
-                                                                      .blue),
-                                                        ),
-                                                        SizedBox(
-                                                          height: fontsz,
-                                                        ),
-                                                        ClipRRect(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(10),
-                                                          child:
-                                                              LinearProgressIndicator(
-                                                            minHeight: 10,
-                                                            value:
-                                                                _progressValue,
-                                                          ),
-                                                        ),
-                                                        const Expanded(
-                                                            child: SizedBox()),
-                                                        const Text(
-                                                          "你的更新，就是对grade开发者最大的认可。",
-                                                          style: TextStyle(
-                                                              fontSize: 12,
-                                                              color: Colors
-                                                                  .black45),
-                                                        ),
-                                                      ],
-                                                    )
-                                                  ],
-                                                ))));
+                                                        ))))));
                                   })
                             ],
                           ),
@@ -1308,9 +1278,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
     formattedDate = DateFormat('M/d').format(currentDate);
     _ChatLoadAnimaController = AnimationController(
-        duration: const Duration(milliseconds: 1500), vsync: this);
+        duration: const Duration(milliseconds: 1000), vsync: this);
     _ChatLoadAnima = CurvedAnimation(
-        parent: _ChatLoadAnimaController, curve: Curves.bounceOut);
+        parent: _ChatLoadAnimaController, curve: Curves.easeInOutExpo);
     _ChatLoadAnima =
         Tween<double>(begin: 0.0, end: 1.0).animate(_ChatLoadAnima);
     _ChatLoadAnimaController.forward();
@@ -1698,30 +1668,46 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                               SizedBox(
                                 width: screenWidth * 0.7,
                                 height: screenHeight * 0.7,
-                                child: PageView.builder(
-                                  controller: _classpagecontroller,
-                                  onPageChanged: (index) => {
-                                    setState(() {
-                                      teacherName = "${index + 1}";
-                                      date = calculateDates(
-                                          int.parse(teacherName));
-                                    })
-                                  },
-                                  itemCount: widget.schedule.length, // 你的页面数量
-                                  itemBuilder: (context, index) {
-                                    return Container(
-                                        clipBehavior: Clip.hardEdge,
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        child: CalendarPage(
-                                          colorstate: itemcolorstate,
-                                          dat: widget.schedule[index],
-                                          iteh: screenHeight * 0.7,
-                                          showstate: classstate,
-                                        ));
-                                    // 创建日历页面
+                                child: AnimatedBuilder(
+                                  animation: _ChatLoadAnima,
+                                  builder: (context, child) {
+                                    return Transform.translate(
+                                        offset: Offset(
+                                            0, 50 - 50 * _ChatLoadAnima.value),
+                                        child: Opacity(
+                                            opacity:
+                                                0.6 * _ChatLoadAnima.value +
+                                                    0.4,
+                                            child: PageView.builder(
+                                              controller: _classpagecontroller,
+                                              onPageChanged: (index) => {
+                                                setState(() {
+                                                  teacherName = "${index + 1}";
+                                                  date = calculateDates(
+                                                      int.parse(teacherName));
+                                                })
+                                              },
+                                              itemCount: widget
+                                                  .schedule.length, // 你的页面数量
+                                              itemBuilder: (context, index) {
+                                                return Container(
+                                                    clipBehavior: Clip.hardEdge,
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10),
+                                                    ),
+                                                    child: CalendarPage(
+                                                      colorstate:
+                                                          itemcolorstate,
+                                                      dat: widget
+                                                          .schedule[index],
+                                                      iteh: screenHeight * 0.7,
+                                                      showstate: classstate,
+                                                    ));
+                                                // 创建日历页面
+                                              },
+                                            )));
                                   },
                                 ),
                               ),
@@ -1733,34 +1719,48 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(3),
-                                          //margin: EdgeInsets.only(top: 0),
-                                          width: screenWidth /
-                                              1.9 *
-                                              _ChatLoadAnima.value,
-                                          // height: fontsz * 2,
-                                          decoration: BoxDecoration(
-                                              color: const ui.Color.fromARGB(
-                                                  60, 141, 141, 141),
-                                              borderRadius: BorderRadius.only(
-                                                  topRight: Radius.circular(
-                                                      fontsz / 2),
-                                                  bottomRight: Radius.circular(
-                                                      fontsz / 2))),
-                                          child: Center(
-                                            child: Text(
-                                              dayword,
-                                              style: TextStyle(
-                                                  fontSize: fontsz * 0.75,
-                                                  height: 1.1,
-                                                  color: Colors.white),
-                                            ),
-                                          ),
-                                        ),
+                                        Transform.translate(
+                                            offset: Offset(
+                                                -100 +
+                                                    100 * _ChatLoadAnima.value,
+                                                0),
+                                            child: Opacity(
+                                                opacity: 1,
+                                                child: Container(
+                                                  padding:
+                                                      const EdgeInsets.all(3),
+                                                  //margin: EdgeInsets.only(top: 0),
+                                                  width: screenWidth / 1.9,
+                                                  // height: fontsz * 2,
+                                                  decoration: const BoxDecoration(
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                            color:
+                                                                Colors.black12,
+                                                            blurRadius: 10)
+                                                      ],
+                                                      color: Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.only(
+                                                              topRight: Radius
+                                                                  .circular(7),
+                                                              bottomRight:
+                                                                  Radius
+                                                                      .circular(
+                                                                          7))),
+                                                  child: Center(
+                                                    child: Text(
+                                                      dayword,
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          height: 1.1,
+                                                          color: dateColor),
+                                                    ),
+                                                  ),
+                                                ))),
                                         const Expanded(child: SizedBox()),
-                                        Transform.rotate(
-                                            angle: _ChatLoadAnima.value * 6,
+                                        Transform.scale(
+                                            scale: _ChatLoadAnima.value,
                                             child: GestureDetector(
                                               child: Container(
                                                   margin: EdgeInsets.only(
@@ -1771,9 +1771,13 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                                     child: Icon(
                                                       Icons.settings,
                                                       size: fontsz * 2,
-                                                      color: const ui
-                                                          .Color.fromARGB(
-                                                          60, 141, 141, 141),
+                                                      color: Colors.white,
+                                                      shadows: const [
+                                                        BoxShadow(
+                                                            color:
+                                                                Colors.black12,
+                                                            blurRadius: 10)
+                                                      ],
                                                     ),
                                                   )),
                                               onTap: () async {
@@ -1896,367 +1900,449 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                         ],
                       )),
                   const Expanded(child: SizedBox()),
-                  Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          //margin: EdgeInsets.only(top: fontsz),
-                          width: screenWidth / 4,
-                          decoration: BoxDecoration(
-                              color: bgColor,
-                              // gradient: const LinearGradient(colors: [
-                              //   Colors.blue,
-                              //   Color.fromARGB(255, 114, 167, 233)
-                              // ], begin: Alignment.bottomCenter),
-                              borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(fontsz),
-                                  bottomLeft: Radius.circular(fontsz))),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                "week",
-                                style: TextStyle(
-                                  fontSize: fontsz,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              Text(
-                                teacherName,
-                                style: TextStyle(
-                                  fontSize: fontsz * 3.5,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                            width: screenWidth / 4,
-                            height: screenHeight / 4.5,
-                            margin: EdgeInsets.only(top: fontsz),
-                            decoration: BoxDecoration(
-                                color: bgColor,
-                                // gradient: const LinearGradient(colors: [
-                                //   Colors.blue,
-                                //   Color.fromARGB(255, 114, 167, 233)
-                                // ], begin: Alignment.bottomCenter),
-                                borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(fontsz),
-                                    bottomLeft: Radius.circular(fontsz))),
-                            child: Column(
-                              children: [
-                                Text(
-                                  "今日课程",
-                                  style: TextStyle(
-                                      fontSize: fontsz * 0.9,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.normal),
-                                ),
-                                SizedBox(
-                                  width: screenWidth / 4,
-                                  height: screenHeight / 6,
-                                  child: MediaQuery.removePadding(
-                                      context: context,
-                                      removeTop: true,
-                                      child: ListView.builder(
-                                        itemCount: 8,
-                                        itemBuilder: (context, index) {
-                                          if (currentscdule[index].courseName ==
-                                              "") {
-                                            return Container(
-                                              height: 2,
-                                              color: Colors.grey,
-                                              margin: EdgeInsets.only(
-                                                  top: 2,
-                                                  bottom: 2,
-                                                  left: fontsz,
-                                                  right: fontsz),
+                  AnimatedBuilder(
+                    animation: _ChatLoadAnima,
+                    builder: (context, child) {
+                      return Transform.translate(
+                          offset: Offset(80 - 80 * _ChatLoadAnima.value, 0),
+                          child: Opacity(
+                              opacity: 0.6 * _ChatLoadAnima.value + 0.4,
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      //margin: EdgeInsets.only(top: fontsz),
+                                      width: screenWidth / 4,
+                                      decoration: BoxDecoration(
+                                          color: bgColor,
+                                          // gradient: const LinearGradient(colors: [
+                                          //   Colors.blue,
+                                          //   Color.fromARGB(255, 114, 167, 233)
+                                          // ], begin: Alignment.bottomCenter),
+                                          borderRadius: BorderRadius.only(
+                                              topLeft: Radius.circular(fontsz),
+                                              bottomLeft:
+                                                  Radius.circular(fontsz / 3))),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            "week",
+                                            style: TextStyle(
+                                              fontSize: fontsz,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          Text(
+                                            teacherName,
+                                            style: TextStyle(
+                                                fontSize: fontsz * 3.5,
+                                                color: Colors.white,
+                                                shadows: const [
+                                                  BoxShadow(
+                                                      color: Colors.black12,
+                                                      blurRadius: 20)
+                                                ],
+                                                fontWeight: FontWeight.w800),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                        width: screenWidth / 4,
+                                        height: screenHeight / 4.4,
+                                        margin:
+                                            EdgeInsets.only(top: fontsz / 4),
+                                        decoration: BoxDecoration(
+                                            color: bgColor,
+                                            // gradient: const LinearGradient(colors: [
+                                            //   Colors.blue,
+                                            //   Color.fromARGB(255, 114, 167, 233)
+                                            // ], begin: Alignment.bottomCenter),
+                                            borderRadius: BorderRadius.only(
+                                                topLeft:
+                                                    Radius.circular(fontsz / 3),
+                                                bottomLeft:
+                                                    Radius.circular(fontsz))),
+                                        child: Column(
+                                          children: [
+                                            Text(
+                                              "今日课程",
+                                              style: TextStyle(
+                                                  fontSize: fontsz * 0.8,
+                                                  height: 1.5,
+                                                  color: Colors.white,
+                                                  fontWeight:
+                                                      FontWeight.normal),
+                                            ),
+                                            SizedBox(
+                                              width: screenWidth / 4,
+                                              height: screenHeight / 6,
+                                              child: MediaQuery.removePadding(
+                                                  context: context,
+                                                  removeTop: true,
+                                                  child: ListView.builder(
+                                                    itemCount: 8,
+                                                    itemBuilder:
+                                                        (context, index) {
+                                                      if (currentscdule[index]
+                                                              .courseName ==
+                                                          "") {
+                                                        return Container(
+                                                          height: 2,
+                                                          color: Colors.black,
+                                                          margin:
+                                                              EdgeInsets.only(
+                                                                  top: 2,
+                                                                  bottom: 2,
+                                                                  left: fontsz,
+                                                                  right:
+                                                                      fontsz),
+                                                        );
+                                                      } else {
+                                                        return Container(
+                                                            margin:
+                                                                const EdgeInsets
+                                                                    .all(2),
+                                                            // decoration: BoxDecoration(
+                                                            //     color: Colors.white,
+                                                            //     borderRadius:
+                                                            //         BorderRadius.circular(
+                                                            //             fontsz / 4)),
+                                                            child: Column(
+                                                              children: [
+                                                                Text(
+                                                                  currentscdule[
+                                                                          index]
+                                                                      .courseName,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis, // 超出一行时使用省略号表示
+                                                                  maxLines: 1,
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          fontsz *
+                                                                              0.8,
+                                                                      color: Colors
+                                                                          .black54,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold),
+                                                                )
+                                                              ],
+                                                            ));
+                                                      }
+                                                    },
+                                                  )),
+                                            ),
+                                            Text("共$todaytotalclass节",
+                                                style: TextStyle(
+                                                    fontSize: fontsz * 0.9,
+                                                    color: Colors.white,
+                                                    fontWeight:
+                                                        FontWeight.normal))
+                                          ],
+                                        )),
+                                    // SizedBox(
+                                    //   height: screenHeight * 0.1,
+                                    // ),
+
+                                    Container(
+                                        width: screenWidth / 4,
+                                        height: screenHeight / 4.5,
+                                        margin: EdgeInsets.only(
+                                            top: fontsz, bottom: fontsz * 2),
+                                        // decoration: BoxDecoration(
+                                        //     gradient: const LinearGradient(colors: [
+                                        //       Colors.blue,
+                                        //       Color.fromARGB(255, 114, 167, 233)
+                                        //     ], begin: Alignment.bottomCenter),
+                                        //     borderRadius: BorderRadius.only(
+                                        //         topLeft: Radius.circular(fontsz),
+                                        //         bottomLeft: Radius.circular(fontsz))),
+                                        child: Stack(
+                                          children: [
+                                            const Center(
+                                              child: Text(
+                                                "↑账号列表\n点击切换♉\n♌长按删除\n添+账号↓",
+                                                style: TextStyle(
+                                                    color: Colors.black45),
+                                              ),
+                                            ),
+                                            MediaQuery.removePadding(
+                                              context: context,
+                                              removeTop: true,
+                                              child: ListView.builder(
+                                                //scrollDirection: Axis.horizontal, // 设置横向滚动
+                                                itemCount: widget
+                                                    .userlist["content"].length,
+                                                itemBuilder:
+                                                    (BuildContext context,
+                                                        int index) {
+                                                  return GestureDetector(
+                                                    onLongPress: () {
+                                                      //删除账号
+                                                      setState(() {
+                                                        HapticFeedback
+                                                            .lightImpact();
+                                                        deleteAsk = true;
+                                                        currentdelete = widget
+                                                            .userlist["content"]
+                                                            .keys
+                                                            .toList()[index];
+                                                      });
+                                                    },
+                                                    onTap: () => backlogin(
+                                                        widget
+                                                            .userlist["content"]
+                                                            .keys
+                                                            .toList()[index]),
+                                                    child: Container(
+                                                      margin: EdgeInsets.only(
+                                                          bottom: fontsz / 4),
+                                                      //width: fontsz,
+                                                      // padding: EdgeInsets.all(fontsz * 0.1),
+                                                      decoration: BoxDecoration(
+                                                          boxShadow: [
+                                                            BoxShadow(
+                                                                color: Colors
+                                                                    .black
+                                                                    .withOpacity(
+                                                                        0.1),
+                                                                blurRadius:
+                                                                    fontsz / 2),
+                                                          ],
+                                                          color: deleteAsk
+                                                              ? widget.userlist["content"].keys
+                                                                              .toList()[
+                                                                          index] ==
+                                                                      currentdelete
+                                                                  ? Colors.red
+                                                                  : Colors.white
+                                                              : Colors.white,
+                                                          borderRadius: BorderRadius.only(
+                                                              topLeft: Radius
+                                                                  .circular(
+                                                                      fontsz /
+                                                                          4),
+                                                              bottomLeft: Radius
+                                                                  .circular(
+                                                                      fontsz /
+                                                                          4))),
+                                                      // width: 45,
+                                                      //margin: const EdgeInsets.only(top: 5),
+                                                      child: Text(
+                                                        '${widget.userlist["content"].keys.toList()[index]}',
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: TextStyle(
+                                                          //fontFamily: "Roboto",
+                                                          color: Colors.blue,
+                                                          fontSize:
+                                                              fontsz * 0.9,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            )
+                                          ],
+                                        )),
+
+                                    Column(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            _classpagecontroller.jumpToPage(
+                                              currentWeek - 1,
                                             );
-                                          } else {
-                                            return Container(
-                                                margin: const EdgeInsets.all(2),
-                                                // decoration: BoxDecoration(
-                                                //     color: Colors.white,
-                                                //     borderRadius:
-                                                //         BorderRadius.circular(
-                                                //             fontsz / 4)),
-                                                child: Column(
+                                          },
+                                          child: Container(
+                                            width: screenWidth / 4,
+                                            padding: EdgeInsets.only(
+                                                left: fontsz / 2),
+                                            // margin: EdgeInsets.only(
+                                            //   top: fontsz / 3,
+                                            //   //left: fontsz / 3,
+                                            // ),
+                                            decoration: BoxDecoration(
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                      color: Colors.black12,
+                                                      blurRadius: fontsz / 2)
+                                                ],
+                                                borderRadius:
+                                                    const BorderRadius.only(
+                                                        topLeft:
+                                                            Radius.circular(15),
+                                                        bottomLeft:
+                                                            Radius.circular(
+                                                                10)),
+                                                color: Colors.white),
+                                            child: Row(
+                                              children: [
+                                                const Icon(
+                                                  Icons.adjust,
+                                                  color: Colors.blue,
+                                                ),
+                                                Column(
                                                   children: [
                                                     Text(
-                                                      currentscdule[index]
-                                                          .courseName,
-                                                      overflow: TextOverflow
-                                                          .ellipsis, // 超出一行时使用省略号表示
-                                                      maxLines: 1,
+                                                      "复  位",
                                                       style: TextStyle(
                                                           fontSize:
                                                               fontsz * 0.8,
-                                                          color: Colors.black54,
-                                                          fontWeight:
-                                                              FontWeight.bold),
+                                                          color: Colors.blue),
                                                     ),
                                                     Text(
-                                                      currentscdule[index]
-                                                          .coursePeriod,
+                                                      "定位课表到今天",
                                                       style: TextStyle(
-                                                          color: Colors.black87,
                                                           fontSize:
-                                                              fontsz * 0.65),
-                                                    ),
+                                                              fontsz / 2.2,
+                                                          color: Colors.black
+                                                              .withOpacity(
+                                                                  0.5)),
+                                                    )
                                                   ],
-                                                ));
-                                          }
-                                        },
-                                      )),
-                                ),
-                                Text("共$todaytotalclass节",
-                                    style: TextStyle(
-                                        fontSize: fontsz * 0.9,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.normal))
-                              ],
-                            )),
-                        // SizedBox(
-                        //   height: screenHeight * 0.1,
-                        // ),
-
-                        Container(
-                            width: screenWidth / 4,
-                            height: screenHeight / 4.5,
-                            margin: EdgeInsets.only(
-                                top: fontsz, bottom: fontsz * 2),
-                            // decoration: BoxDecoration(
-                            //     gradient: const LinearGradient(colors: [
-                            //       Colors.blue,
-                            //       Color.fromARGB(255, 114, 167, 233)
-                            //     ], begin: Alignment.bottomCenter),
-                            //     borderRadius: BorderRadius.only(
-                            //         topLeft: Radius.circular(fontsz),
-                            //         bottomLeft: Radius.circular(fontsz))),
-                            child: MediaQuery.removePadding(
-                              context: context,
-                              removeTop: true,
-                              child: ListView.builder(
-                                //scrollDirection: Axis.horizontal, // 设置横向滚动
-                                itemCount: widget.userlist["content"].length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  return GestureDetector(
-                                    onLongPress: () {
-                                      //删除账号
-                                      setState(() {
-                                        HapticFeedback.lightImpact();
-                                        deleteAsk = true;
-                                        currentdelete = widget
-                                            .userlist["content"].keys
-                                            .toList()[index];
-                                      });
-                                    },
-                                    onTap: () => backlogin(widget
-                                        .userlist["content"].keys
-                                        .toList()[index]),
-                                    child: Container(
-                                      margin:
-                                          EdgeInsets.only(bottom: fontsz / 4),
-                                      //width: fontsz,
-                                      // padding: EdgeInsets.all(fontsz * 0.1),
-                                      decoration: BoxDecoration(
-                                          boxShadow: [
-                                            BoxShadow(
-                                                color: Colors.black
-                                                    .withOpacity(0.1),
-                                                blurRadius: fontsz / 2),
-                                          ],
-                                          color: deleteAsk
-                                              ? widget.userlist["content"].keys
-                                                          .toList()[index] ==
-                                                      currentdelete
-                                                  ? Colors.red
-                                                  : Colors.white
-                                              : Colors.white,
-                                          borderRadius: BorderRadius.only(
-                                              topLeft:
-                                                  Radius.circular(fontsz / 4),
-                                              bottomLeft:
-                                                  Radius.circular(fontsz / 4))),
-                                      // width: 45,
-                                      //margin: const EdgeInsets.only(top: 5),
-                                      child: Text(
-                                        '${widget.userlist["content"].keys.toList()[index]}',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          //fontFamily: "Roboto",
-                                          color: Colors.blue,
-                                          fontSize: fontsz * 0.9,
+                                                )
+                                              ],
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            )),
-
-                        Column(
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                _classpagecontroller.jumpToPage(
-                                  currentWeek - 1,
-                                );
-                              },
-                              child: Container(
-                                width: screenWidth / 4,
-                                padding: EdgeInsets.only(left: fontsz / 2),
-                                // margin: EdgeInsets.only(
-                                //   top: fontsz / 3,
-                                //   //left: fontsz / 3,
-                                // ),
-                                decoration: BoxDecoration(
-                                    boxShadow: [
-                                      BoxShadow(
-                                          color: Colors.black12,
-                                          blurRadius: fontsz / 2)
-                                    ],
-                                    borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(fontsz),
-                                        bottomLeft: const Radius.circular(10)),
-                                    color: Colors.white),
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.adjust,
-                                      color: Colors.blue,
-                                    ),
-                                    Column(
-                                      children: [
-                                        Text(
-                                          "复  位",
-                                          style: TextStyle(
-                                              fontSize: fontsz * 0.8,
-                                              color: Colors.blue),
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(context,
+                                                MaterialPageRoute(
+                                              builder: (context) {
+                                                return AutherPage(
+                                                    name:
+                                                        widget.topdata[0].name,
+                                                    campus: widget
+                                                        .topdata[0].department,
+                                                    code: widget
+                                                        .topdata[0].studentId);
+                                              },
+                                            ));
+                                          },
+                                          child: Container(
+                                            width: screenWidth / 4,
+                                            padding: EdgeInsets.only(
+                                                left: fontsz / 2),
+                                            margin: EdgeInsets.only(
+                                              top: fontsz / 4,
+                                              //left: fontsz / 3,
+                                            ),
+                                            decoration: BoxDecoration(
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                      color: Colors.black12,
+                                                      blurRadius: fontsz / 2)
+                                                ],
+                                                borderRadius:
+                                                    const BorderRadius.only(
+                                                        topLeft:
+                                                            Radius.circular(10),
+                                                        bottomLeft:
+                                                            Radius.circular(
+                                                                10)),
+                                                color: Colors.white),
+                                            child: Row(
+                                              children: [
+                                                const Icon(
+                                                  Icons.layers,
+                                                  color: Colors.blue,
+                                                ),
+                                                Column(
+                                                  children: [
+                                                    Text(
+                                                      "关  于",
+                                                      style: TextStyle(
+                                                          fontSize:
+                                                              fontsz * 0.8,
+                                                          color: Colors.blue),
+                                                    ),
+                                                    Text(
+                                                      "    建议与更新    ",
+                                                      style: TextStyle(
+                                                          fontSize:
+                                                              fontsz / 2.2,
+                                                          color: Colors.black
+                                                              .withOpacity(
+                                                                  0.5)),
+                                                    )
+                                                  ],
+                                                )
+                                              ],
+                                            ),
+                                          ),
                                         ),
-                                        Text(
-                                          "定位课表到今天",
-                                          style: TextStyle(
-                                              fontSize: fontsz / 2.2,
-                                              color: Colors.black
-                                                  .withOpacity(0.5)),
-                                        )
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              classstate = !classstate;
+                                            });
+                                          },
+                                          child: Container(
+                                            width: screenWidth / 4,
+                                            padding: EdgeInsets.only(
+                                                left: fontsz / 2),
+                                            margin: EdgeInsets.only(
+                                              top: fontsz / 4,
+                                              //left: fontsz / 3,
+                                            ),
+                                            decoration: BoxDecoration(
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                      color: Colors.black12,
+                                                      blurRadius: fontsz / 2)
+                                                ],
+                                                borderRadius:
+                                                    const BorderRadius.only(
+                                                        topLeft:
+                                                            Radius.circular(10),
+                                                        bottomLeft:
+                                                            Radius.circular(
+                                                                15)),
+                                                color: Colors.white),
+                                            child: Row(
+                                              children: [
+                                                const Icon(
+                                                  Icons.apps,
+                                                  color: Colors.blue,
+                                                ),
+                                                Column(
+                                                  children: [
+                                                    Text(
+                                                      "模  式",
+                                                      style: TextStyle(
+                                                          fontSize:
+                                                              fontsz * 0.8,
+                                                          color: Colors.blue),
+                                                    ),
+                                                    Text(
+                                                      "显示周末或关闭",
+                                                      style: TextStyle(
+                                                          fontSize:
+                                                              fontsz / 2.2,
+                                                          color: Colors.black
+                                                              .withOpacity(
+                                                                  0.5)),
+                                                    )
+                                                  ],
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                        ),
                                       ],
                                     )
-                                  ],
-                                ),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(context, MaterialPageRoute(
-                                  builder: (context) {
-                                    return AutherPage(
-                                        name: widget.topdata[0].name,
-                                        campus: widget.topdata[0].department,
-                                        code: widget.topdata[0].studentId);
-                                  },
-                                ));
-                              },
-                              child: Container(
-                                width: screenWidth / 4,
-                                padding: EdgeInsets.only(left: fontsz / 2),
-                                margin: EdgeInsets.only(
-                                  top: fontsz / 3,
-                                  //left: fontsz / 3,
-                                ),
-                                decoration: BoxDecoration(
-                                    boxShadow: [
-                                      BoxShadow(
-                                          color: Colors.black12,
-                                          blurRadius: fontsz / 2)
-                                    ],
-                                    borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(10),
-                                        bottomLeft: Radius.circular(10)),
-                                    color: Colors.white),
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.layers,
-                                      color: Colors.blue,
-                                    ),
-                                    Column(
-                                      children: [
-                                        Text(
-                                          "关  于",
-                                          style: TextStyle(
-                                              fontSize: fontsz * 0.8,
-                                              color: Colors.blue),
-                                        ),
-                                        Text(
-                                          "    建议与更新    ",
-                                          style: TextStyle(
-                                              fontSize: fontsz / 2.2,
-                                              color: Colors.black
-                                                  .withOpacity(0.5)),
-                                        )
-                                      ],
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  classstate = !classstate;
-                                });
-                              },
-                              child: Container(
-                                width: screenWidth / 4,
-                                padding: EdgeInsets.only(left: fontsz / 2),
-                                margin: EdgeInsets.only(
-                                  top: fontsz / 3,
-                                  //left: fontsz / 3,
-                                ),
-                                decoration: BoxDecoration(
-                                    boxShadow: [
-                                      BoxShadow(
-                                          color: Colors.black12,
-                                          blurRadius: fontsz / 2)
-                                    ],
-                                    borderRadius: BorderRadius.only(
-                                        topLeft: const Radius.circular(10),
-                                        bottomLeft: Radius.circular(fontsz)),
-                                    color: Colors.white),
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.apps,
-                                      color: Colors.blue,
-                                    ),
-                                    Column(
-                                      children: [
-                                        Text(
-                                          "模  式",
-                                          style: TextStyle(
-                                              fontSize: fontsz * 0.8,
-                                              color: Colors.blue),
-                                        ),
-                                        Text(
-                                          "显示周末或关闭",
-                                          style: TextStyle(
-                                              fontSize: fontsz / 2.2,
-                                              color: Colors.black
-                                                  .withOpacity(0.5)),
-                                        )
-                                      ],
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      ]),
+                                  ])));
+                    },
+                  ),
                 ],
               ),
               Positioned(
@@ -2418,7 +2504,7 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
   late List<Map> selectcourselist = [{}];
 
   TextEditingController qrcodect =
-      TextEditingController(text: "同志们喝口水——Grade2.5.0");
+      TextEditingController(text: "我爱上了金牛座—Grade2.5.1");
   GlobalKey globalKey = GlobalKey();
 
   Future<void> _saveQRCode(String data) async {
@@ -2551,7 +2637,7 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
                                           Row(
                                             children: [
                                               Text(
-                                                "\"形式主义\"大学习截图",
+                                                "老年小学习截图",
                                                 style: TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                     color: Colors.white,
@@ -3310,30 +3396,35 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
                                   children: [
                                     Text(
                                       "一些功能的解释",
+                                      textAlign: TextAlign.center,
                                       style: TextStyle(
                                           fontSize: fontsz * 0.65,
                                           color: Colors.grey),
                                     ),
                                     Text(
                                       "备用源：当Teen大学习与当前最新期不匹配时，可尝试使用备用源生成",
+                                      textAlign: TextAlign.center,
                                       style: TextStyle(
                                           fontSize: fontsz * 0.65,
                                           color: Colors.grey),
                                     ),
                                     Text(
                                       "功能暂时关闭：由于功能敏感性等原因而导致功能暂时性停用",
+                                      textAlign: TextAlign.center,
                                       style: TextStyle(
                                           fontSize: fontsz * 0.65,
                                           color: Colors.grey),
                                     ),
                                     Text(
-                                      "关于“一键差评”：Grade2一直是为爱发电的状态,此功能可能会导致学校的反对,此举不利于grade2的生存",
+                                      "“一键差评”：Grade2一直是为爱发电的状态,此功能可能会导致学校的反对,此举不利于grade2的生存",
+                                      textAlign: TextAlign.center,
                                       style: TextStyle(
                                           fontSize: fontsz * 0.65,
                                           color: Colors.grey),
                                     ),
                                     Text(
                                       "大家有好的创意功能想法可以与我联系或反馈\nVX:xiaonaoweisuo003",
+                                      textAlign: TextAlign.center,
                                       style: TextStyle(
                                           fontSize: fontsz * 0.65,
                                           color: Colors.green),
