@@ -4,8 +4,11 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:grade2/rewidget.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:install_plugin/install_plugin.dart';
@@ -557,6 +560,7 @@ class _Auther extends State<AutherPage> {
   String online = "";
   Map rootdata = {};
   bool isonline = false;
+  int caculatelove = 0;
   CounterStorage rootfile = CounterStorage(filename: "data.json");
   @override
   void initState() {
@@ -646,94 +650,72 @@ class _Auther extends State<AutherPage> {
           )),
       body: SingleChildScrollView(
           child: Padding(
-        padding: EdgeInsets.all(statusBarHeight / 2),
+        padding: EdgeInsets.symmetric(horizontal: statusBarHeight / 2),
         child: Column(
           children: [
-            Container(
-                padding: const EdgeInsets.all(2.0),
-                decoration: BoxDecoration(
-                  color: Colors.yellow[800], // 选择黄金色
-                  borderRadius: BorderRadius.circular(5.0),
-                  // boxShadow: [
-                  //   BoxShadow(
-                  //     color: Colors.yellow.withOpacity(0.5), // 添加一点深色投影
-                  //     spreadRadius: 2,
-                  //     blurRadius: 4,
-                  //     offset: const Offset(0, 2),
-                  //   ),
-                  // ],
-                ),
-                child: const Text(
-                  '长江大学武汉校区计算机学会',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15.0,
+            // Container(
+            //     padding: const EdgeInsets.all(2.0),
+            //     decoration: BoxDecoration(
+            //       color: Colors.yellow[800], // 选择黄金色
+            //       borderRadius: BorderRadius.circular(5.0),
+            //       // boxShadow: [
+            //       //   BoxShadow(
+            //       //     color: Colors.yellow.withOpacity(0.5), // 添加一点深色投影
+            //       //     spreadRadius: 2,
+            //       //     blurRadius: 4,
+            //       //     offset: const Offset(0, 2),
+            //       //   ),
+            //       // ],
+            //     ),
+            //     child: const Text(
+            //       '长江大学武汉校区计算机学会',
+            //       style: TextStyle(
+            //         color: Colors.white,
+            //         fontWeight: FontWeight.bold,
+            //         fontSize: 15.0,
+            //       ),
+            //     )),
+            Row(
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 10),
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                      color: Colors.blueAccent,
+                      border: Border.all(
+                        color: Colors.blueAccent,
+                      ),
+                      borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(10),
+                          topRight: Radius.circular(10))),
+                  child: const Text(
+                    "我是开发者",
+                    style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500),
                   ),
-                )),
+                )
+              ],
+            ),
             Container(
-              margin: const EdgeInsets.all(10),
+              margin: const EdgeInsets.only(bottom: 3),
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 214, 214, 214),
-                  borderRadius: BorderRadius.circular(fontsz)),
+                  color: Colors.blueAccent,
+                  border: Border.all(
+                    color: Colors.blueAccent,
+                  ),
+                  borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(5),
+                      bottomRight: Radius.circular(5),
+                      topRight: Radius.circular(15))),
               child: Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(fontsz / 2),
                     clipBehavior: Clip.hardEdge,
-                    width: screenWidth / 5.5,
-                    height: screenWidth / 5.5,
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(screenWidth / 3)),
-                    child: Image.asset(
-                      'assets/data/icon.png',
-                      fit: BoxFit.cover,
-                    ),
-                    // child: Image(image: kWebNumPadMap),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Grade2",
-                        style: TextStyle(fontSize: fontsz, color: Colors.white),
-                      ),
-                      SizedBox(
-                        height: fontsz,
-                      ),
-                      Text(
-                        " v.$versionapp",
-                        style: TextStyle(
-                            fontSize: fontsz / 1.5, color: Colors.white),
-                      ),
-                    ],
-                  ),
-                  const Expanded(child: SizedBox()),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        "小脑萎缩",
-                        style: TextStyle(fontSize: fontsz, color: Colors.white),
-                      ),
-                      Text(
-                        "联系我 ",
-                        style: TextStyle(
-                            fontSize: fontsz / 1.5, color: Colors.white),
-                      ),
-                      Text(
-                        "3517049357",
-                        style: TextStyle(
-                            fontSize: fontsz / 1.5, color: Colors.white),
-                      )
-                    ],
-                  ),
-                  Container(
-                    clipBehavior: Clip.hardEdge,
-                    width: screenWidth / 5.5,
-                    height: screenWidth / 5.5,
+                    width: screenWidth / 6,
+                    height: screenWidth / 6,
                     decoration: BoxDecoration(
                         color: Colors.lightBlueAccent,
                         borderRadius: BorderRadius.circular(screenWidth / 3)),
@@ -742,103 +724,191 @@ class _Auther extends State<AutherPage> {
                     ),
                     // child: Image(image: kWebNumPadMap),
                   ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "小 脑 萎 缩",
+                        style: TextStyle(fontSize: fontsz, color: Colors.white),
+                      ),
+                      Text(
+                        "3517${caculatelove}49357",
+                        style: TextStyle(
+                            fontSize: fontsz / 1.5, color: Colors.black),
+                      ),
+                      Text(
+                        "\"悟已往之不谏知来者之可追\"",
+                        style: TextStyle(
+                            fontSize: fontsz / 1.5, color: Colors.black54),
+                      ),
+                    ],
+                  ),
+                  const Expanded(child: SizedBox()),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        caculatelove += 1;
+                      });
+                    },
+                    onLongPress: () {
+                      if (caculatelove == 5) {
+                        Navigator.push(context, SizeTransitionRe(LOVEPage()));
+                      }
+                    },
+                    child: const Icon(
+                      Icons.tag_faces,
+                      size: 60,
+                      color: Colors.black12,
+                    ),
+                  )
                 ],
               ),
             ),
             Container(
-                margin: const EdgeInsets.all(10),
-                padding: const EdgeInsets.only(left: 3),
-                // decoration: const BoxDecoration(
-                //     border: Border(
-                //         left: BorderSide(
-                //             width: 2,
-                //             color: Color.fromARGB(255, 152, 209, 255)))),
+                margin: const EdgeInsets.only(bottom: 15),
+                padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+                decoration: const BoxDecoration(
+                    color: Colors.greenAccent,
+                    // border: Border.all(
+                    //     width: 2, color: Colors.blue.withOpacity(0.5)),
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(5),
+                        bottomLeft: Radius.circular(15),
+                        topRight: Radius.circular(5),
+                        bottomRight: Radius.circular(15))),
                 child: Column(
-                  children: [
-                    Text(
-                      logtext,
-                      style: const TextStyle(
-                          color: Color.fromARGB(255, 86, 86, 86)),
-                    ),
-                    Align(
-                      alignment: Alignment.bottomRight,
-                      child: Text("_$logdate"),
-                    )
-                  ],
-                )),
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      TextField(
+                        style: const TextStyle(
+                            fontSize: 14, color: Colors.black87),
+                        //cursorHeight: fontsz * 1.1,
+                        controller: advicecontrol,
+                        maxLines: null,
+                        keyboardType: TextInputType.multiline,
+                        decoration: const InputDecoration(
+                          hintText: "点击编辑你的建议或反馈",
+                          hintStyle: TextStyle(color: Colors.black87),
+                          isDense: true,
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          const Expanded(
+                              child: Center(
+                            child: Text(
+                              "Grade有哪些设计不合理之处或bug?",
+                              style: TextStyle(color: Colors.black54),
+                            ),
+                          )),
+                          GestureDetector(
+                            onTap: () {
+                              if (advicecontrol.text != "") {
+                                SenMail(widget.name, widget.campus,
+                                    advicecontrol.text, true, "");
+                                const snackBar = SnackBar(
+                                  content: Text('发送成功'), // 显示的消息文本
+                                  duration: Duration(seconds: 2), // 持续时间，单位为秒
+                                );
+                                if (advicecontrol.text == "2022007915") {
+                                  const snackBar = SnackBar(
+                                    content: Text('恶心的骗子'), // 显示的消息文本
+                                    duration: Duration(seconds: 2), // 持续时间，单位为秒
+                                  );
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(snackBar);
+                                }
+                                if (advicecontrol.text == "2022008048") {
+                                  Fluttertoast.showToast(
+                                      msg: "噢，这是我未来的女朋友",
+                                      toastLength: Toast.LENGTH_SHORT,
+                                      gravity: ToastGravity.CENTER,
+                                      timeInSecForIosWeb: 3,
+                                      backgroundColor: Colors.blue,
+                                      textColor: Colors.white,
+                                      fontSize: 16.0);
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(snackBar);
+                                }
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(snackBar);
+                              } else {
+                                const snackBar = SnackBar(
+                                  content: Text('内容不能为空'), // 显示的消息文本
+                                  duration: Duration(seconds: 2), // 持续时间，单位为秒
+                                );
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(snackBar);
+                              }
+                            },
+                            child: Container(
+                                //margin: EdgeInsets.all(fontsz / 2),
+                                width: fontsz * 4,
+                                height: fontsz * 2,
+                                padding: const EdgeInsets.all(2),
+                                child: Center(
+                                  child: Text(
+                                    "发送反馈",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.normal,
+                                        fontSize: fontsz * 0.8,
+                                        decoration: TextDecoration.none,
+                                        color: Colors.blue),
+                                  ),
+                                )),
+                          ),
+                        ],
+                      )
+                    ])),
             Container(
-              padding: EdgeInsets.only(left: fontsz / 4),
-              decoration: BoxDecoration(
-                  border:
-                      Border.all(width: 2, color: Colors.blue.withOpacity(0.5)),
-                  borderRadius: BorderRadius.circular(fontsz / 1.3)),
-              //height: screenHeight / 8,
-              child: SingleChildScrollView(
-                child: TextField(
-                  cursorHeight: fontsz * 1.1,
-                  controller: advicecontrol,
-                  maxLines: null,
-                  keyboardType: TextInputType.multiline,
-                  decoration: const InputDecoration(
-                    contentPadding: EdgeInsets.all(0),
-                    border: InputBorder.none, // 设置边框为none，即消除边框
-                    hintText: " 编辑问题反馈或功能建议",
+              margin: const EdgeInsets.only(bottom: 3),
+              height: fontsz * 3,
+              padding: EdgeInsets.only(left: fontsz, right: fontsz),
+              decoration: const BoxDecoration(
+                  color: Colors.amber,
+                  borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(15), bottom: Radius.circular(5))),
+              child: Row(
+                children: [
+                  const Text(
+                    "在线模式(Online Mode)",
+                    style: TextStyle(
+                        color: Colors.black54,
+                        height: 2,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600),
                   ),
-                ),
+                  const Expanded(child: SizedBox()),
+                  Switch(
+                      value: isonline,
+                      onChanged: (value) {
+                        setState(() {
+                          isonline = value;
+                        });
+                        rootdata["setting"] = value ? "ON" : "OFF";
+                        rootfile.writeCounter(rootdata).then((value) => null);
+                        debugPrint(rootdata.toString());
+                      })
+                ],
               ),
-            ),
-            GestureDetector(
-              onTap: () {
-                if (advicecontrol.text != "") {
-                  SenMail(
-                      widget.name, widget.campus, advicecontrol.text, true, "");
-                  const snackBar = SnackBar(
-                    content: Text('发送成功'), // 显示的消息文本
-                    duration: Duration(seconds: 2), // 持续时间，单位为秒
-                  );
-                  if (advicecontrol.text == "2022007915") {
-                    const snackBar = SnackBar(
-                      content: Text('恶心的骗子'), // 显示的消息文本
-                      duration: Duration(seconds: 2), // 持续时间，单位为秒
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                  }
-                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                } else {
-                  const snackBar = SnackBar(
-                    content: Text('内容不能为空'), // 显示的消息文本
-                    duration: Duration(seconds: 2), // 持续时间，单位为秒
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                }
-              },
-              child: Container(
-                  margin: EdgeInsets.all(fontsz / 2),
-                  width: fontsz * 8,
-                  height: fontsz * 2,
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(fontsz / 2),
-                  ),
-                  child: Center(
-                    child: Text(
-                      "发送反馈给开发者",
-                      style: TextStyle(
-                          fontWeight: FontWeight.normal,
-                          fontSize: fontsz * 0.8,
-                          decoration: TextDecoration.none,
-                          color: Colors.blue),
-                    ),
-                  )),
             ),
             Container(
                 // width: fontsz * 15,
                 // height: fontsz * 10,
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: const Color.fromARGB(255, 202, 238, 228)),
+                decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(5), bottom: Radius.circular(15)),
+                    color: Color.fromARGB(255, 202, 238, 228)),
                 child: Row(
                   children: [
                     Column(
@@ -851,10 +921,10 @@ class _Auther extends State<AutherPage> {
                           child: Text(
                             " 最新版本:  $versionserive",
                             style: TextStyle(
-                                fontWeight: FontWeight.normal,
+                                fontWeight: FontWeight.w600,
                                 fontSize: fontsz,
                                 decoration: TextDecoration.none,
-                                color: Colors.black.withOpacity(0.7)),
+                                color: Colors.green),
                           ),
                         ),
                         Container(
@@ -864,10 +934,10 @@ class _Auther extends State<AutherPage> {
                           child: Text(
                             " 当前版本:  $versionapp",
                             style: TextStyle(
-                                fontWeight: FontWeight.normal,
+                                fontWeight: FontWeight.w600,
                                 fontSize: fontsz,
                                 decoration: TextDecoration.none,
-                                color: Colors.black.withOpacity(0.7)),
+                                color: Colors.blue),
                           ),
                         ),
                       ],
@@ -908,37 +978,23 @@ class _Auther extends State<AutherPage> {
                           )
                   ],
                 )),
+
             Container(
-              margin: EdgeInsets.only(top: fontsz),
-              height: fontsz * 3,
-              padding: EdgeInsets.only(left: fontsz, right: fontsz),
-              decoration: BoxDecoration(
-                  color: Colors.amber,
-                  borderRadius: BorderRadius.circular(fontsz)),
-              child: Row(
-                children: [
-                  const Text(
-                    "在线模式(Online Mode)",
-                    style: TextStyle(
-                        color: Colors.black54,
-                        height: 2,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600),
-                  ),
-                  const Expanded(child: SizedBox()),
-                  Switch(
-                      value: isonline,
-                      onChanged: (value) {
-                        setState(() {
-                          isonline = value;
-                        });
-                        rootdata["setting"] = value ? "ON" : "OFF";
-                        rootfile.writeCounter(rootdata).then((value) => null);
-                        debugPrint(rootdata.toString());
-                      })
-                ],
-              ),
-            )
+                margin: const EdgeInsets.all(10),
+                padding: const EdgeInsets.only(left: 3),
+                child: Column(
+                  children: [
+                    Text(
+                      logtext,
+                      style: const TextStyle(
+                          color: Color.fromARGB(255, 86, 86, 86)),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Text("_$logdate"),
+                    )
+                  ],
+                )),
           ],
         ),
       )),
@@ -1901,7 +1957,7 @@ class HomoPageState extends State<HomoPage> with TickerProviderStateMixin {
         case "必修":
           pravitesession += 1;
           break;
-        case "选修":
+        case "公选":
           pubulicsession += 1;
           break;
         default:
@@ -1943,6 +1999,7 @@ class HomoPageState extends State<HomoPage> with TickerProviderStateMixin {
         // 禁用返回按钮
         canPop: false,
         child: Scaffold(
+            // backgroundColor: Colors.black.withOpacity(0.01),
             body: AnimatedBuilder(
                 animation: initialanimation,
                 builder: (context, child) {
@@ -1952,79 +2009,19 @@ class HomoPageState extends State<HomoPage> with TickerProviderStateMixin {
                         SizedBox(
                           height: statusBarHeight,
                         ),
-                        // Align(
-                        //   alignment: Alignment.center,
-                        //   child: Container(
-                        //     margin: EdgeInsets.all(fontsz / 3),
-                        //     padding: EdgeInsets.all(fontsz / 3),
-                        //     decoration: const BoxDecoration(
-                        //         borderRadius: BorderRadius.all(Radius.circular(30))),
-                        //     child: Column(
-                        //       children: [
-                        //         Row(
-                        //           children: [
-                        //             Container(
-                        //               margin:
-                        //                   const EdgeInsets.only(left: 5, right: 5),
-                        //               width: 4,
-                        //               height: fontsz * 2,
-                        //               decoration: BoxDecoration(
-                        //                   color: Colors.blue,
-                        //                   borderRadius: BorderRadius.circular(5)),
-                        //             ),
-                        //             Column(
-                        //               crossAxisAlignment: CrossAxisAlignment.start,
-                        //               children: [
-                        //                 Text(
-                        //                   widget.topdata[0].name,
-                        //                   style: TextStyle(
-                        //                       fontSize: fontsz,
-                        //                       fontWeight: FontWeight.bold,
-                        //                       color: Colors.blue),
-                        //                   textAlign: TextAlign.left,
-                        //                 ),
-                        //                 Text(
-                        //                   widget.topdata[0].department,
-                        //                   style: TextStyle(
-                        //                       fontWeight: FontWeight.normal,
-                        //                       fontSize: fontsz * 0.7,
-                        //                       color: Colors.blue),
-                        //                 )
-                        //               ],
-                        //             ),
-                        //             // Row(
-                        //             //   children: [
-                        //             //     widgetshow(
-                        //             //       name: "GPA",
-                        //             //       value: widget.topdata[0].gpa,
-                        //             //       fill: 10,
-                        //             //       size: fontsz,
-                        //             //     ),
-                        //             //     widgetshow(
-                        //             //       name: "Credits",
-                        //             //       value: widget.topdata[0].earnedCredits,
-                        //             //       fill: widget.topdata[0].requiredCredits,
-                        //             //       size: fontsz,
-                        //             //     )
-                        //             //   ],
-                        //             // ),
-                        //           ],
-                        //         ),
-                        //         // Text(
-                        //         //   "培养计划预览",
-                        //         //   style: TextStyle(
-                        //         //       color: Colors.blue, fontSize: fontsz * 0.8),
-                        //         // ),
-                        //         // ContributionGraph(
-                        //         //   activityData: datalist,
-                        //         //   size: fontsz / 10,
-                        //         // ),
-                        //       ],
-                        //     ),
-                        //   ),
-                        // ),
-                        SizedBox(
-                            height: fontsz * 6,
+                        Container(
+                            // margin: EdgeInsets.symmetric(horizontal: 10),
+                            decoration: const BoxDecoration(
+                                color: Colors.white,
+                                border: Border.symmetric(
+                                    horizontal: BorderSide(
+                                        color: Colors.black, width: 0.5))
+                                // boxShadow: [
+                                //   BoxShadow(
+                                //       color: Colors.black12, blurRadius: 20)
+                                // ]
+                                ),
+                            height: fontsz * 5,
                             child: Row(
                               children: [
                                 SizedBox(
@@ -2032,23 +2029,25 @@ class HomoPageState extends State<HomoPage> with TickerProviderStateMixin {
                                   child: Column(
                                     children: [
                                       SizedBox(
-                                          height: fontsz * 2,
+                                          height: fontsz,
                                           child: const Center(
                                               child: Text(
                                             "门        数",
                                             style: TextStyle(
                                                 color: Colors.black54),
                                           ))),
+                                      SizedBox(height: fontsz - 1),
                                       SizedBox(
-                                          height: fontsz * 2,
+                                          height: fontsz,
                                           child: const Center(
                                               child: Text(
                                             "总  学  分",
                                             style: TextStyle(
                                                 color: Colors.black54),
                                           ))),
+                                      SizedBox(height: fontsz - 1),
                                       SizedBox(
-                                          height: fontsz * 2,
+                                          height: fontsz,
                                           child: const Center(
                                               child: Text(
                                             "平均绩点",
@@ -2078,17 +2077,19 @@ class HomoPageState extends State<HomoPage> with TickerProviderStateMixin {
                                         child: Column(
                                           children: [
                                             SizedBox(
-                                                height: fontsz * 2,
+                                                height: fontsz,
                                                 child: Center(
                                                     child: Text(
                                                         "${widget.allgradelist[0][index].number}"))),
+                                            SizedBox(height: fontsz - 1),
                                             SizedBox(
-                                                height: fontsz * 2,
+                                                height: fontsz,
                                                 child: Center(
                                                     child: Text(
                                                         "${widget.allgradelist[0][index].totalgrade}"))),
+                                            SizedBox(height: fontsz - 1),
                                             SizedBox(
-                                                height: fontsz * 2,
+                                                height: fontsz,
                                                 child: Center(
                                                     child: Text(
                                                         "${widget.allgradelist[0][index].averangegrade}"))),
@@ -2115,12 +2116,6 @@ class HomoPageState extends State<HomoPage> with TickerProviderStateMixin {
                           // padding: EdgeInsets.all(5),
                           margin: const EdgeInsets.all(5),
                           height: fontsz * 2,
-                          //width: screenWidth * 0.7,
-                          // decoration: const BoxDecoration(
-                          //     color: Colors.blue,
-                          //     borderRadius: BorderRadius.only(
-                          //         topLeft: Radius.circular(8),
-                          //         topRight: Radius.circular(8))),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -2138,22 +2133,34 @@ class HomoPageState extends State<HomoPage> with TickerProviderStateMixin {
                                         CrossAxisAlignment.center,
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
+                                      Container(
+                                        width: 10,
+                                        height: 10,
+                                        color: const Color.fromARGB(
+                                            255, 224, 78, 68),
+                                      ),
                                       Text(
-                                        "公选:$pubulicsession  |  ",
+                                        "公选:$pubulicsession  ",
                                         style: const TextStyle(
                                             color: Colors.white),
                                       ),
-                                      // SizedBox(
-                                      //   width: fontsz,
-                                      // ),
+                                      Container(
+                                        width: 10,
+                                        height: 10,
+                                        color: const Color.fromARGB(
+                                            255, 222, 213, 47),
+                                      ),
                                       Text(
-                                        "必修:$pravitesession  |  ",
+                                        "必修:$pravitesession  ",
                                         style: const TextStyle(
                                             color: Colors.white),
                                       ),
-                                      // SizedBox(
-                                      //   width: fontsz,
-                                      // ),
+                                      Container(
+                                        width: 10,
+                                        height: 10,
+                                        color: const Color.fromARGB(
+                                            255, 68, 164, 224),
+                                      ),
                                       Text(
                                         "其它:$othersession",
                                         style: const TextStyle(
@@ -2194,317 +2201,480 @@ class HomoPageState extends State<HomoPage> with TickerProviderStateMixin {
                           ),
                         ),
                         Expanded(
-                            child: Container(
-                                decoration: const BoxDecoration(
-                                    border: Border(
-                                        top: BorderSide(
-                                            width: 3, color: Colors.blue))),
-                                // width: screenWidth * 0.95,
-                                // height: screenHeight * 0.5,
-                                child: PageView(
-                                  controller: homopagectl,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  children: [
-                                    widget.otherdata.length == 0
-                                        ? Column(
-                                            children: [
-                                              SizedBox(
-                                                height: fontsz * 3,
-                                              ),
-                                              SizedBox(
-                                                height: screenWidth * 0.6,
-                                                width: screenWidth,
-                                                child: Image.asset(
-                                                    'assets/data/icon.png'),
-                                              ),
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.all(3),
-                                                decoration: BoxDecoration(
-                                                    color: const Color.fromARGB(
-                                                        255, 194, 194, 194),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            fontsz / 4)),
-                                                child: Text(
-                                                  "本学期暂无考试成绩",
-                                                  style: TextStyle(
-                                                      fontSize: fontsz,
-                                                      color: Colors.white,
-                                                      height: 1),
-                                                ),
-                                              )
-                                            ],
-                                          )
-                                        : SubjectCreditsList(
-                                            courseList: widget.otherdata,
-                                            size: fontsz,
+                            child: PageView(
+                          controller: homopagectl,
+                          physics: const NeverScrollableScrollPhysics(),
+                          children: [
+                            widget.otherdata.length == 0
+                                ? Column(children: [
+                                    SizedBox(
+                                      height: fontsz * 3,
+                                    ),
+                                    SizedBox(
+                                      height: screenWidth * 0.6,
+                                      width: screenWidth,
+                                      child:
+                                          Image.asset('assets/data/icon.png'),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.all(3),
+                                      decoration: BoxDecoration(
+                                          color: const Color.fromARGB(
+                                              255, 194, 194, 194),
+                                          borderRadius: BorderRadius.circular(
+                                              fontsz / 4)),
+                                      child: Text(
+                                        "本学期暂无考试成绩",
+                                        style: TextStyle(
+                                            fontSize: fontsz,
+                                            color: Colors.white,
+                                            height: 1),
+                                      ),
+                                    ),
+                                    RichText(
+                                      text: TextSpan(children: [
+                                        const TextSpan(
+                                          text: "请前往",
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.grey),
+                                        ),
+                                        TextSpan(
+                                          text: "\"关于\"",
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () {
+                                              Navigator.push(context,
+                                                  MaterialPageRoute(
+                                                builder: (context) {
+                                                  return const AutherPage(
+                                                      name: "关于跳转",
+                                                      campus: "none",
+                                                      code: "5201314");
+                                                },
+                                              ));
+                                            },
+                                          style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.blueAccent),
+                                        ),
+                                        const TextSpan(
+                                          text: "检查并开启\"在线模式\"",
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.grey),
+                                        )
+                                      ]),
+                                    )
+                                  ])
+                                : SubjectCreditsList(
+                                    courseList: widget.otherdata,
+                                    size: fontsz,
+                                  ),
+                            Container(
+                              margin: const EdgeInsets.only(
+                                  left: 20, right: 20, top: 10),
+                              decoration: BoxDecoration(
+                                color: const Color.fromARGB(255, 228, 226, 226),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Column(
+                                children: [
+                                  SizedBox(
+                                    height: fontsz * 2,
+                                    //margin: EdgeInsets.only(),
+                                    child: Row(
+                                      children: [
+                                        SizedBox(
+                                          width: (screenWidth - 40) * 0.1,
+                                          child: const Center(
+                                              child: Icon(
+                                            Icons.local_offer,
+                                            color: Colors.black54,
+                                            size: 18,
+                                          )),
+                                        ),
+                                        SizedBox(
+                                          width: (screenWidth - 40) * 0.45,
+                                          child: const Center(
+                                            child: Text(
+                                              "课程",
+                                              style: TextStyle(
+                                                  color: Colors.black54,
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w600),
+                                            ),
                                           ),
-                                    MediaQuery.removePadding(
-                                        context: context,
-                                        removeTop: true,
-                                        child: Scrollbar(
-                                          child: ListView.builder(
-                                            itemCount:
-                                                widget.allgradelist[1].length,
-                                            itemBuilder: (context, index) {
-                                              return Container(
-                                                padding:
-                                                    const EdgeInsets.all(3),
-                                                margin:
-                                                    const EdgeInsets.fromLTRB(
-                                                        5, 5, 5, 0),
-                                                decoration: const BoxDecoration(
-                                                    //color: Colors.white,
-                                                    border: Border(
-                                                        bottom: BorderSide(
-                                                            width: 1,
-                                                            color: Colors
-                                                                .black12))),
-                                                height: fontsz * 3,
-                                                child: Row(
-                                                  children: [
-                                                    SizedBox(
-                                                      width: fontsz * 0.7,
-                                                    ),
-                                                    SizedBox(
-                                                      width: screenWidth * 0.6,
-                                                      child: Column(
-                                                        children: [
-                                                          Row(
-                                                            children: [
-                                                              Text(
-                                                                widget
-                                                                    .allgradelist[
-                                                                        1]
-                                                                        [index]
-                                                                    .courseName,
-                                                                maxLines: 1,
-                                                                style: TextStyle(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    fontSize:
-                                                                        fontsz,
-                                                                    color: Colors
-                                                                        .black
-                                                                        .withOpacity(
-                                                                            0.7),
-                                                                    height:
-                                                                        1.2),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          const Expanded(
-                                                              child:
-                                                                  SizedBox()),
-                                                          Row(
-                                                            children: [
-                                                              Text("类别:",
-                                                                  style: TextStyle(
-                                                                      color: Colors
-                                                                          .black54,
-                                                                      fontSize:
-                                                                          fontsz *
-                                                                              0.7,
-                                                                      height:
-                                                                          1)),
-                                                              Text(
-                                                                  "${widget.allgradelist[1][index].courseType}",
-                                                                  style: TextStyle(
-                                                                      fontSize:
-                                                                          fontsz *
-                                                                              0.7,
-                                                                      height:
-                                                                          1)),
-                                                              Text(
-                                                                "  序号:",
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .black54,
-                                                                    fontSize:
-                                                                        fontsz *
-                                                                            0.7,
-                                                                    height: 1),
-                                                              ),
-                                                              Text(
-                                                                "${widget.allgradelist[1][index].courseNum}",
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        fontsz *
-                                                                            0.7,
-                                                                    height: 1),
-                                                              ),
-                                                              Text(
-                                                                "  绩点:",
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .black54,
-                                                                    fontSize:
-                                                                        fontsz *
-                                                                            0.7,
-                                                                    height: 1),
-                                                              ),
-                                                              Text(
-                                                                " ${widget.allgradelist[1][index].gradePoint}",
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .blue,
-                                                                    fontSize:
-                                                                        fontsz *
-                                                                            0.9,
-                                                                    height: 1),
-                                                              )
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    Row(
-                                                      children: [
-                                                        Column(
+                                        ),
+                                        SizedBox(
+                                          width: (screenWidth - 40) * 0.15,
+                                          child: const Center(
+                                            child: Text(
+                                              "绩点",
+                                              style: TextStyle(
+                                                  color: Colors.black54,
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w600),
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: (screenWidth - 40) * 0.15,
+                                          child: const Center(
+                                            child: Text(
+                                              "学分",
+                                              style: TextStyle(
+                                                  color: Colors.black54,
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w600),
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: (screenWidth - 40) * 0.15,
+                                          child: const Center(
+                                            child: Text("最终",
+                                                style: TextStyle(
+                                                    color: Colors.black54,
+                                                    fontSize: 15,
+                                                    fontWeight:
+                                                        FontWeight.w600)),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                  Expanded(
+                                      child: MediaQuery.removePadding(
+                                          context: context,
+                                          removeTop: true,
+                                          removeBottom: true,
+                                          child: Scrollbar(
+                                            child: ListView.builder(
+                                              itemCount:
+                                                  widget.allgradelist[1].length,
+                                              itemBuilder: (context, index) {
+                                                return SizedBox(
+                                                  height: fontsz * 2,
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:
+                                                            (screenWidth - 40),
+                                                        child: Row(
                                                           children: [
-                                                            Row(
-                                                              children: [
-                                                                SizedBox(
-                                                                  height:
-                                                                      fontsz,
-                                                                  child: Text(
-                                                                    "  学分:",
-                                                                    style: TextStyle(
-                                                                        color: Colors
-                                                                            .black54,
-                                                                        fontSize:
-                                                                            fontsz *
-                                                                                0.7,
-                                                                        height:
-                                                                            1),
-                                                                  ),
+                                                            SizedBox(
+                                                              width:
+                                                                  (screenWidth -
+                                                                          40) *
+                                                                      0.1,
+                                                              child: Center(
+                                                                child:
+                                                                    Container(
+                                                                  width: 10,
+                                                                  height: 10,
+                                                                  color: widget
+                                                                              .allgradelist[1][
+                                                                                  index]
+                                                                              .courseType ==
+                                                                          "必修"
+                                                                      ? const Color
+                                                                          .fromARGB(
+                                                                          255,
+                                                                          222,
+                                                                          213,
+                                                                          47)
+                                                                      : widget.allgradelist[1][index].courseType ==
+                                                                              "公选"
+                                                                          ? const Color
+                                                                              .fromARGB(
+                                                                              255,
+                                                                              224,
+                                                                              78,
+                                                                              68)
+                                                                          : const Color
+                                                                              .fromARGB(
+                                                                              255,
+                                                                              68,
+                                                                              164,
+                                                                              224),
                                                                 ),
-                                                                SizedBox(
-                                                                    height:
-                                                                        fontsz,
-                                                                    child: Text(
-                                                                      " ${widget.allgradelist[1][index].credit}",
-                                                                      style: TextStyle(
-                                                                          color: Colors
-                                                                              .blue,
-                                                                          fontSize: fontsz *
-                                                                              0.8,
-                                                                          height:
-                                                                              1),
-                                                                    ))
-                                                              ],
+                                                              ),
                                                             ),
-                                                            Row(
-                                                              children: [
-                                                                SizedBox(
-                                                                    height:
-                                                                        fontsz,
-                                                                    child: Text(
-                                                                      "  补考:",
-                                                                      style: TextStyle(
-                                                                          color: Colors
-                                                                              .black54,
-                                                                          fontSize: fontsz *
-                                                                              0.7,
-                                                                          height:
-                                                                              1),
-                                                                    )),
-                                                                SizedBox(
-                                                                    height:
-                                                                        fontsz,
-                                                                    child: Text(
-                                                                      " ${widget.allgradelist[1][index].reexamScore}",
-                                                                      style: TextStyle(
-                                                                          color: Colors
-                                                                              .blue,
-                                                                          fontSize: fontsz *
-                                                                              0.8,
-                                                                          height:
-                                                                              1),
-                                                                    ))
-                                                              ],
+                                                            SizedBox(
+                                                                width:
+                                                                    (screenWidth -
+                                                                            40) *
+                                                                        0.45,
+                                                                child: Center(
+                                                                  child: Text(
+                                                                    widget
+                                                                        .allgradelist[
+                                                                            1][
+                                                                            index]
+                                                                        .courseName,
+                                                                    maxLines: 1,
+                                                                    style: TextStyle(
+                                                                        fontWeight:
+                                                                            FontWeight
+                                                                                .w600,
+                                                                        fontSize:
+                                                                            14,
+                                                                        color: Colors
+                                                                            .black
+                                                                            .withOpacity(
+                                                                                0.7),
+                                                                        height:
+                                                                            1.2),
+                                                                  ),
+                                                                )),
+                                                            SizedBox(
+                                                              width:
+                                                                  (screenWidth -
+                                                                          40) *
+                                                                      0.15,
+                                                              child: Center(
+                                                                child: Text(
+                                                                  "${widget.allgradelist[1][index].gradePoint}",
+                                                                  style: const TextStyle(
+                                                                      fontSize:
+                                                                          15,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w600,
+                                                                      color: Colors
+                                                                          .black54),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            SizedBox(
+                                                              width:
+                                                                  (screenWidth -
+                                                                          40) *
+                                                                      0.15,
+                                                              child: Center(
+                                                                child: Text(
+                                                                  "${widget.allgradelist[1][index].credit}",
+                                                                  style: const TextStyle(
+                                                                      fontSize:
+                                                                          15,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w600,
+                                                                      color: Colors
+                                                                          .black54),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            SizedBox(
+                                                              width:
+                                                                  (screenWidth -
+                                                                          40) *
+                                                                      0.15,
+                                                              child: Center(
+                                                                child: Text(
+                                                                  "${widget.allgradelist[1][index].finalScore}",
+                                                                  style: const TextStyle(
+                                                                      fontSize:
+                                                                          15,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w600,
+                                                                      color: Colors
+                                                                          .black54),
+                                                                ),
+                                                              ),
                                                             )
                                                           ],
                                                         ),
-                                                        Column(
-                                                          children: [
-                                                            Row(
-                                                              children: [
-                                                                SizedBox(
-                                                                    height:
-                                                                        fontsz,
-                                                                    child: Text(
-                                                                      "  总评:",
-                                                                      style: TextStyle(
-                                                                          color: Colors
-                                                                              .black54,
-                                                                          fontSize: fontsz *
-                                                                              0.7,
-                                                                          height:
-                                                                              1),
-                                                                    )),
-                                                                SizedBox(
-                                                                    height:
-                                                                        fontsz,
-                                                                    child: Text(
-                                                                      " ${widget.allgradelist[1][index].totalScore}",
-                                                                      style: TextStyle(
-                                                                          color: Colors
-                                                                              .blue,
-                                                                          fontSize: fontsz *
-                                                                              0.8,
-                                                                          height:
-                                                                              1),
-                                                                    ))
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: [
-                                                                SizedBox(
-                                                                    height:
-                                                                        fontsz,
-                                                                    child: Text(
-                                                                      "  最终:",
-                                                                      style: TextStyle(
-                                                                          color: Colors
-                                                                              .black54,
-                                                                          fontSize: fontsz *
-                                                                              0.7,
-                                                                          height:
-                                                                              1),
-                                                                    )),
-                                                                SizedBox(
-                                                                    height:
-                                                                        fontsz,
-                                                                    child: Text(
-                                                                      " ${widget.allgradelist[1][index].finalScore}",
-                                                                      style: TextStyle(
-                                                                          color: Colors
-                                                                              .blue,
-                                                                          fontSize: fontsz *
-                                                                              0.8,
-                                                                          height:
-                                                                              1),
-                                                                    ))
-                                                              ],
-                                                            )
-                                                          ],
-                                                        )
-                                                      ],
-                                                    )
-                                                  ],
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ))
-                                  ],
-                                )))
+                                                        // Row(
+                                                        //   children: [
+                                                        //     // Text(
+                                                        //     //     "类别:",
+                                                        //     //     style: TextStyle(
+                                                        //     //         color: Colors.black54,
+                                                        //     //         fontSize: fontsz * 0.7,
+                                                        //     //         height: 1)),
+                                                        //     // Text(
+                                                        //     //     "${widget.allgradelist[1][index].courseType}",
+                                                        //     //     style: TextStyle(
+                                                        //     //         fontSize: fontsz * 0.7,
+                                                        //     //         height: 1)),
+                                                        //     // Text(
+                                                        //     //   "  序号:",
+                                                        //     //   style: TextStyle(
+                                                        //     //       color: Colors
+                                                        //     //           .black54,
+                                                        //     //       fontSize: fontsz *
+                                                        //     //           0.7,
+                                                        //     //       height:
+                                                        //     //           1),
+                                                        //     // ),
+                                                        //     // Text(
+                                                        //     //   "${widget.allgradelist[1][index].courseNum}",
+                                                        //     //   style: TextStyle(
+                                                        //     //       fontSize: fontsz *
+                                                        //     //           0.7,
+                                                        //     //       height:
+                                                        //     //           1),
+                                                        //     // ),
+                                                        //     Text(
+                                                        //       "  绩点:",
+                                                        //       style: TextStyle(
+                                                        //           color: Colors
+                                                        //               .black54,
+                                                        //           fontSize: fontsz *
+                                                        //               0.7,
+                                                        //           height:
+                                                        //               1),
+                                                        //     ),
+                                                        //     Text(
+                                                        //       " ${widget.allgradelist[1][index].gradePoint}",
+                                                        //       style: TextStyle(
+                                                        //           color: Colors
+                                                        //               .blue,
+                                                        //           fontSize: fontsz *
+                                                        //               0.9,
+                                                        //           height:
+                                                        //               1),
+                                                        //     )
+                                                        //   ],
+                                                        // ),
+                                                      ),
+                                                      // Row(
+                                                      //   children: [
+                                                      //     Column(
+                                                      //       children: [
+                                                      //         Row(
+                                                      //           children: [
+                                                      //             SizedBox(
+                                                      //               height:
+                                                      //                   fontsz,
+                                                      //               child:
+                                                      //                   Text(
+                                                      //                 "  学分:",
+                                                      //                 style: TextStyle(
+                                                      //                     color: Colors.black54,
+                                                      //                     fontSize: fontsz * 0.7,
+                                                      //                     height: 1),
+                                                      //               ),
+                                                      //             ),
+                                                      //             SizedBox(
+                                                      //                 height:
+                                                      //                     fontsz,
+                                                      //                 child:
+                                                      //                     Text(
+                                                      //                   " ${widget.allgradelist[1][index].credit}",
+                                                      //                   style: TextStyle(color: Colors.blue, fontSize: fontsz * 0.8, height: 1),
+                                                      //                 ))
+                                                      //           ],
+                                                      //         ),
+                                                      //         Row(
+                                                      //           children: [
+                                                      //             SizedBox(
+                                                      //                 height:
+                                                      //                     fontsz,
+                                                      //                 child:
+                                                      //                     Text(
+                                                      //                   "  补考:",
+                                                      //                   style: TextStyle(color: Colors.black54, fontSize: fontsz * 0.7, height: 1),
+                                                      //                 )),
+                                                      //             SizedBox(
+                                                      //                 height:
+                                                      //                     fontsz,
+                                                      //                 child:
+                                                      //                     Text(
+                                                      //                   " ${widget.allgradelist[1][index].reexamScore}",
+                                                      //                   style: TextStyle(color: Colors.blue, fontSize: fontsz * 0.8, height: 1),
+                                                      //                 ))
+                                                      //           ],
+                                                      //         )
+                                                      //       ],
+                                                      //     ),
+                                                      //     Column(
+                                                      //       children: [
+                                                      //         Row(
+                                                      //           children: [
+                                                      //             SizedBox(
+                                                      //                 height:
+                                                      //                     fontsz,
+                                                      //                 child:
+                                                      //                     Text(
+                                                      //                   "  总评:",
+                                                      //                   style: TextStyle(color: Colors.black54, fontSize: fontsz * 0.7, height: 1),
+                                                      //                 )),
+                                                      //             SizedBox(
+                                                      //                 height:
+                                                      //                     fontsz,
+                                                      //                 child:
+                                                      //                     Text(
+                                                      //                   " ${widget.allgradelist[1][index].totalScore}",
+                                                      //                   style: TextStyle(color: Colors.blue, fontSize: fontsz * 0.8, height: 1),
+                                                      //                 ))
+                                                      //           ],
+                                                      //         ),
+                                                      //         Row(
+                                                      //           children: [
+                                                      //             SizedBox(
+                                                      //                 height:
+                                                      //                     fontsz,
+                                                      //                 child:
+                                                      //                     Text(
+                                                      //                   "  最终:",
+                                                      //                   style: TextStyle(color: Colors.black54, fontSize: fontsz * 0.7, height: 1),
+                                                      //                 )),
+                                                      //             SizedBox(
+                                                      //                 height:
+                                                      //                     fontsz,
+                                                      //                 child:
+                                                      //                     Text(
+                                                      //                   " ${widget.allgradelist[1][index].finalScore}",
+                                                      //                   style: TextStyle(color: Colors.blue, fontSize: fontsz * 0.8, height: 1),
+                                                      //                 ))
+                                                      //           ],
+                                                      //         )
+                                                      //       ],
+                                                      //     )
+                                                      //   ],
+                                                      // )
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          )))
+                                ],
+                              ),
+                            )
+                          ],
+                        ))
                       ],
                     ),
                   ]);
                 })));
+  }
+}
+
+class LOVEPage extends StatelessWidget {
+  const LOVEPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text('2024-6-6'),
+        systemOverlayStyle: SystemUiOverlayStyle.light,
+      ),
+      body: AnimCard(
+        Color(0xffFF6594),
+        '',
+        '',
+        '',
+      ),
+    );
   }
 }

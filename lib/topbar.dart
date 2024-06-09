@@ -3,11 +3,13 @@
 import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pickers/style/default_style.dart';
 import 'package:flutter_pickers/time_picker/model/pduration.dart';
 import 'package:flutter_pickers/time_picker/model/suffix.dart';
+import 'package:grade2/tree/pages.dart';
 import 'function.dart';
 import 'package:flutter_pickers/pickers.dart';
 import 'package:flutter_pickers/time_picker/model/date_mode.dart';
@@ -525,13 +527,13 @@ class CalendarPagestate extends State<CalendarPage> {
                                                   textAlign: TextAlign.left,
                                                   style: TextStyle(
                                                       fontSize:
-                                                          widget.iteh / 12,
+                                                          widget.iteh / 13,
                                                       color:
                                                           const Color.fromARGB(
                                                               255,
-                                                              80,
-                                                              80,
-                                                              80))),
+                                                              110,
+                                                              109,
+                                                              109))),
                                             )
                                           ],
                                         ),
@@ -540,7 +542,7 @@ class CalendarPagestate extends State<CalendarPage> {
                                     Text(
                                       data[index].teacherName,
                                       style: TextStyle(
-                                          fontSize: widget.iteh / 10,
+                                          fontSize: widget.iteh / 11,
                                           color: const Color.fromARGB(
                                               255, 83, 83, 83)),
                                     ),
@@ -813,15 +815,52 @@ class ExamList extends StatelessWidget {
       Align(
         alignment: Alignment.centerLeft,
         child: Padding(
-          padding: EdgeInsets.all(fontsz),
-          child: Text(
-            "考试安排",
-            style: TextStyle(
-                fontSize: fontsz,
-                fontWeight: FontWeight.w700,
-                color: Colors.blue),
-          ),
-        ),
+            padding: EdgeInsets.all(fontsz),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  "考试安排 ",
+                  style: TextStyle(
+                      fontSize: fontsz,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.blue),
+                ),
+                RichText(
+                    text: TextSpan(children: [
+                  const TextSpan(
+                    text: "请在考试期间前往",
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey),
+                  ),
+                  TextSpan(
+                    text: "\"关于\"",
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        Navigator.push(context, MaterialPageRoute(
+                          builder: (context) {
+                            return const AutherPage(
+                                name: "关于跳转", campus: "none", code: "5201314");
+                          },
+                        ));
+                      },
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.blueAccent),
+                  ),
+                  const TextSpan(
+                    text: "关闭离线模式",
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey),
+                  )
+                ]))
+              ],
+            )),
       ),
       Expanded(
           child: SizedBox(
@@ -941,7 +980,6 @@ class ExamList extends StatelessWidget {
                                                   ? Colors.blue.withOpacity(0.5)
                                                   : Colors.blue,
                                               //fontWeight: FontWeight.w800,
-
                                               fontSize: fontsz * 1.5,
                                               fontWeight: FontWeight.bold)),
                                       Icon(
@@ -960,7 +998,7 @@ class ExamList extends StatelessWidget {
                                   ),
                                   Container(
                                     padding:
-                                        const EdgeInsets.fromLTRB(3, 0, 3, 0),
+                                        const EdgeInsets.fromLTRB(4, 2, 4, 2),
                                     decoration: BoxDecoration(
                                         color: data.ispass
                                             ? Colors.black.withOpacity(0.3)
@@ -968,10 +1006,10 @@ class ExamList extends StatelessWidget {
                                         borderRadius: BorderRadius.circular(3)),
                                     child: Text(
                                       data.examRoom,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           //backgroundColor: Colors.black,
                                           color: Colors.white,
-                                          fontSize: fontsz / 1.2,
+                                          fontSize: 13,
                                           fontWeight: FontWeight.w600),
                                     ),
                                   )

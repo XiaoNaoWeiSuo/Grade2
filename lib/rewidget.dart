@@ -329,3 +329,147 @@ class _PolygonalPainter extends CustomPainter {
     return false;
   }
 }
+
+class SizeTransitionRe extends PageRouteBuilder {
+  final Widget page;
+
+  SizeTransitionRe(this.page)
+      : super(
+          pageBuilder: (context, animation, anotherAnimation) => page,
+          transitionDuration: const Duration(milliseconds: 1000),
+          reverseTransitionDuration: const Duration(milliseconds: 200),
+          transitionsBuilder: (context, animation, anotherAnimation, child) {
+            animation = CurvedAnimation(
+                curve: Curves.fastLinearToSlowEaseIn,
+                parent: animation,
+                reverseCurve: Curves.fastOutSlowIn);
+            return Align(
+              alignment: Alignment.bottomCenter,
+              child: SizeTransition(
+                sizeFactor: animation,
+                child: page,
+                axisAlignment: 0,
+              ),
+            );
+          },
+        );
+}
+
+class AnimCard extends StatefulWidget {
+  final Color color;
+  final String num;
+  final String numEng;
+  final String content;
+
+  const AnimCard(this.color, this.num, this.numEng, this.content);
+
+  @override
+  _AnimCardState createState() => _AnimCardState();
+}
+
+class _AnimCardState extends State<AnimCard> {
+  var padding = 150.0;
+  var bottomPadding = 0.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        AnimatedPadding(
+          padding: EdgeInsets.only(top: padding, bottom: bottomPadding),
+          duration: const Duration(milliseconds: 1000),
+          curve: Curves.fastLinearToSlowEaseIn,
+          child: CardItem(
+            widget.color,
+            widget.num,
+            widget.numEng,
+            widget.content,
+            () {
+              setState(() {
+                padding = padding == 0 ? 150.0 : 0.0;
+                bottomPadding = bottomPadding == 0 ? 150 : 0.0;
+              });
+            },
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Container(
+            margin: EdgeInsets.only(right: 20, left: 20, top: 200),
+            height: 180,
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 30)
+              ],
+              color: Colors.grey.shade200.withOpacity(1.0),
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+            ),
+            child: Center(
+                child: Icon(Icons.favorite,
+                    color: Color(0xffFF6594).withOpacity(1.0), size: 70)),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class CardItem extends StatelessWidget {
+  final Color color;
+  final String num;
+  final String numEng;
+  final String content;
+  final onTap;
+
+  CardItem(this.color, this.num, this.numEng, this.content, this.onTap);
+
+  @override
+  Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    return GestureDetector(
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 25),
+        height: 220,
+        width: width,
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+                color: Color(0xffFF6594).withOpacity(0.2), blurRadius: 25),
+          ],
+          color: color.withOpacity(1.0),
+          borderRadius: BorderRadius.all(
+            Radius.circular(30),
+          ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(15.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'Tap it',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Text(
+                '   我们还在冷战呢，不想说话。',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      onTap: onTap,
+    );
+  }
+}

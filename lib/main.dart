@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'dart:ui';
 import 'package:dio/dio.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import "package:flutter/services.dart";
 
@@ -1943,8 +1944,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                                 color: Colors.white,
                                                 shadows: const [
                                                   BoxShadow(
-                                                      color: Colors.black12,
-                                                      blurRadius: 20)
+                                                      color: Colors.black26,
+                                                      blurRadius: 25,
+                                                      offset: Offset(0, 10))
                                                 ],
                                                 fontWeight: FontWeight.w800),
                                           ),
@@ -2067,7 +2069,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                           children: [
                                             const Center(
                                               child: Text(
-                                                "↑账号列表\n点击切换♉\n♌长按删除\n添+账号↓",
+                                                "↑账号列表\n点击切换\n长按删除\n添加账号↓",
                                                 style: TextStyle(
                                                     color: Colors.black45),
                                               ),
@@ -2152,7 +2154,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                             )
                                           ],
                                         )),
-
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2450,6 +2451,42 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                           style: TextStyle(
                               fontSize: fontsz, color: Colors.white, height: 1),
                         ),
+                      ),
+                      RichText(
+                        text: TextSpan(children: [
+                          const TextSpan(
+                            text: "请前往",
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey),
+                          ),
+                          TextSpan(
+                            text: "\"关于\"",
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.push(context, MaterialPageRoute(
+                                  builder: (context) {
+                                    return const AutherPage(
+                                        name: "关于跳转",
+                                        campus: "none",
+                                        code: "5201314");
+                                  },
+                                ));
+                              },
+                            style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.blueAccent),
+                          ),
+                          const TextSpan(
+                            text: "检查并开启\"在线模式\"",
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey),
+                          )
+                        ]),
                       )
                     ],
                   )
@@ -2503,8 +2540,9 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
 
   late List<Map> selectcourselist = [{}];
 
-  TextEditingController qrcodect =
-      TextEditingController(text: "我爱上了金牛座—Grade2.5.1");
+  TextEditingController qrcodect = TextEditingController(
+      text:
+          "while you looking for a relationship, you have to ask yourself what you want,what you will gain.");
   GlobalKey globalKey = GlobalKey();
 
   Future<void> _saveQRCode(String data) async {
