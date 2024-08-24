@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, must_be_immutable, library_private_types_in_public_api, prefer_typing_uninitialized_variables
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'dart:ui';
@@ -7,6 +8,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import "package:flutter/services.dart";
+import 'package:grade2/rewidget.dart';
+//import 'package:flutter_markdown/flutter_markdown.dart';
+//import 'package:flutter_svg/flutter_svg.dart';
+import 'package:grade2/tree/chat.dart';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -16,8 +21,9 @@ import "package:flutter/material.dart";
 import 'package:intl/intl.dart';
 
 import 'package:install_plugin/install_plugin.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import "login.dart";
 import "topbar.dart";
@@ -61,6 +67,8 @@ class MyApp extends StatelessWidget {
 }
 
 class Loadpage extends StatefulWidget {
+  const Loadpage({super.key});
+
   @override
   State<StatefulWidget> createState() => LoadpageState();
 }
@@ -131,9 +139,6 @@ class LoadpageState extends State<Loadpage> with TickerProviderStateMixin {
                 // 从文件读取 rootData
                 CounterStorage rootfile = CounterStorage(filename: "root.json");
                 Map rootData = await rootfile.readCounter();
-
-                // 解析 rootData 并转换为对应的数据模型
-
                 // 解析 maintable
                 for (var a in rootData["maintable"][0]) {
                   maintable[0].add(Student.fromJson(a));
@@ -141,12 +146,10 @@ class LoadpageState extends State<Loadpage> with TickerProviderStateMixin {
                 for (var a in rootData["maintable"][1]) {
                   maintable[1].add(Course.fromJson(a));
                 }
-
                 // 解析 gradetable
                 for (var a in rootData["gradetable"]) {
                   gradetable.add(CourseDataModel.fromJson(a));
                 }
-
                 // 解析 schedule
                 for (var a in rootData["schedule"]) {
                   List<Coursesis> item = [];
@@ -155,12 +158,10 @@ class LoadpageState extends State<Loadpage> with TickerProviderStateMixin {
                   }
                   schedule.add(item);
                 }
-
                 // 解析 examlist
                 for (var a in rootData["examlist"]) {
                   examlist.add(ExamData.fromJson(a));
                 }
-
                 // 解析 allgradelist
                 for (var a in rootData["allgradelist"][0]) {
                   //debugPrint(a);
@@ -314,8 +315,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     widget.ctrlFile.readCounter().then((value) {
       if (value.isEmpty) {
         widget.ctrlFile.writeCounter(initdata);
-        debugPrint("成功运行初始化");
-        debugPrint(initdata.toString());
+        // debugPrint("成功运行初始化");
+        // debugPrint(initdata.toString());
       } else {
         initdata = value;
         // if (!initdata.containsKey('setting')) {
@@ -553,17 +554,130 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     return formattedTime;
   }
 
+  Future<void> handleTimeout() async {
+    if (!loginstate) {
+      List<dynamic> maintable = [[], []];
+      List<CourseDataModel> gradetable = [];
+      List<List<Coursesis>> schedule = [];
+      List<ExamData> examlist = [];
+      List<dynamic> allgradelist = [[], []];
+      await Future.delayed(const Duration(milliseconds: 1000));
+      CounterStorage rootfile = CounterStorage(filename: "data.json");
+
+      Map data = await rootfile.readCounter();
+      if (data.containsKey("setting")) {
+        setState(() {
+          Fluttertoast.showToast(
+              msg: "登录超时，切换离线模式",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.CENTER,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.blue,
+              textColor: Colors.white,
+              fontSize: 16.0);
+        });
+
+        try {
+          initdata = data;
+          // 从文件读取 rootData
+          CounterStorage rootfile = CounterStorage(filename: "root.json");
+          Map rootData = await rootfile.readCounter();
+          // 解析 maintable
+          for (var a in rootData["maintable"][0]) {
+            maintable[0].add(Student.fromJson(a));
+          }
+          for (var a in rootData["maintable"][1]) {
+            maintable[1].add(Course.fromJson(a));
+          }
+          // 解析 gradetable
+          for (var a in rootData["gradetable"]) {
+            gradetable.add(CourseDataModel.fromJson(a));
+          }
+          // 解析 schedule
+          for (var a in rootData["schedule"]) {
+            List<Coursesis> item = [];
+            for (var b in a) {
+              item.add(Coursesis.fromJson(b));
+            }
+            schedule.add(item);
+          }
+          // 解析 examlist
+          for (var a in rootData["examlist"]) {
+            examlist.add(ExamData.fromJson(a));
+          }
+          // 解析 allgradelist
+          for (var a in rootData["allgradelist"][0]) {
+            //debugPrint(a);
+            allgradelist[0].add(GradeAverange.fromJson(a));
+          }
+          for (var a in rootData["allgradelist"][1]) {
+            allgradelist[1].add(CourseTotal.fromJson(a));
+          }
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) {
+                return MainPage(maintable[0], maintable[1], gradetable,
+                    schedule, initdata, examlist, allgradelist);
+              },
+            ),
+          );
+        } catch (e) {
+          setState(() {
+            Fluttertoast.showToast(
+                msg: "离线数据错误",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.CENTER,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.blue,
+                textColor: Colors.white,
+                fontSize: 16.0);
+          });
+        }
+      } else {
+        setState(() {
+          Fluttertoast.showToast(
+              msg: "您尚未登录过，请等待教务系统开放",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.CENTER,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.blue,
+              textColor: Colors.white,
+              fontSize: 16.0);
+        });
+      }
+    } else {
+      setState(() {
+        Fluttertoast.showToast(
+            msg: "在线模式",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.blue,
+            textColor: Colors.white,
+            fontSize: 16.0);
+      });
+    }
+  }
+
+  bool loginstate = false;
+
   Future<void> Loginact() async {
     String account = _numController.text;
     String password = _pwdController.text;
+
+    const duration = Duration(seconds: 5); // 定义定时器的时间间隔
+    Timer(duration, handleTimeout);
     if (account != "" && password != "") {
       Requests iTing = Requests();
       setState(() {
         tip = "正在尝试登陆";
         state = true;
+        loginstate = false;
       });
       while (true) {
         netdata = await iTing.Login(account, password);
+
         if (netdata[1] == 302) {
           late String setting;
           widget.ctrlFile.readCounter().then((value) {
@@ -650,7 +764,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               bukao.toString()
             ];
             //initdata["goal"] = initdata["content"].length.toString();
-
             widget.ctrlFile.writeCounter(initdata);
           }
           try {
@@ -659,7 +772,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           } catch (e) {
             Null;
           }
-
+          loginstate = true;
           await Navigator.push(
             context,
             MaterialPageRoute(
@@ -1579,6 +1692,10 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                       height: screenHeight * 0.83,
                       child: Stack(
                         children: [
+                          RandomGeometricShapes(
+                              width: screenWidth * 0.7,
+                              height: screenHeight * 0.83,
+                              shapeCount: 10),
                           Container(
                               clipBehavior: Clip.hardEdge,
                               height: screenHeight,
@@ -1833,6 +1950,8 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                               decoration: BoxDecoration(
                                   color:
                                       const Color.fromARGB(255, 255, 251, 254),
+                                  border:
+                                      Border.all(width: 0, color: Colors.white),
                                   borderRadius: BorderRadius.only(
                                       topLeft: Radius.circular(fontsz))),
                             ),
@@ -2051,7 +2170,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                     // SizedBox(
                                     //   height: screenHeight * 0.1,
                                     // ),
-
                                     Container(
                                         width: screenWidth / 4,
                                         height: screenHeight / 4.5,
@@ -2537,12 +2655,9 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
   List passstate = ["1", "1", "1"];
   List evaluate = [];
   bool teensource = false;
-
   late List<Map> selectcourselist = [{}];
 
-  TextEditingController qrcodect = TextEditingController(
-      text:
-          "while you looking for a relationship, you have to ask yourself what you want,what you will gain.");
+  TextEditingController qrcodect = TextEditingController(text: "徐佳我喜欢你");
   GlobalKey globalKey = GlobalKey();
 
   Future<void> _saveQRCode(String data) async {
@@ -2578,7 +2693,7 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
         setState(() {});
       });
       initialController = AnimationController(
-          vsync: this, duration: const Duration(milliseconds: 1000));
+          vsync: this, duration: const Duration(milliseconds: 700));
       initialAnimation = CurvedAnimation(
           parent: initialController, curve: Curves.easeInOutCubic);
       initialAnimation = Tween<double>(
@@ -2633,7 +2748,7 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
           builder: (context, child) {
             return Expanded(
               child: Opacity(
-                  opacity: initialAnimation.value,
+                  opacity: 0.5 + 0.5 * initialAnimation.value,
                   child: MediaQuery.removePadding(
                       context: context,
                       removeTop: true,
@@ -3245,8 +3360,6 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
                                 ],
                               )),
                           SizedBox(
-                            // width: screenWidth,
-                            //height: fontsz * 3,
                             child: Stack(children: [
                               GestureDetector(
                                 onTap: () async {
@@ -3265,7 +3378,14 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
                                       ),
                                     );
                                   } catch (e) {
-                                    Null;
+                                    Fluttertoast.showToast(
+                                        msg: "Grade当前为离线模式，无法使用",
+                                        toastLength: Toast.LENGTH_SHORT,
+                                        gravity: ToastGravity.CENTER,
+                                        timeInSecForIosWeb: 1,
+                                        backgroundColor: Colors.blue,
+                                        textColor: Colors.white,
+                                        fontSize: 16.0);
                                   }
                                   //setState(() {});
                                 },
@@ -3280,13 +3400,11 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
                                             BorderRadius.circular(fontsz)),
                                     child: const Center(
                                       child: Text(
-                                        "快 捷 量 化 评 教",
+                                        "快 捷 量 化 评 教(在线模式)",
                                         style: TextStyle(
                                             color: Colors.white, fontSize: 20),
                                       ),
                                     )),
-
-                                //,const Expanded(child: SizedBox())
                               ),
                               passstate[2] == "0"
                                   ? Container(
@@ -3319,105 +3437,145 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
                           SizedBox(
                             height: 50 - 50 * initialAnimation.value,
                           ),
-                          Container(
-                            margin: EdgeInsets.symmetric(horizontal: fontsz),
-                            padding: EdgeInsets.all(fontsz / 2),
-                            width: screenWidth,
-                            height: screenWidth / 2.5,
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                      color: const Color.fromARGB(
-                                          255, 236, 236, 236),
-                                      blurRadius: fontsz)
-                                ],
-                                borderRadius: BorderRadius.circular(fontsz)),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                    child: Container(
-                                  padding: const EdgeInsets.all(5),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              GestureDetector(
+                                onTap: () async {
+                                  final Uri url = Uri.parse(
+                                      'https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm');
+                                  if (!await launchUrl(url)) {
+                                    throw Exception('Could not launch $url');
+                                  }
+                                },
+                                child: Container(
+                                  margin: EdgeInsets.only(left: fontsz),
+                                  width: 300,
+                                  height: 30,
                                   decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      border: Border.all(
-                                          width: 1, color: Colors.black12),
-                                      borderRadius: BorderRadius.circular(10)),
-                                  // width: screenWidth * 0.55,
-                                  height: screenWidth / 2,
-                                  child: TextField(
-                                    onEditingComplete: () => setState(() {}),
-                                    controller: qrcodect,
-                                    maxLines: null,
-                                    style: const TextStyle(
-                                        height: 1, fontSize: 14),
-                                    decoration: const InputDecoration(
-                                      border: InputBorder.none,
-                                      contentPadding: EdgeInsets.all(0),
-                                      //helperText: "输入内容转换为二维码",
+                                      border: Border.all(width: 0),
+                                      color: Colors.black,
+                                      borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(10),
+                                          topRight: Radius.circular(10))),
+                                  child: const Center(
+                                    child: Text(
+                                      "《生成式人工智能服务管理暂行办法》",
+                                      style: TextStyle(
+                                          color: Colors.redAccent,
+                                          fontSize: 15),
                                     ),
                                   ),
-                                )),
-                                Column(
-                                  children: [
-                                    RepaintBoundary(
-                                        key: globalKey,
-                                        child: Container(
-                                            color: Colors.white,
-                                            child: QrImageView(
-                                              data: qrcodect.text,
-                                              version: QrVersions.auto,
-                                              eyeStyle: const QrEyeStyle(
-                                                color: Colors.black,
-                                              ),
-                                              dataModuleStyle:
-                                                  const QrDataModuleStyle(
-                                                color: Colors.black,
-                                                dataModuleShape:
-                                                    QrDataModuleShape
-                                                        .circle, // 将二维码点设置为圆形
-                                              ),
-                                              size: screenWidth * 0.3,
-                                            ))),
-                                    Row(
-                                      children: [
-                                        GestureDetector(
-                                            onTap: () {
-                                              Fluttertoast.showToast(
-                                                  msg: "刷新成功",
-                                                  toastLength:
-                                                      Toast.LENGTH_SHORT,
-                                                  gravity: ToastGravity.CENTER,
-                                                  timeInSecForIosWeb: 1,
-                                                  backgroundColor: Colors.blue,
-                                                  textColor: Colors.white,
-                                                  fontSize: 16.0);
-                                              setState(() {});
-                                            },
-                                            child: const Text(
-                                              "刷新",
-                                              style:
-                                                  TextStyle(color: Colors.blue),
-                                            )),
-                                        SizedBox(
-                                          width: fontsz,
-                                        ),
-                                        GestureDetector(
-                                            onTap: () {
-                                              _saveQRCode(qrcodect.text);
-                                            },
-                                            child: const Text(
-                                              "保存",
-                                              style: TextStyle(
-                                                  color: Colors.green),
-                                            ))
-                                      ],
-                                    )
-                                  ],
-                                )
-                              ],
-                            ),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) {
+                                        return Fucking();
+                                      },
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  width: screenWidth,
+                                  height: 50,
+                                  margin:
+                                      EdgeInsets.symmetric(horizontal: fontsz),
+                                  decoration: const BoxDecoration(
+                                      color: Colors.black,
+                                      borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(10),
+                                          topRight: Radius.circular(10),
+                                          bottomRight: Radius.circular(10))),
+                                  child: const Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 10,
+                                      ),
+                                      Icon(
+                                        Icons.send,
+                                        color: Colors.white,
+                                      ),
+                                      Text(
+                                        "     @#%#@&%@*#@&",
+                                        style: TextStyle(
+                                            fontSize: 14, color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            ],
                           ),
+
+                          // AnimatedContainer(
+                          //   duration: Duration(milliseconds: 500),
+                          //   margin: EdgeInsets.symmetric(horizontal: fontsz),
+                          //   padding: EdgeInsets.all(fontsz / 2),
+                          //   width: screenWidth,
+                          //   height: screenWidth / 3,
+                          //   decoration: BoxDecoration(
+                          //       color: Colors.amber,
+                          //       boxShadow: [
+                          //         BoxShadow(
+                          //             color: const Color.fromARGB(
+                          //                 255, 236, 236, 236),
+                          //             blurRadius: fontsz)
+                          //       ],
+                          //       borderRadius: BorderRadius.circular(fontsz)),
+                          //   child: Row(
+                          //     children: [
+                          //       Expanded(
+                          //           child: Container(
+                          //         padding: const EdgeInsets.all(5),
+                          //         decoration: BoxDecoration(
+                          //             color: Colors.white,
+                          //             border: Border.all(
+                          //                 width: 1, color: Colors.black12),
+                          //             borderRadius: BorderRadius.circular(10)),
+                          //         height: screenWidth / 2,
+                          //         child: TextField(
+                          //           onEditingComplete: () => setState(() {}),
+                          //           controller: qrcodect,
+                          //           maxLines: null,
+                          //           style: const TextStyle(
+                          //               height: 1, fontSize: 14),
+                          //           decoration: const InputDecoration(
+                          //             isDense: true,
+                          //             border: InputBorder.none,
+                          //             enabledBorder: InputBorder.none,
+                          //             focusedBorder: InputBorder.none,
+                          //             errorBorder: InputBorder.none,
+                          //             disabledBorder: InputBorder.none,
+                          //             contentPadding: EdgeInsets.zero,
+                          //             //helperText: "输入内容转换为二维码",
+                          //           ),
+                          //         ),
+                          //       )),
+                          //       RepaintBoundary(
+                          //           key: globalKey,
+                          //           child: Container(
+                          //               color: Colors.white,
+                          //               child: QrImageView(
+                          //                 data: qrcodect.text,
+                          //                 version: QrVersions.auto,
+                          //                 eyeStyle: const QrEyeStyle(
+                          //                   color: Colors.black,
+                          //                 ),
+                          //                 dataModuleStyle:
+                          //                     const QrDataModuleStyle(
+                          //                   color: Colors.black,
+                          //                   dataModuleShape: QrDataModuleShape
+                          //                       .circle, // 将二维码点设置为圆形
+                          //                 ),
+                          //                 size: screenWidth * 0.3,
+                          //               ))),
+                          //     ],
+                          //   ),
+                          // ),
                           SizedBox(
                             height: 50 - 50 * initialAnimation.value,
                           ),
@@ -3428,8 +3586,6 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
                             child: SizedBox(
                                 width: screenWidth * 0.8,
                                 height: screenWidth * 0.4,
-                                // decoration:
-                                //     const BoxDecoration(color: Color.fromARGB(31, 123, 123, 123)),
                                 child: Column(
                                   children: [
                                     Text(
@@ -3469,7 +3625,7 @@ class _updatepage extends State<updatePage> with TickerProviderStateMixin {
                                     ),
                                   ],
                                 )),
-                          )
+                          ),
                         ],
                       ))),
             );

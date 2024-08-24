@@ -718,6 +718,7 @@ class Requests {
       "username": account,
       "password": password,
     });
+    await Future.delayed(const Duration(seconds: 1));
     Response callback = await dio.post(
       "http://jwc3.yangtzeu.edu.cn/eams/login.action",
       data: data,
@@ -727,9 +728,11 @@ class Requests {
             return status != 500;
           }),
     ); //模拟登陆
+
     if (callback.data.contains("账号或密码错误")) {
       return [dio, 400];
     } else {
+      // print("oh yeah,成功登录");
       return [dio, callback.statusCode];
     }
   }

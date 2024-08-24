@@ -561,6 +561,7 @@ class _Auther extends State<AutherPage> {
   Map rootdata = {};
   bool isonline = false;
   int caculatelove = 0;
+
   CounterStorage rootfile = CounterStorage(filename: "data.json");
   @override
   void initState() {
@@ -635,17 +636,25 @@ class _Auther extends State<AutherPage> {
             children: [
               const Text("关于"),
               const Expanded(child: SizedBox()),
-              const Text(
-                "开源仓库",
-                style: TextStyle(fontSize: 15, color: Colors.black45),
+              GestureDetector(
+                onTap: _launchUrl,
+                child: Container(
+                  color: Colors.transparent,
+                  child: Row(
+                    children: [
+                      const Text(
+                        "开源仓库  ",
+                        style: TextStyle(fontSize: 15, color: Colors.black45),
+                      ),
+                      Icon(
+                        const IconData(0xe85a, fontFamily: "GradeIcon"),
+                        color: Colors.black,
+                        size: fontsz * 1.5,
+                      )
+                    ],
+                  ),
+                ),
               ),
-              IconButton(
-                  onPressed: _launchUrl,
-                  icon: Icon(
-                    const IconData(0xe85a, fontFamily: "GradeIcon"),
-                    color: Colors.black,
-                    size: fontsz * 1.5,
-                  ))
             ],
           )),
       body: SingleChildScrollView(
@@ -754,7 +763,7 @@ class _Auther extends State<AutherPage> {
                       });
                     },
                     onLongPress: () {
-                      if (caculatelove == 5) {
+                      if (caculatelove == 430) {
                         Navigator.push(context, SizeTransitionRe(LOVEPage()));
                       }
                     },
@@ -2666,7 +2675,7 @@ class LOVEPage extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('2024-6-6'),
+        title: const Text('none'),
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
       body: AnimCard(

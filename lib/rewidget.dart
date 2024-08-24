@@ -458,7 +458,7 @@ class CardItem extends StatelessWidget {
                 height: 10,
               ),
               Text(
-                '   我们还在冷战呢，不想说话。',
+                '对不起宝宝，我爱你，我盼望一切重归于好，我想和你在一起。',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -471,5 +471,110 @@ class CardItem extends StatelessWidget {
       ),
       onTap: onTap,
     );
+  }
+}
+
+class RandomGeometricShapes extends StatelessWidget {
+  final double width;
+  final double height;
+  final int shapeCount;
+
+ const  RandomGeometricShapes({super.key, 
+    required this.width,
+    required this.height,
+    required this.shapeCount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: width,
+      height: height,
+      child: CustomPaint(
+        painter: GeometricShapesPainter(shapeCount),
+      ),
+    );
+  }
+}
+
+class GeometricShapesPainter extends CustomPainter {
+  final int shapeCount;
+  final Random random = Random();
+
+  GeometricShapesPainter(this.shapeCount);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (int i = 0; i < shapeCount; i++) {
+      _drawRandomShape(canvas, size);
+    }
+  }
+
+  void _drawRandomShape(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Color.fromRGBO(
+          random.nextInt(256), random.nextInt(256), random.nextInt(256), 1)
+      ..style = PaintingStyle.fill;
+
+    final shapeType = random.nextInt(3); // 0: Circle, 1: Rectangle, 2: Polygon
+    switch (shapeType) {
+      case 0:
+        _drawRandomCircle(canvas, size, paint);
+        break;
+      case 1:
+        _drawRandomRectangle(canvas, size, paint);
+        break;
+      case 2:
+        _drawRandomPolygon(canvas, size, paint);
+        break;
+    }
+  }
+
+  void _drawRandomCircle(Canvas canvas, Size size, Paint paint) {
+    final radius = random.nextDouble() * 50;
+    final center = Offset(
+      random.nextDouble() * size.width,
+      random.nextDouble() * size.height,
+    );
+    canvas.drawCircle(center, radius, paint);
+  }
+
+  void _drawRandomRectangle(Canvas canvas, Size size, Paint paint) {
+    final width = random.nextDouble() * 100;
+    final height = random.nextDouble() * 100;
+    final topLeft = Offset(
+      random.nextDouble() * (size.width - width),
+      random.nextDouble() * (size.height - height),
+    );
+    final rect = Rect.fromLTWH(topLeft.dx, topLeft.dy, width, height);
+    canvas.drawRect(rect, paint);
+  }
+
+  void _drawRandomPolygon(Canvas canvas, Size size, Paint paint) {
+    final sides = random.nextInt(5) + 3; // 3 to 7 sides
+    final radius = random.nextDouble() * 50;
+    final center = Offset(
+      random.nextDouble() * size.width,
+      random.nextDouble() * size.height,
+    );
+
+    final path = Path();
+    for (int i = 0; i < sides; i++) {
+      final angle = (2 * pi * i) / sides;
+      final x = center.dx + radius * cos(angle);
+      final y = center.dy + radius * sin(angle);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }
