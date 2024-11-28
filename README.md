@@ -1,16 +1,26 @@
-# grade2
+打包环境
 
-none.
+dart: `2.0.0+`
 
-## Getting Started
+flutter: `3.16`
 
-This project is a starting point for a Flutter application.
+打包命令：`flutter build apk --obfuscate --split-debug-info=HLQ_Struggle --target-platform android-arm,android-arm64,android-x64 --split-per-abi`
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+-----------
+免责声明（Disclaimer）
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+本项目是一款针对长江大学开发的课程表 App，核心功能是通过爬虫技术模拟登录学校网站并解析 HTML 页面获取课程表数据。由于涉及学生账号和密码的使用，请务必仔细阅读以下免责声明：
+1.	仅供学习与研究使用
+本项目仅供学习、研究以及个人开发练习之用，不得用于任何商业用途或违法活动。请在使用时确保遵守相关法律法规及长江大学的相关规定。
+2.	数据安全与隐私
+本项目中涉及用户的账号和密码操作，开发者未设置任何服务器端存储机制。所有登录操作均在本地执行，用户的账号密码数据不会上传至任何第三方服务器。然而，开发者不对由于用户使用不当或因项目代码可能存在的漏洞而引发的隐私泄露或安全问题负责。请谨慎使用，并确保代码运行环境的安全。
+3.	开发者责任限制
+本项目由开发者个人开发，与长江大学无关。开发者对使用本项目可能造成的任何后果概不负责，包括但不限于账号封禁、数据泄露或法律责任。
+4.	使用风险自负
+使用本项目即表示您已明确知晓并同意自行承担使用过程中可能产生的所有风险和责任。
+5.	知识产权声明
+本项目中涉及的代码和实现方式为开发者原创，所有权归开发者所有。项目中提及的学校相关系统、数据及网站版权归长江大学所有，开发者不对其拥有所有权。
+
+提醒：请勿滥用本项目，严格遵守长江大学的相关政策。若有任何法律争议，开发者保留删除本项目的权利。
+
