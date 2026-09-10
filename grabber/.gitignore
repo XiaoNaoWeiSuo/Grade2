@@ -1,0 +1,5 @@
+# 会话令牌与抓取产物,严禁提交
+.session/
+output/
+__pycache__/
+*.pyc

@@ -1,41 +1,47 @@
-// 应用入口。MVVM 重构后本文件只负责：
-// 1) 系统状态栏/导航栏样式  2) ProviderScope 挂载  3) MaterialApp 配置。
-// 页面见 lib/views/pages/，状态见 lib/viewmodels/，数据见 lib/data/。
+// 应用入口。MVVM + Riverpod 组装：
+// 1) 系统状态栏样式  2) ProviderScope 挂载
+// 3) 依认证状态路由：boot→Splash / needsLogin→Login / authed→Home。
+// 页面见 lib/views/pages/，状态见 lib/viewmodels/，内核见 lib/core/。
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:io';
 
+import 'viewmodels/auth_vm.dart';
+import 'views/pages/home_page.dart';
 import 'views/pages/load_page.dart';
+import 'views/pages/login_page.dart';
 
-void main() async {
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark,
   ));
-
-  runApp(const ProviderScope(child: MyApp()));
-
-  if (Platform.isAndroid) {
-    SystemUiOverlayStyle systemUiOverlayStyle = const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        systemNavigationBarColor: Colors.transparent);
-    SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  }
+  runApp(const ProviderScope(child: GradeApp()));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class GradeApp extends ConsumerWidget {
+  const GradeApp({super.key});
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(authProvider);
     return MaterialApp(
-      title: "Grade",
-      theme: ThemeData(
-        platform: TargetPlatform.android, // 或 TargetPlatform.android
+      title: 'Grade',
+      theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
+      home: auth.when(
+        loading: () => const SplashPage(),
+        error: (e, _) => SplashPage(message: '启动失败: $e'),
+        data: (s) => switch (s.status) {
+          AuthStatus.boot => const SplashPage(),
+          AuthStatus.busy ||
+          AuthStatus.needsLogin ||
+          AuthStatus.needsSms =>
+            const LoginPage(),
+          AuthStatus.authed => const HomePage(),
+        },
       ),
-      home: const SplashPage(),
     );
   }
 }

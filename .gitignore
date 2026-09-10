@@ -26,6 +26,9 @@ migrate_working_dir/
 # Local secrets (SMTP credentials etc.)
 lib/core/config/app_secrets.dart
 
+# Packet captures / debug HAR exports (may contain credentials)
+assets/*.har
+
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
