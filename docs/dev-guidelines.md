@@ -42,19 +42,40 @@
 
 ## 5. LocalCache 使用规范
 
-- 命名空间按业务域划分（`auth`/`timetable`/`meta`…），一个 ns 一个文件。
+- 命名空间按业务域划分，一个 ns 一个文件。现有：`auth`（账号簿元数据，**不含密码**）、
+  `timetable`、`meta`（学期/主题/语言）、`grades`、`evaluate`、`messages`、`welcome`、
+  `elective`（`my_elect_<profileId>`）。
+- **密码只进安全存储**（`flutter_secure_storage`，key=`pwd_<username>`），
+  禁止写入 LocalCache / 日志 / 任何 JSON。
 - 会话令牌走 `FileSessionStateStore(crawler_state.json)`，**与业务缓存严格分离**。
 - 写缓存前剔除不可序列化字段（如原始 `file` 路径）、不落敏感凭据。
 - 缓存优先策略：读取在驱动网络前命中即渲染（离线可用）；`refresh()` 才强制在线。
 
-## 6. 测试
+## 6. UI 规范（Cupertino + i18n + 主题）
+
+- **文案**：一律 `context.l10n.xxx`，禁止页面硬编码中文/英文；新词条在
+  [app_strings.dart](../lib/l10n/app_strings.dart) **5 种语言（zh-Hans/zh-Hant/en/ja/ur）
+  同步补齐**，缺一种会让对应语言回退默认语。
+- **颜色**：一律 `AppThemeScope.of(context)` 色板（bg/card/bar/label/secondary/separator/
+  primary，透明变体用 `palette.tint(c, a)`），**禁止硬编码 `Color(...)`/`CupertinoColors.xxx`
+  作为大面积配色**（systemRed 等语义警示色除外），否则暗色/护眼主题错色。
+- **组件**：页面骨架 `CupertinoPageScaffold` + `CupertinoNavigationBar`；共享组件取
+  [cupertino_kit.dart](../lib/views/widgets/cupertino_kit.dart)（Group/SectionHeader/
+  CupertinoEmpty/AsyncSliver/toast/confirm/pushPage）；下钻用 `pushPage`（CupertinoPageRoute），
+  保持 iOS 单栈（无底部 TabBar，见 [design-spec.md](design-spec.md)）。
+- **列表性能**：长列表用 `SliverList.builder` 懒加载（参考 elective_lessons_page），
+  避免一次性 `Column` 全量构建。
+- **设置持久化**：语言/主题改动走 `appSettingsProvider`（自动落盘 ns=meta），
+  不另建存储路径。
+
+## 7. 测试
 
 - 新增解析器/加解密/会话逻辑必须有 `test/*_test.dart` 覆盖；改动内核后跑全量单元测试。
 - 域名解析器/golden 基准以 `grabber/`（Python）为对照，改动后跑 `kernel_check.dart` 的
   golden/domain 比对，**任何保真偏差先定位**。
 - 公用 golden 采样脚本在 /tmp（如 `/tmp/gen_domain_golden.py`），改动采样需同步。
 
-## 7. 已踩坑清单（新坑请回填）
+## 8. 已踩坑清单（新坑请回填）
 
 - **T1 dynamic 调泛型 `withApi`**：`dynamic session.withApi((api)=>…)` 闭包推断为
   `(dynamic)→dynamic`，运行时签名检查失败（`type '(dynamic) => dynamic' is not a subtype of
@@ -77,14 +98,21 @@
   → 外部改后 `python3` 原子写入 + 同命令内 grep 验证。
 - **T12 构建 SDK 混淆**：PATH 是鸿蒙 SDK（Dart 3.9.2）解析不了本项目。
   → 一律 `/Users/lin/develop/flutter/bin/flutter`。
+- **T13 Cupertino 图标全变方框**：`CupertinoIcons` 依赖 pubspec 里的
+  `cupertino_icons`（正文字体）打包；缺依赖或字体未打入即渲染为 tofu 方框。
+  → 依赖已在 pubspec，变更后 `pub get` + 必要时 clean 重建。
+- **T14 `Table` 换数据源渲染断言**：`_elements.contains(element): is not true`——
+  同一 `Table` 复用旧子元素且配 `IntrinsicColumnWidth` 时触发布局断言（切学期后崩溃）。
+  → 空表头先兜底空态；表格包 `KeyedSubtree(key: ValueKey('<数据源id>'))` + 行稳定 key
+  强制整表重建（见 grades_page）。
 
-## 8. 提交与安全
+## 9. 提交与安全
 
-- **不提交敏感数据**：`assets/*.har`（抓包含 token/cookie）已进 `.gitignore`，勿重新 add；
-  `lib/core/config/app_secrets.dart` 是本地密钥占位，勿泄露。
+- **不提交敏感数据**：`assets/*.har`（抓包含 token/cookie）已进 `.gitignore`，勿重新 add。
+- 账号簿密码只存系统安全存储（Keychain/Keystore），不出现在仓库与缓存 JSON。
 - 提交信息风格参考现有历史（简洁、中英皆可，聚焦"为什么"）。
 
-## 9. 环境命令速查
+## 10. 环境命令速查
 
 ```bash
 export SDK=/Users/lin/develop/flutter/bin/flutter

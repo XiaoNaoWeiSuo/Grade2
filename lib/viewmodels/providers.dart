@@ -8,12 +8,17 @@ library;
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../core/crawler/models/config_models.dart';
 import '../core/crawler/session/crawler_session.dart';
 import '../core/storage/local_cache.dart';
 import 'auth_vm.dart';
+
+/// 密码安全存储（Keychain / Android Keystore）。账号簿密码不再明文落盘。
+final secureStorageProvider = Provider<FlutterSecureStorage>(
+    (ref) => const FlutterSecureStorage());
 
 /// 本地缓存（LocalCache 单例）。
 final localCacheProvider = FutureProvider<LocalCache>((ref) async {

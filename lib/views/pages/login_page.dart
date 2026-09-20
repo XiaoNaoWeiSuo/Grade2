@@ -1,14 +1,13 @@
-/// 登录页（含本机账号簿 = 工程期"注册"）。
-///
-/// - 登录：CAS 四步鉴权由 AuthController 驱动，本页只收集输入
-/// - 账号簿：登记/切换/删除本机保存的账号（CAS 无在线注册，此处仅本机登记）
+/// 登录页（含本机账号簿）。采用现代化的 Cupertino 设计，引入磨砂玻璃质感与更优雅的布局。
 library;
 
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_strings.dart';
+import '../../l10n/app_theme.dart';
 import '../../viewmodels/auth_vm.dart';
-import '../widgets/kit.dart';
+import '../widgets/cupertino_kit.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -17,9 +16,8 @@ class LoginPage extends ConsumerStatefulWidget {
   ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends ConsumerState<LoginPage>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tab = TabController(length: 2, vsync: this);
+class _LoginPageState extends ConsumerState<LoginPage> {
+  var _tab = 0; // 0=登录 1=账号簿
   final _username = TextEditingController();
   final _password = TextEditingController();
   bool _remember = true;
@@ -27,26 +25,23 @@ class _LoginPageState extends ConsumerState<LoginPage>
 
   @override
   void dispose() {
-    _tab.dispose();
     _username.dispose();
     _password.dispose();
     super.dispose();
   }
 
-  void _prefillFromBook(List<Map<String, Object?>> accounts) {
+  void _prefill(List<Map<String, Object?>> accounts) {
     if (_username.text.isNotEmpty || accounts.isEmpty) return;
-    final last =
-        accounts.where((a) => a['remember'] == true).toList();
+    final last = accounts.where((a) => a['remember'] == true).toList();
     if (last.isEmpty) return;
-    final entry = last.last;
-    _username.text = entry['username'] as String? ?? '';
+    _username.text = last.last['username'] as String? ?? '';
   }
 
-  Future<void> _submitLogin() async {
+  Future<void> _submit() async {
     final u = _username.text.trim();
     final p = _password.text;
     if (u.isEmpty || p.isEmpty) {
-      snack(context, '请输入账号与密码', error: true);
+      toast(context, context.l10n.enterAcctPwd, error: true);
       return;
     }
     await ref.read(authProvider.notifier).login(u, p, _remember);
@@ -57,184 +52,260 @@ class _LoginPageState extends ConsumerState<LoginPage>
     ref.listen(authProvider, (prev, next) {
       final err = next.value?.error;
       if (err != null && next.value?.status != AuthStatus.authed) {
-        snack(context, err, error: true);
+        toast(context, err, error: true);
       }
     });
 
     final auth = ref.watch(authProvider);
     final state = auth.value ?? const AuthState();
-    _prefillFromBook(state.accounts);
+    _prefill(state.accounts);
     final busy = state.status == AuthStatus.busy;
+    final p = AppThemeScope.of(context);
 
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: state.status == AuthStatus.needsSms
-              ? _SmsPanel(state: state)
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 40),
-                    Icon(Icons.school,
-                        size: 64, color: Theme.of(context).colorScheme.primary),
-                    const SizedBox(height: 8),
-                    const Text('Grade',
-                        textAlign: TextAlign.center,
-                        style:
-                            TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 24),
-                    TabBar(
-                      controller: _tab,
-                      tabs: const [Tab(text: '登录'), Tab(text: '账号簿')],
-                    ),
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tab,
-                        children: [
-                          _buildLoginTab(busy),
-                          _buildBookTab(state.accounts, busy),
-                        ],
+    return CupertinoPageScaffold(
+      backgroundColor: p.bg,
+      child: Stack(
+        children: [
+          // 背景装饰
+          Positioned(
+            top: -100,
+            right: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: p.primary.withValues(alpha: 0.05),
+              ),
+            ),
+          ),
+          
+          SafeArea(
+            child: state.status == AuthStatus.needsSms
+                ? _SmsPanel(state: state)
+                : ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    children: [
+                      const SizedBox(height: 60),
+                      Center(
+                        child: BlurView(
+                          borderRadius: BorderRadius.circular(24),
+                          color: p.primary.withValues(alpha: 0.1),
+                          blur: 10,
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Icon(CupertinoIcons.book_fill, size: 64, color: p.primary),
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-        ),
+                      const SizedBox(height: 24),
+                      Text(
+                        context.l10n.appName,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: p.label, letterSpacing: -0.5),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '学期管理 · 成绩查询 · 选课助手',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 14, color: p.secondary, fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 40),
+                      CupertinoSlidingSegmentedControl<int>(
+                        groupValue: _tab,
+                        onValueChanged: (v) => setState(() => _tab = v ?? 0),
+                        children: {
+                          0: Padding(padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8), child: Text(context.l10n.loginTab)),
+                          1: Padding(padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8), child: Text(context.l10n.bookTab)),
+                        },
+                      ),
+                      const SizedBox(height: 32),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: _tab == 0 ? _buildLoginTab(busy) : _buildBookTab(state.accounts, busy),
+                      ),
+                    ],
+                  ),
+          ),
+        ],
       ),
     );
   }
 
-  // ---------------- 登录 tab ----------------
-
   Widget _buildLoginTab(bool busy) {
-    return ListView(
-      padding: const EdgeInsets.only(top: 24),
+    final p = AppThemeScope.of(context);
+    return Column(
+      key: const ValueKey('login_tab'),
       children: [
-        TextField(
-          controller: _username,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-              labelText: '学号/工号', prefixIcon: Icon(Icons.person_outline)),
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _password,
-          obscureText: _obscure,
-          decoration: InputDecoration(
-            labelText: '密码',
-            prefixIcon: const Icon(Icons.lock_outline),
-            suffixIcon: IconButton(
-              icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
-              onPressed: () => setState(() => _obscure = !_obscure),
+        Group(
+          margin: const EdgeInsets.only(bottom: 16),
+          children: [
+            _CupertinoField(
+              controller: _username,
+              placeholder: context.l10n.username,
+              keyboardType: TextInputType.number,
+              prefix: const Padding(padding: EdgeInsets.only(left: 12), child: Icon(CupertinoIcons.person, size: 20)),
             ),
+            _CupertinoField(
+              controller: _password,
+              placeholder: context.l10n.password,
+              obscureText: _obscure,
+              prefix: const Padding(padding: EdgeInsets.only(left: 12), child: Icon(CupertinoIcons.lock, size: 20)),
+              suffix: CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: () => setState(() => _obscure = !_obscure),
+                child: Icon(_obscure ? CupertinoIcons.eye_slash : CupertinoIcons.eye, size: 20, color: p.secondary),
+              ),
+              onSubmitted: (_) => busy ? null : _submit(),
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(context.l10n.rememberAcct, style: TextStyle(color: p.secondary, fontSize: 14, fontWeight: FontWeight.w500)),
+            ),
+            CupertinoSwitch(
+              value: _remember,
+              activeTrackColor: p.primary,
+              onChanged: (v) => setState(() => _remember = v),
+            ),
+          ],
+        ),
+        const SizedBox(height: 32),
+        SizedBox(
+          width: double.infinity,
+          child: CupertinoButton.filled(
+            borderRadius: BorderRadius.circular(14),
+            onPressed: busy ? null : _submit,
+            child: busy
+                ? const CupertinoActivityIndicator(color: CupertinoColors.white)
+                : Text(context.l10n.loginBtn, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
           ),
-          onSubmitted: (_) => _submitLogin(),
         ),
-        const SizedBox(height: 8),
-        CheckboxListTile(
-          value: _remember,
-          onChanged: (v) => setState(() => _remember = v ?? true),
-          title: const Text('记住账号密码（本机存储）'),
-          controlAffinity: ListTileControlAffinity.leading,
-          dense: true,
-          contentPadding: EdgeInsets.zero,
-        ),
-        const SizedBox(height: 16),
-        FilledButton(
-          onPressed: busy ? null : _submitLogin,
-          child: busy
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2))
-              : const Text('登 录'),
-        ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
         Text(
-          '工程期提示：CAS 密码 POST 每次会话最多 1 次，'
-          '失败不自动重试（防封号）；CASTGC 有效期内自动免密 SSO。',
-          style: TextStyle(
-              fontSize: 12, color: Theme.of(context).colorScheme.outline),
+          context.l10n.casHint,
+          textAlign: TextAlign.center,
+          style: TextStyle(color: p.secondary, fontSize: 12, height: 1.4),
         ),
       ],
     );
   }
 
-  // ---------------- 账号簿 tab ----------------
-
   Widget _buildBookTab(List<Map<String, Object?>> accounts, bool busy) {
-    return ListView(
-      padding: const EdgeInsets.only(top: 24),
+    final p = AppThemeScope.of(context);
+    return Column(
+      key: const ValueKey('book_tab'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          'CAS 不支持在线注册。此处将账号登记到本机账号簿，'
-          '便于多账号管理与一键切换登录。',
-          style: TextStyle(
-              fontSize: 12, color: Theme.of(context).colorScheme.outline),
+        Group(
+          margin: const EdgeInsets.only(bottom: 24),
+          header: Text(context.l10n.bookHint),
+          children: [
+            _CupertinoField(
+              controller: _username,
+              placeholder: context.l10n.username,
+              prefix: const Padding(padding: EdgeInsets.only(left: 12), child: Icon(CupertinoIcons.person_add, size: 20)),
+            ),
+            Tile(
+              title: Center(child: Text(context.l10n.saveToBook, style: TextStyle(color: p.primary, fontWeight: FontWeight.bold))),
+              onTap: busy || _username.text.trim().isEmpty ? null : _saveToBook,
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
-        _AccountForm(
-          busy: busy,
-          onSave: (u, p, remember) async {
-            final err = await ref
-                .read(authProvider.notifier)
-                .saveAccount(u, p, remember);
-            if (mounted) {
-              snack(context, err ?? '已保存到账号簿', error: err != null);
-            }
-          },
-        ),
-        const SizedBox(height: 16),
         if (accounts.isEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 32),
-            child: Text('暂无登记账号',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Theme.of(context).disabledColor)),
+            padding: const EdgeInsets.symmetric(vertical: 40),
+            child: CupertinoEmpty(message: context.l10n.noAccounts, icon: CupertinoIcons.person_crop_circle_badge_exclam),
           )
         else
-          ...[
-            for (final a in accounts)
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.account_circle_outlined),
-                  title: Text(a['username'] as String? ?? ''),
-                  subtitle: Text((a['remember'] == true)
-                      ? '已记住密码'
-                      : '未记住密码（每次手动输入）'),
+          Group(
+            header: Text(context.l10n.bookTab),
+            children: [
+              for (final a in accounts)
+                Tile(
+                  leading: TileIcon(icon: CupertinoIcons.person_fill, color: p.primary.withValues(alpha: 0.1)),
+                  title: Text(a['username'] as String? ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text(a['remember'] == true ? context.l10n.remembered : context.l10n.notRemembered),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      TextButton(
-                        onPressed: busy
-                            ? null
-                            : () => ref
-                                .read(authProvider.notifier)
-                                .loginWithSaved(a),
-                        child: const Text('登录'),
+                      CupertinoButton(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        color: p.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        onPressed: busy ? null : () => _loginSaved(a),
+                        child: Text(context.l10n.loginBtn, style: TextStyle(color: p.primary, fontSize: 13, fontWeight: FontWeight.bold)),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline, size: 20),
-                        onPressed: () => ref
-                            .read(authProvider.notifier)
-                            .removeAccount(a['username'] as String? ?? ''),
+                      const SizedBox(width: 8),
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () => ref.read(authProvider.notifier).removeAccount(a['username'] as String? ?? ''),
+                        child: const Icon(CupertinoIcons.trash, size: 18, color: CupertinoColors.systemGrey),
                       ),
                     ],
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
       ],
+    );
+  }
+
+  Future<void> _saveToBook() async {
+    final err = await ref.read(authProvider.notifier).saveAccount(_username.text.trim(), _password.text, true);
+    if (mounted) {
+      toast(context, err ?? context.l10n.addedToBook, error: err != null);
+    }
+  }
+
+  Future<void> _loginSaved(Map<String, Object?> a) async {
+    await ref.read(authProvider.notifier).loginWithSaved(a);
+  }
+}
+
+class _CupertinoField extends StatelessWidget {
+  const _CupertinoField({
+    required this.controller,
+    required this.placeholder,
+    this.keyboardType,
+    this.obscureText = false,
+    this.suffix,
+    this.prefix,
+    this.onSubmitted,
+  });
+
+  final TextEditingController controller;
+  final String placeholder;
+  final TextInputType? keyboardType;
+  final bool obscureText;
+  final Widget? suffix;
+  final Widget? prefix;
+  final void Function(String)? onSubmitted;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = AppThemeScope.of(context);
+    return CupertinoTextField(
+      controller: controller,
+      placeholder: placeholder,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      onSubmitted: onSubmitted,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      autocorrect: false,
+      prefix: prefix,
+      suffix: suffix,
+      decoration: BoxDecoration(color: p.card),
+      placeholderStyle: TextStyle(color: p.secondary.withValues(alpha: 0.5)),
     );
   }
 }
 
-/// 短信验证码面板（网关风控增强认证）。
 class _SmsPanel extends ConsumerStatefulWidget {
   const _SmsPanel({required this.state});
-
   final AuthState state;
-
   @override
   ConsumerState<_SmsPanel> createState() => _SmsPanelState();
 }
@@ -266,20 +337,18 @@ class _SmsPanelState extends ConsumerState<_SmsPanel> {
   }
 
   Future<void> _submit() async {
-    final err =
-        await ref.read(authProvider.notifier).submitSmsCode(_code.text.trim());
-    if (err != null && mounted) snack(context, err, error: true);
+    final err = await ref.read(authProvider.notifier).submitSmsCode(_code.text.trim());
+    if (err != null && mounted) toast(context, err, error: true);
   }
 
   Future<void> _resend() async {
     final err = await ref.read(authProvider.notifier).resendSms();
     if (mounted) {
       if (err != null) {
-        snack(context, err, error: true);
+        toast(context, err, error: true);
       } else {
-        snack(context, '已重新发送');
-        setState(() => _countdown =
-            ref.read(authProvider).value?.smsInterval ?? 60);
+        toast(context, context.l10n.smsSent);
+        setState(() => _countdown = ref.read(authProvider).value?.smsInterval ?? 60);
         _tick();
       }
     }
@@ -290,132 +359,52 @@ class _SmsPanelState extends ConsumerState<_SmsPanel> {
     final auth = ref.watch(authProvider);
     final state = auth.value ?? widget.state;
     final busy = state.status == AuthStatus.busy;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    final p = AppThemeScope.of(context);
+    
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 28),
       children: [
-        const SizedBox(height: 40),
-        Icon(Icons.sms_outlined,
-            size: 56, color: Theme.of(context).colorScheme.primary),
-        const SizedBox(height: 12),
-        Text(
-          state.smsMaskedPhone == null
-              ? '需要短信验证'
-              : '验证码已发送至 ${state.smsMaskedPhone}',
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        const SizedBox(height: 60),
+        BlurView(
+          borderRadius: BorderRadius.circular(20),
+          color: CupertinoColors.systemOrange.withValues(alpha: 0.1),
+          child: const Padding(padding: EdgeInsets.all(20), child: Icon(CupertinoIcons.shield_lefthalf_fill, size: 52, color: CupertinoColors.systemOrange)),
         ),
-        const SizedBox(height: 8),
-        Text('学校网关对本次登录启用了二次认证，请输入短信验证码',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                fontSize: 12, color: Theme.of(context).colorScheme.outline)),
         const SizedBox(height: 24),
-        TextField(
+        Text(
+          state.smsMaskedPhone == null ? context.l10n.needSms : context.l10n.smsSentTo.replaceFirst('%1', state.smsMaskedPhone!),
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: p.label),
+        ),
+        const SizedBox(height: 12),
+        Text(context.l10n.smsHint, textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: p.secondary, height: 1.4)),
+        const SizedBox(height: 40),
+        CupertinoTextField(
           controller: _code,
           keyboardType: TextInputType.number,
           maxLength: 6,
           textAlign: TextAlign.center,
-          style: const TextStyle(
-              fontSize: 22, letterSpacing: 8, fontWeight: FontWeight.w600),
-          decoration: const InputDecoration(
-            counterText: '',
-            hintText: '------',
-            border: OutlineInputBorder(),
-          ),
+          autofocus: true,
+          style: const TextStyle(fontSize: 32, letterSpacing: 12, fontWeight: FontWeight.bold),
+          placeholder: '------',
+          decoration: BoxDecoration(color: p.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: p.separator)),
           onSubmitted: (_) => busy ? null : _submit(),
         ),
-        const SizedBox(height: 16),
-        FilledButton(
-          onPressed: busy ? null : _submit,
-          child: busy
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2))
-              : const Text('验 证'),
+        const SizedBox(height: 32),
+        SizedBox(
+          width: double.infinity,
+          child: CupertinoButton.filled(
+            borderRadius: BorderRadius.circular(14),
+            onPressed: busy ? null : _submit,
+            child: busy ? const CupertinoActivityIndicator(color: CupertinoColors.white) : Text(context.l10n.verifyBtn, style: const TextStyle(fontWeight: FontWeight.bold)),
+          ),
         ),
-        const SizedBox(height: 8),
-        TextButton(
+        const SizedBox(height: 12),
+        CupertinoButton(
           onPressed: busy || _countdown > 0 ? null : _resend,
-          child: Text(_countdown > 0 ? '重新发送(${_countdown}s)' : '重新发送验证码'),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          state.error ?? '',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: 12, color: Theme.of(context).colorScheme.error),
+          child: Text(_countdown > 0 ? '${context.l10n.resend}(${_countdown}s)' : context.l10n.resendNow, style: const TextStyle(fontWeight: FontWeight.w500)),
         ),
       ],
-    );
-  }
-}
-
-/// 账号登记表单。
-class _AccountForm extends StatefulWidget {
-  const _AccountForm({required this.busy, required this.onSave});
-
-  final bool busy;
-  final Future<void> Function(String u, String p, bool remember) onSave;
-
-  @override
-  State<_AccountForm> createState() => _AccountFormState();
-}
-
-class _AccountFormState extends State<_AccountForm> {
-  final _u = TextEditingController();
-  final _p = TextEditingController();
-  bool _remember = true;
-
-  @override
-  void dispose() {
-    _u.dispose();
-    _p.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            TextField(
-              controller: _u,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                  labelText: '学号/工号', isDense: true),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _p,
-              obscureText: true,
-              decoration:
-                  const InputDecoration(labelText: '密码', isDense: true),
-            ),
-            const SizedBox(height: 4),
-            CheckboxListTile(
-              value: _remember,
-              onChanged: (v) => setState(() => _remember = v ?? true),
-              title: const Text('同时记住密码'),
-              controlAffinity: ListTileControlAffinity.leading,
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-            ),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: widget.busy || _u.text.trim().isEmpty
-                    ? null
-                    : () => widget.onSave(
-                        _u.text.trim(), _p.text, _remember),
-                child: const Text('保存到账号簿'),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

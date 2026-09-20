@@ -11,6 +11,7 @@
 | 2026-09-10 | ②   | 爬虫内核 1.0 beta：Python `grabber/` → 纯 Dart 翻译 + 封装闭环 |
 | 2026-09-10 | ③   | 登录联调实测：四步鉴权、短信二次认证、SSO 免密、离线降级 |
 | 2026-09-10 | ④   | 学期编号本地表、全局学期切换、离线审计与提速 |
+| 2026-09-11 | ⑤   | 正式 UI 全量落地：Cupertino 单栈 + 国际化（5 语言）+ 主题（4 模式）+ 密码安全存储 |
 
 ## 2. 各阶段状态
 
@@ -44,6 +45,29 @@
 - **验证**：test/ 8 文件全部通过；`kernel_check.dart`（AES 向量、表格 golden、域 golden）PASS
   （golden 采样已持续比对 Python，结果逐字符一致）。
 
+### ⑤ 正式 UI 全量落地（已完成，2026-09-11）
+
+- **信息架构**：放弃底部 TabBar，改为 **iOS 单栈**——课表即首页（常驻），其余能力经
+  『更多』中枢（hub_page）与『账户』页（account_page）下钻；设计基准见
+  [design-spec.md](design-spec.md)。
+- **业务页面全量落地**（Cupertino 风格）：选课（轮次→课程列表→选/退，跨接口编排余量合并、
+  myElect 本地记录 + 课表课程号交叉判定"已选"、多标签筛选 + SliverList.builder 懒加载）、
+  考试（批次/安排/四六级/中期考核）、成绩（表格 + 全局学期联动）、培养计划、学籍、
+  欢迎公告、消息、教学评价、账号簿多账号管理（accounts_page）。
+- **国际化** `lib/l10n/app_strings.dart`：简体中文 / 繁體中文 / English / 日本語 / اردو
+  共 5 语言，`context.l10n` 全量替换硬编码文案。
+- **主题** `lib/l10n/app_theme.dart`：跟随系统 / 亮色 / 暗色 / 护眼四模式；
+  `AppPalette` 语义色板经 `AppThemeScope` 下发，页面统一 `AppThemeScope.of(context)` 取色。
+- **语言/主题持久化** `lib/l10n/app_settings.dart`：LocalCache ns=`meta` 落盘，启动恢复。
+- **密码安全存储**：账号簿密码迁至 `flutter_secure_storage`（Keychain / Android Keystore），
+  不再 base64 落盘；LocalCache 仅存账号簿元数据。
+- **工程期调试能力移除**：api_explorer_vm / cache_vm / cache_page / more_page / kit.dart 删除，
+  由正式页面 + `cupertino_kit.dart` 共享组件取代。
+- **修复**：Cupertino 图标方框（补 `cupertino_icons` 正文字体依赖）；成绩页 Table 渲染断言
+  `_elements.contains(element): is not true`（空表头兜底 + `KeyedSubtree` 稳定 key 整表重建）。
+- **选课实现核对**：对照 `assets/教务系统抓包.har` 与 `grabber/api/elective.py` 逐参数核对，
+  Dart 端轮次/上下文/课程/余量/选退接口与抓包链路一致（无需修改内核）。
+
 ## 3. 质量验证现状
 
 | 项 | 结果 |
@@ -52,6 +76,7 @@
 | test/（8 文件） | 全部通过 |
 | 内核 golden（AES/表格/域） | PASS（与 Python 逐字符一致） |
 | 短信全链路实网 | 通过（send/check/resume，check 阶段从落盘恢复会话） |
+| 选课实现与抓包核对 | 一致（HAR vs `grabber/api/elective.py` vs Dart eams_api） |
 
 ## 4. 环境约束备忘（重要）
 
@@ -61,10 +86,9 @@
 
 ## 5. 待办 / 后续方向
 
-- 密码存储升级为安全存储（正式版）：`flutter_secure_storage` / Keychain / Android Keystore，
-  当前账号簿密码 base64 存应用目录仅为工程期实现。
-- 正式 UI 重写：`apiExplorerProvider`/`api_explorer_vm.dart` 为工程期调试能力，可整体替换/删除，
-  不影响内核。
+- ~~密码存储升级为安全存储~~（⑤已完成：`flutter_secure_storage`）。
+- ~~正式 UI 重写 / API 调试页替换~~（⑤已完成：见 [design-spec.md](design-spec.md)）。
 - 线上补推/产物打包（参见仓库 README 打包命令，按需更新到官方 SDK）。
 - Android/iOS 平台目录、原生插件 namespace（AGP 9 约束）在重建模板后需回归验证。
-- 更多业务页面（成绩/考试/培养计划/选课/学籍等）落地为正式 UI，当前以"更多页 API 调试"呈现。
+- UI 打磨延续：动画细节、平板/大屏适配、RTL（乌尔都语）布局复查。
+- 长尾能力（如有需要）：学期列表网络校正入口下沉、缓存管理页可视化回归。

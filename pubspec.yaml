@@ -16,6 +16,13 @@ dependencies:
   flutter_riverpod: ^2.6.1
   # 应用目录定位（LocalCache / 会话状态落盘路径；路径只在组装层注入）
   path_provider: ^2.1.2
+  # 密码安全存储（Keychain/Android Keystore；正式版账号簿，替代 base64 明文）
+  flutter_secure_storage: ^11.1.0
+  # CupertinoIcons 的正文字体（name=CupertinoIcons；缺它所有 Cupertino 图标变方框）
+  cupertino_icons: ^1.0.8
+  # 国际化（框架层本地化委托）
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:

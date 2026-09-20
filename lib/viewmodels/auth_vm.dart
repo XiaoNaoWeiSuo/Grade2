@@ -6,13 +6,15 @@
 /// - 登录：新建会话走完整四步鉴权（每会话最多 1 次密码 POST，防封号）
 /// - 账号簿（"注册"）：CAS 无在线注册，此处为本机账号登记，支持多账号快速切换
 ///
-/// 安全说明：记住密码以 base64 存于应用文档目录（工程期实现）；
-/// 正式版建议替换为 flutter_secure_storage / Keychain-Keystore。
+/// 安全说明：账号簿密码存于系统安全存储（Keychain / Android Keystore，
+/// 见 secureStorageProvider），账号簿仅保存 `{username, remember}` 元数据；
+/// 旧版本 base64 明文条目首次恢复时自动迁移到安全存储并清除明文。
 library;
 
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../core/crawler/crawler_exceptions.dart';
 import '../core/crawler/models/config_models.dart';
@@ -63,7 +65,7 @@ class AuthState {
   /// 离线降级：历史会话存在但本次网络校验未通过，仅可用本地缓存数据。
   final bool offline;
 
-  /// 本机账号簿 `[{username, password_b64, remember}]`。
+  /// 本机账号簿 `[{username, remember}]`（密码存于安全存储）。
   final List<Map<String, Object?>> accounts;
 
   /// 展示给用户的错误文案。
@@ -110,18 +112,26 @@ class AuthController extends AsyncNotifier<AuthState> {
 
   Future<AuthState> _restore() async {
     final cache = await ref.watch(localCacheProvider.future);
-    final accounts = _book(await cache.readAs<List<Object?>>(
+    var accounts = _book(await cache.readAs<List<Object?>>(
         _nsAuth, _keyAccounts, const []));
     final last = await cache.readAs<String>(_nsAuth, _keyLast, '');
-    final remembered = _entryOf(accounts, last);
+    var remembered = _entryOf(accounts, last);
+
+    // 旧版 base64 明文迁移：首个记住密码的账号迁入安全存储并清除明文
+    final migrated = await _migrateLegacy(accounts);
+    if (migrated != null) {
+      accounts = migrated;
+      remembered = _entryOf(accounts, last);
+      await _persistBook(cache, accounts);
+    }
+
+    final username = remembered?['username'] as String? ?? '';
+    final password = await _loadPwd(username);
 
     final statePath = await ref.watch(sessionStatePathProvider.future);
     final session = CrawlerSession(
       config: ref.watch(grabberConfigProvider),
-      credentials: CrawlerCredentials(
-        username: remembered?['username'] as String? ?? '',
-        password: _decodePwd(remembered?['password_b64'] as String?),
-      ),
+      credentials: CrawlerCredentials(username: username, password: password),
       stateStore: FileSessionStateStore(statePath),
       onLog: (m) {}, // 工程期静默；调试时可接 debugPrint
     );
@@ -182,10 +192,10 @@ class AuthController extends AsyncNotifier<AuthState> {
 
   // ---------------- 登录 ----------------
 
-  /// 账号密码登录（走完整四步鉴权）。成功后按 [remember] 更新账号簿。
+  /// 账号密码登录（走完整四步鉴权）。成功后按 [remember] 更新账号簿与安全存储。
   Future<void> login(String username, String password, bool remember) async {
     final cache = await ref.read(localCacheProvider.future);
-    final accounts = _book(await cache.readAs<List<Object?>>(
+    var accounts = _book(await cache.readAs<List<Object?>>(
         _nsAuth, _keyAccounts, const []));
 
     final cur = state.value ?? const AuthState();
@@ -203,18 +213,19 @@ class AuthController extends AsyncNotifier<AuthState> {
 
     try {
       await session.ensureApi(forceRelogin: true);
-      final newAccounts = _upsert(accounts, {
-        'username': username,
-        'password_b64': remember ? base64Encode(utf8.encode(password)) : '',
-        'remember': remember,
-      });
-      await _persistBook(cache, newAccounts, last: username);
+      accounts = _upsert(accounts, {'username': username, 'remember': remember});
+      await _persistBook(cache, accounts, last: username);
+      if (remember) {
+        await _savePwd(username, password);
+      } else {
+        await _deletePwd(username);
+      }
       state = AsyncData(AuthState(
         status: AuthStatus.authed,
         session: session,
         username: username,
         displayName: session.extra['display_name'] as String?,
-        accounts: newAccounts,
+        accounts: accounts,
       ));
     } on CredentialError catch (e) {
       await _disposeSession(session);
@@ -251,11 +262,8 @@ class AuthController extends AsyncNotifier<AuthState> {
 
   /// 用账号簿中已记住的账号直接登录。
   Future<void> loginWithSaved(Map<String, Object?> entry) async {
-    await login(
-      entry['username'] as String? ?? '',
-      _decodePwd(entry['password_b64'] as String?),
-      entry['remember'] == true,
-    );
+    final username = entry['username'] as String? ?? '';
+    await login(username, await _loadPwd(username), true);
   }
 
   // ---------------- 短信二次认证 ----------------
@@ -321,22 +329,25 @@ class AuthController extends AsyncNotifier<AuthState> {
     }
     final newAccounts = _upsert(accounts, {
       'username': username,
-      'password_b64': remember ? base64Encode(utf8.encode(password)) : '',
       'remember': remember,
     });
     await _persistBook(cache, newAccounts);
+    if (remember) {
+      await _savePwd(username, password);
+    }
     state = AsyncData(
         (state.value ?? const AuthState()).copyWith(accounts: newAccounts));
     return null;
   }
 
-  /// 删除账号簿条目。
+  /// 删除账号簿条目（同时清除该账号安全存储的密码）。
   Future<void> removeAccount(String username) async {
     final cache = await ref.read(localCacheProvider.future);
     final accounts = _book(await cache.readAs<List<Object?>>(
         _nsAuth, _keyAccounts, const []));
     accounts.removeWhere((a) => a['username'] == username);
     await _persistBook(cache, accounts);
+    await _deletePwd(username);
     state = AsyncData(
         (state.value ?? const AuthState()).copyWith(accounts: accounts));
   }
@@ -352,8 +363,11 @@ class AuthController extends AsyncNotifier<AuthState> {
     await cache.remove(_nsAuth, _keyLast);
     var accounts = state.value?.accounts ?? const <Map<String, Object?>>[];
     if (forgetCredentials) {
+      for (final a in accounts) {
+        await _deletePwd(a['username'] as String? ?? '');
+      }
       accounts = [
-        for (final a in accounts) {...a, 'password_b64': '', 'remember': false}
+        for (final a in accounts) {...a, 'remember': false}
       ];
       await _persistBook(cache, accounts);
     }
@@ -365,6 +379,9 @@ class AuthController extends AsyncNotifier<AuthState> {
   static const _nsAuth = 'auth';
   static const _keyAccounts = 'accounts';
   static const _keyLast = 'last';
+  static const _pwdPrefix = 'grade_pwd_';
+
+  String _pwdKey(String username) => '$_pwdPrefix$username';
 
   Future<void> _disposeSession([CrawlerSession? target]) async {
     final s = target ?? state.value?.session;
@@ -376,6 +393,28 @@ class AuthController extends AsyncNotifier<AuthState> {
       }
       s.dispose();
     }
+  }
+
+  /// 旧版 base64 明文 → 安全存储迁移。返回清理后的账号簿；无需迁移返回 null。
+  Future<List<Map<String, Object?>>?> _migrateLegacy(
+      List<Map<String, Object?>> accounts) async {
+    var changed = false;
+    final out = <Map<String, Object?>>[];
+    for (final a in accounts) {
+      final username = a['username'] as String? ?? '';
+      final b64 = a['password_b64'] as String? ?? '';
+      final remember = a['remember'] == true;
+      if (b64.isNotEmpty) {
+        if (remember) {
+          await _savePwd(username, _decodePwd(b64));
+        }
+        changed = true;
+        out.add({'username': username, 'remember': remember});
+      } else {
+        out.add(a);
+      }
+    }
+    return changed ? out : null;
   }
 
   static List<Map<String, Object?>> _book(List<Object?> raw) => [
@@ -402,6 +441,37 @@ class AuthController extends AsyncNotifier<AuthState> {
       List<Map<String, Object?>> accounts, {String? last}) async {
     await cache.write(_nsAuth, _keyAccounts, accounts);
     if (last != null) await cache.write(_nsAuth, _keyLast, last);
+  }
+
+  // ---- 安全存储读写（宽容处理：读失败视为空，写失败不崩状态机） ----
+
+  FlutterSecureStorage _storage() => ref.read(secureStorageProvider);
+
+  Future<String> _loadPwd(String username) async {
+    if (username.isEmpty) return '';
+    try {
+      return await _storage().read(key: _pwdKey(username)) ?? '';
+    } on Exception {
+      return '';
+    }
+  }
+
+  Future<void> _savePwd(String username, String password) async {
+    if (username.isEmpty || password.isEmpty) return;
+    try {
+      await _storage().write(key: _pwdKey(username), value: password);
+    } on Exception {
+      // 安全存储不可用（如平台通道缺失）时静默降级，不阻塞登录
+    }
+  }
+
+  Future<void> _deletePwd(String username) async {
+    if (username.isEmpty) return;
+    try {
+      await _storage().delete(key: _pwdKey(username));
+    } on Exception {
+      // 尽力而为
+    }
   }
 
   static String _decodePwd(String? b64) {

@@ -6,9 +6,10 @@
 
 按顺序：
 1. [architect.md](architect.md) —— 架构、分层、平台标识、环境要求
-2. [lib/core/crawler/README.md](../lib/core/crawler/README.md) —— 内核函数签名全集
-3. [dev-guidelines.md](dev-guidelines.md) —— 开发规范与已踩坑清单
-4. [process.md](process.md) —— 进度与后续方向
+2. [design-spec.md](design-spec.md) —— 正式 UI 设计规格（IA/页面/交互基准）
+3. [lib/core/crawler/README.md](../lib/core/crawler/README.md) —— 内核函数签名全集
+4. [dev-guidelines.md](dev-guidelines.md) —— 开发规范与已踩坑清单
+5. [process.md](process.md) —— 进度与后续方向
 
 ## 2. 环境准备（第一步必做）
 
@@ -26,16 +27,17 @@
 ```text
 Grade2/
 ├── lib/
-│   ├── main.dart              入口 / 路由
+│   ├── main.dart              入口 / CupertinoApp + 主题与语言路由
+│   ├── l10n/                  本地化层（5 语言词典 + 4 主题色板 + 设置持久化）
 │   ├── core/
 │   │   ├── crawler/           爬虫内核（23 文件，零依赖，已冻结）
 │   │   └── storage/local_cache.dart  业务 KV 缓存
-│   ├── viewmodels/            Riverpod 状态层（组装根在 providers.dart）
-│   └── views/                 UI（可整体替换）
+│   ├── viewmodels/            Riverpod 状态层（组装根在 providers.dart，12 个 VM）
+│   └── views/                 Cupertino UI（15 页 + cupertino_kit 共享组件）
 ├── grabber/                   Python 原版爬虫（参考 & golden 基准）
 ├── test/                      8 个单测文件
 ├── tool/                      实网验证/诊断脚本（dart run）
-└── docs/                      本目录文档
+└── docs/                      本目录文档（含 design-spec.md 设计基准）
 ```
 
 ## 4. 运行与验证
@@ -71,13 +73,22 @@ JAVA_HOME=<Android Studio>/jbr /Users/lin/develop/flutter/bin/flutter build apk 
 2. 在 viewmodel 用静态类型会话调 `session.withApi((api) => api.xxx(...))`；
 3. 结果写 LocalCache（缓存优先），页面绑定 Provider。
 
+### 加一个页面
+1. 文案全部走 `context.l10n`（新词条在 `lib/l10n/app_strings.dart` **5 种语言同步补齐**）；
+2. 颜色全部走 `AppThemeScope.of(context)` 色板（bg/card/label/secondary/separator/primary），
+   **禁止硬编码 Color**，否则暗色/护眼主题下错色；
+3. 用 `cupertino_kit.dart` 共享组件（Group/SectionHeader/CupertinoEmpty/AsyncSliver/toast/confirm），
+   页面骨架 `CupertinoPageScaffold`，下钻 `pushPage`（CupertinoPageRoute）；
+4. 入口挂『更多』中枢（hub_page）或『账户』页，遵循 design-spec 的分组。
+
 ### 处理会话失效 / 风控
 - `SessionLost` → `withApi` 已自动重建，业务无需处理；
 - `CredentialError`/`NeedCaptchaError`/`NeedSecondaryAuthError` → 提示用户，**永不自动重试**。
 
 ### 新增缓存命名空间
 在 [local_cache.dart](../lib/core/storage/local_cache.dart) 约定范围内新增 `<ns>`，
-路径由组装层注入，VM 不直接拼路径。
+路径由组装层注入，VM 不直接拼路径。现有 ns：`auth`/`timetable`/`meta`/`grades`/
+`evaluate`/`messages`/`welcome`/`elective`。
 
 ## 6. 已知陷阱与红线（务必先看开发规范）
 
@@ -89,16 +100,14 @@ JAVA_HOME=<Android Studio>/jbr /Users/lin/develop/flutter/bin/flutter build apk 
 - **防封号红线**：每会话最多 1 次密码 POST；SSO 期内全走免密；凭据被拒不重试；
   短信二次认证绝不自动重试。
 - **敏感文件**：`assets/*.har` 含抓包 token/cookie，已 gitignore，**勿重新提交**。
-  `lib/core/config/app_secrets.dart` 为本地密钥占位（勿泄露）。
 
 ## 7. 可整体替换 / 临时项
 
 | 项 | 性质 | 说明 |
 |---|---|---|
-| `api_explorer_vm.dart` + more_page API 调试 | 工程期调试 | 正式 UI 落地后可删除 |
-| 账号簿密码 base64 存储 | 工程期 | 正式版换 secure storage |
 | `grabber/` Python 源 | 参考基准 | 保留作 golden 与行为参照 |
 | `tool/*.dart` 实网脚本 | 开发验证 | 保留作回归入口 |
+| `l10n/app_strings.dart` 词条 | 可扩展 | 新文案 5 语言同步补齐；RTL（乌尔都语）需复查布局 |
 
 ## 8. 常见问题（FAQ）
 
@@ -112,3 +121,11 @@ JAVA_HOME=<Android Studio>/jbr /Users/lin/develop/flutter/bin/flutter build apk 
    离线/未登录仍可渲染（缓存优先）。
 - **Q：改了内核代码后怎么验证？**
   A：`flutter test` + `kernel_check.dart`（golden 比对 Python），任何保真偏差都要先回归。
+- **Q：语言/主题在哪里改？持久化在哪？**
+  A：『账户』页外观/语言设置 → `appSettingsProvider.setTheme/setLocale`，
+   落盘 LocalCache ns=`meta`（键 `theme`/`locale`），启动时 `load()` 恢复。
+- **Q：图标全是方框？**
+  A：`cupertino_icons` 依赖缺失或字体没打进包（依赖已在 pubspec，重跑 `pub get`/clean 构建）。
+- **Q：成绩页 Table 报 `_elements.contains(element): is not true`？**
+  A：换数据源（切学期）时 Table 复用旧子元素 + `IntrinsicColumnWidth` 触发布局断言。
+   对策：空表头先兜底空态，表格包 `KeyedSubtree(key: ValueKey('<学期>'))` 强制整表重建。
