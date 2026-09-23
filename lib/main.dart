@@ -2,8 +2,8 @@
 // 1) ProviderScope 挂载
 // 2) 启动载入持久化的语言/主题（appSettingsProvider.load）
 // 3) CupertinoApp 注入：locale、localizationsDelegates（中简/繁/英/日/乌）、
-//    按主题模式构建 CupertinoThemeData，并用 AppThemeScope 下发色板
-// 4) 依认证状态路由：boot→Splash / needsLogin/needsSms→Login / authed→Home
+//    按主题模式构建 CupertinoThemeData，并用 AppThemeScope 与 AppL10nScope 全局注入
+// 4) 依认证状态瞬时直达路由：无闪屏/flash页面，直接根据认证态渲染 Home / Login
 // authed 区域用嵌套 Navigator 承载（课表首页 + 下钻模块页压栈），登出时整棵卸载。
 
 import 'package:flutter/cupertino.dart';
@@ -17,7 +17,6 @@ import 'l10n/app_strings.dart';
 import 'l10n/app_theme.dart';
 import 'viewmodels/auth_vm.dart';
 import 'views/pages/login_page.dart';
-import 'views/pages/load_page.dart';
 import 'views/pages/timetable_page.dart';
 
 const _appSystemUiOverlayStyle = SystemUiOverlayStyle(
@@ -29,6 +28,7 @@ const _appSystemUiOverlayStyle = SystemUiOverlayStyle(
   systemNavigationBarDividerColor: Colors.transparent,
   systemNavigationBarContrastEnforced: false,
 );
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -62,20 +62,32 @@ class _GradeAppState extends ConsumerState<GradeApp> {
 
     return AppThemeScope(
       palette: palette,
-      child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: _appSystemUiOverlayStyle,
-        child: CupertinoApp(
-          title: settings.locale.code == 'zh-Hant' ? 'Grade' : 'Grade',
-          debugShowCheckedModeBanner: false,
-          locale: settings.locale.locale,
-          supportedLocales: [for (final l in supportedAppLocales) l.locale],
-          localizationsDelegates: const [
-            GlobalCupertinoLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-          ],
-          theme: buildTheme(palette, brightness),
-          home: _AuthGate(),
+      child: AppL10nScope(
+        strings: AppStrings(settings.locale.code),
+        locale: settings.locale,
+        child: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: _appSystemUiOverlayStyle,
+          child: CupertinoApp(
+            title: 'Grade',
+            debugShowCheckedModeBanner: false,
+            locale: settings.locale.locale,
+            supportedLocales: [for (final l in supportedAppLocales) l.locale],
+            localizationsDelegates: const [
+              GlobalCupertinoLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+            ],
+            theme: buildTheme(palette, brightness),
+            builder: (context, child) {
+              return Directionality(
+                textDirection: settings.locale.isRtl
+                    ? TextDirection.rtl
+                    : TextDirection.ltr,
+                child: child ?? const SizedBox.shrink(),
+              );
+            },
+            home: const _AuthGate(),
+          ),
         ),
       ),
     );
@@ -89,15 +101,29 @@ class _AuthGate extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
     return auth.when(
-      loading: () => const SplashPage(),
-      error: (e, _) => SplashPage(message: '${context.l10n.appName} · $e'),
+      loading: () => const _BootContainer(),
+      error: (e, _) => const LoginPage(),
       data: (s) => switch (s.status) {
-        AuthStatus.boot => const SplashPage(),
+        AuthStatus.boot => const _BootContainer(),
         AuthStatus.busy ||
         AuthStatus.needsLogin ||
         AuthStatus.needsSms => const LoginPage(),
         AuthStatus.authed => const AuthedHome(),
       },
+    );
+  }
+}
+
+/// 启动瞬态容器（无冗余动画与闪屏，无缝秒开）
+class _BootContainer extends StatelessWidget {
+  const _BootContainer();
+
+  @override
+  Widget build(BuildContext context) {
+    final p = AppThemeScope.of(context);
+    return CupertinoPageScaffold(
+      backgroundColor: p.bg,
+      child: const SizedBox.expand(),
     );
   }
 }

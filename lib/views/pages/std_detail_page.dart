@@ -1,5 +1,8 @@
-/// 学籍信息页 —— 学籍/联系/家庭等多 section 分段 KV 展示 + 顶部照片。
-/// 采用现代化的 Inset Grouped 列表与大标题导航栏。
+/// 学籍信息页 —— 校园卡风格的个人学籍档案与分段 KV 展示。
+///
+/// 特性：
+/// - 校园卡风格的学生档案 Header（包含照片、姓名、学号、院系）
+/// - Inset Grouped 分段展示学籍、教务、联系方式等元数据
 library;
 
 import 'package:flutter/cupertino.dart';
@@ -17,24 +20,29 @@ class StdDetailPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final p = AppThemeScope.of(context);
     final l10n = context.l10n;
-    
+
     return CupertinoPageScaffold(
       backgroundColor: p.bg,
       child: CustomScrollView(
+        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         slivers: [
           CupertinoSliverNavigationBar(
             largeTitle: Text(l10n.stdInfo),
-            backgroundColor: p.bar.withValues(alpha: 0.8),
+            backgroundColor: p.bar.withValues(alpha: 0.82),
             border: Border(bottom: BorderSide(color: p.separator, width: 0.5)),
             stretch: true,
             trailing: CupertinoButton(
               padding: EdgeInsets.zero,
-              onPressed: () => ProviderScope.containerOf(context).read(stdDetailProvider.notifier).refresh(),
-              child: const Icon(CupertinoIcons.arrow_clockwise),
+              minimumSize: const Size(36, 36),
+              onPressed: () => ref.read(stdDetailProvider.notifier).refresh(),
+              child: const Icon(CupertinoIcons.arrow_clockwise, size: 20),
             ),
           ),
+          CupertinoSliverRefreshControl(
+            onRefresh: () => ref.read(stdDetailProvider.notifier).refresh(),
+          ),
           const _StdBody(),
-          const SliverToBoxAdapter(child: SizedBox(height: 32)),
+          const SliverToBoxAdapter(child: SizedBox(height: 48)),
         ],
       ),
     );
@@ -47,81 +55,208 @@ class _StdBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(stdDetailProvider);
-    final notifier = ref.read(stdDetailProvider.notifier);
-    
+
     return async.when(
-      loading: () => const SliverFillRemaining(child: Center(child: CupertinoActivityIndicator(radius: 12))),
-      error: (e, _) => SliverFillRemaining(child: Center(child: CupertinoButton(child: Text(context.l10n.retry), onPressed: () => notifier.refresh()))),
+      loading: () => const SliverFillRemaining(
+        child: Center(child: CupertinoActivityIndicator(radius: 14)),
+      ),
+      error: (e, _) => SliverFillRemaining(
+        child: CupertinoErrorCard(
+          message: '$e',
+          onRetry: () => ref.read(stdDetailProvider.notifier).refresh(),
+        ),
+      ),
       data: (data) {
         if (data == null || data.isEmpty) {
-          return SliverFillRemaining(child: CupertinoEmpty(message: context.l10n.noStdInfo));
-        }
-        
-        final children = <Widget>[];
-        final photo = data['photo'];
-        if (photo is String && photo.isNotEmpty) {
-          children.add(const SizedBox(height: 20));
-          children.add(_Photo(url: photo));
-          children.add(const SizedBox(height: 20));
+          return SliverFillRemaining(
+            child: CupertinoEmpty(
+              message: context.l10n.noStdInfo,
+              icon: CupertinoIcons.person_badge_minus,
+            ),
+          );
         }
 
+        final photo = data['photo'] as String?;
         final sections = data['sections'];
+        final p = AppThemeScope.of(context);
+        final l10n = context.l10n;
+
+        // 提取主要信息生成学生卡
+        String studentName = l10n.student;
+        String studentNo = '';
+        String department = '';
+        String major = '';
+
         if (sections is List) {
           for (final s in sections.whereType<Map>()) {
-            final name = s['section'];
-            final groupChildren = <Widget>[];
             final kv = s['kv'];
             if (kv is Map) {
-              for (final e in kv.entries) {
-                if (e.key == '照片') continue;
-                groupChildren.add(KVRow(label: '${e.key}', value: '${e.value}'));
+              if (kv.containsKey('姓名')) studentName = '${kv['姓名']}';
+              if (kv.containsKey('学号')) studentNo = '${kv['学号']}';
+              if (kv.containsKey('学院') || kv.containsKey('院系')) {
+                department = '${kv['学院'] ?? kv['院系']}';
               }
-            }
-            if (groupChildren.isNotEmpty) {
-              children.add(
-                Group(
-                  header: name is String && name.isNotEmpty ? Text(name) : null,
-                  margin: const EdgeInsets.only(bottom: 12),
-                  children: groupChildren,
-                ),
-              );
+              if (kv.containsKey('专业')) major = '${kv['专业']}';
             }
           }
         }
-        
-        return SliverList(delegate: SliverChildListDelegate(children));
+
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate([
+              const SizedBox(height: 12),
+
+              // 校园卡风格 Header
+              CupertinoCard(
+                padding: const EdgeInsets.all(20),
+                color: p.card,
+                child: Row(
+                  children: [
+                    _StudentAvatar(photoUrl: photo, name: studentName, p: p),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            studentName,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: p.label,
+                              letterSpacing: -0.4,
+                            ),
+                          ),
+                          if (studentNo.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              l10n.studentIdNo(studentNo),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: p.primary,
+                              ),
+                            ),
+                          ],
+                          if (department.isNotEmpty || major.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              [department, major].where((e) => e.isNotEmpty).join(' · '),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: p.secondary,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // 分段信息组
+              if (sections is List)
+                for (final s in sections.whereType<Map>()) ...[
+                  Builder(
+                    builder: (ctx) {
+                      final name = s['section'] as String? ?? l10n.archiveInfo;
+                      final kv = s['kv'];
+                      final rows = <Widget>[];
+
+                      if (kv is Map) {
+                        for (final e in kv.entries) {
+                          if (e.key == '照片') continue;
+                          rows.add(
+                            KVRow(
+                              label: '${e.key}',
+                              value: '${e.value}',
+                            ),
+                          );
+                        }
+                      }
+
+                      if (rows.isEmpty) return const SizedBox.shrink();
+
+                      return Group(
+                        header: Text(name),
+                        children: rows,
+                      );
+                    },
+                  ),
+                ],
+            ]),
+          ),
+        );
       },
     );
   }
 }
 
-class _Photo extends StatelessWidget {
-  const _Photo({required this.url});
-  final String url;
+class _StudentAvatar extends StatelessWidget {
+  const _StudentAvatar({
+    required this.photoUrl,
+    required this.name,
+    required this.p,
+  });
+
+  final String? photoUrl;
+  final String name;
+  final AppPalette p;
 
   @override
   Widget build(BuildContext context) {
-    final p = AppThemeScope.of(context);
-    const size = 100.0;
-    return Center(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          boxShadow: [BoxShadow(color: p.separator.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(size / 2),
-          child: Image.network(
-            url,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => Container(
-              color: p.card,
-              child: Icon(CupertinoIcons.person_fill, size: 50, color: p.secondary.withValues(alpha: 0.3)),
-            ),
+    const size = 68.0;
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: p.secondary.withValues(alpha: 0.1),
+        shape: BoxShape.circle,
+        border: Border.all(color: p.border, width: 0.5),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0x14000000),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-        ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(size / 2),
+        child: photoUrl != null && photoUrl!.isNotEmpty
+            ? Image.network(
+                photoUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => _fallbackAvatar(),
+              )
+            : _fallbackAvatar(),
+      ),
+    );
+  }
+
+  Widget _fallbackAvatar() {
+    return Container(
+      color: p.primary.withValues(alpha: 0.15),
+      child: Center(
+        child: name.isNotEmpty
+            ? Text(
+                name.substring(0, 1),
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  color: p.primary,
+                ),
+              )
+            : Icon(
+                CupertinoIcons.person_fill,
+                size: 28,
+                color: p.primary,
+              ),
       ),
     );
   }

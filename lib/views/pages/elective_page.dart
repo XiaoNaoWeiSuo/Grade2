@@ -1,4 +1,5 @@
-/// 选课入口页：轮次列表。采用现代化的 Inset Grouped 列表与大标题导航栏。
+/// 选课入口页：轮次列表。
+/// 采用现代 iOS 状态卡片展示选课轮次、开放期、限额与规则。
 library;
 
 import 'package:flutter/cupertino.dart';
@@ -17,16 +18,23 @@ class ElectivePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final p = AppThemeScope.of(context);
     final l10n = context.l10n;
-    
+
     return CupertinoPageScaffold(
       backgroundColor: p.bg,
       child: CustomScrollView(
+        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         slivers: [
           CupertinoSliverNavigationBar(
             largeTitle: Text(l10n.elective),
-            backgroundColor: p.bar.withValues(alpha: 0.8),
+            backgroundColor: p.bar.withValues(alpha: 0.82),
             border: Border(bottom: BorderSide(color: p.separator, width: 0.5)),
             stretch: true,
+            trailing: CupertinoButton(
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(36, 36),
+              onPressed: () => ref.read(electiveProvider.notifier).loadProfiles(),
+              child: const Icon(CupertinoIcons.arrow_clockwise, size: 20),
+            ),
           ),
           const _ProfilesBody(),
         ],
@@ -42,28 +50,37 @@ class _ProfilesBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(electiveProvider);
     final l10n = context.l10n;
-    
+
     return AsyncSliver<ElectiveState>(
       async: async,
       onRetry: () => ref.read(electiveProvider.notifier).loadProfiles(),
       emptyText: l10n.noProfiles,
       builder: (context, data) {
         final profiles = data.profiles;
-        return SliverToBoxAdapter(
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 10),
-              Group(
-                header: Text(l10n.electiveProfiles),
-                children: [
-                  for (final profile in profiles)
-                    _ProfileTile(
-                      profile: profile,
-                      onTap: () => pushPage(context, ElectiveLessonsPage(profile: profile)),
-                    ),
-                ],
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 8),
+                child: Text(
+                  l10n.electiveProfiles,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppThemeScope.of(context).secondary,
+                  ),
+                ),
               ),
-              const SizedBox(height: 32),
+              for (final profile in profiles)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _ProfileCard(
+                    profile: profile,
+                    onTap: () => pushPage(context, ElectiveLessonsPage(profile: profile)),
+                  ),
+                ),
             ],
           ),
         );
@@ -72,8 +89,9 @@ class _ProfilesBody extends ConsumerWidget {
   }
 }
 
-class _ProfileTile extends StatelessWidget {
-  const _ProfileTile({required this.profile, required this.onTap});
+class _ProfileCard extends StatelessWidget {
+  const _ProfileCard({required this.profile, required this.onTap});
+
   final Map<String, Object?> profile;
   final VoidCallback onTap;
 
@@ -86,59 +104,77 @@ class _ProfileTile extends StatelessWidget {
     final electOpen = s(profile, 'elect_open').isNotEmpty;
     final withdrawOpen = s(profile, 'withdraw_open').isNotEmpty;
     final limits = profile['limits'] as List? ?? const [];
+    final notice = s(profile, 'notice');
 
-    return Tile(
+    final title = round != null
+        ? l10n.roundLabel.replaceFirst('%1', name).replaceFirst('%2', '$round')
+        : name;
+
+    return CupertinoCard(
+      padding: const EdgeInsets.all(16),
       onTap: onTap,
-      title: Text(
-        round != null ? l10n.roundLabel.replaceFirst('%1', name).replaceFirst('%2', '$round') : name,
-        style: const TextStyle(fontWeight: FontWeight.bold),
-      ),
-      subtitle: Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 6),
           Row(
             children: [
-              _StatusBadge(open: electOpen, openText: l10n.electOpen, closedText: l10n.electClosed),
-              const SizedBox(width: 8),
-              _StatusBadge(open: withdrawOpen, openText: l10n.withdrawOpen, closedText: l10n.withdrawClosed),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: p.label,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+              ),
+              Icon(CupertinoIcons.chevron_right, size: 16, color: p.tertiary),
             ],
           ),
-          if (limits.isNotEmpty) ...[
-            const SizedBox(height: 6),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              CupertinoPillBadge(
+                text: electOpen ? l10n.electOpen : l10n.electClosed,
+                icon: electOpen ? CupertinoIcons.checkmark_circle_fill : CupertinoIcons.xmark_circle_fill,
+                color: electOpen
+                    ? p.success.withValues(alpha: 0.12)
+                    : p.secondary.withValues(alpha: 0.12),
+                textColor: electOpen ? p.success : p.secondary,
+              ),
+              const SizedBox(width: 8),
+              CupertinoPillBadge(
+                text: withdrawOpen ? l10n.withdrawOpen : l10n.withdrawClosed,
+                icon: withdrawOpen ? CupertinoIcons.arrow_uturn_left_circle_fill : CupertinoIcons.slash_circle_fill,
+                color: withdrawOpen
+                    ? p.primary.withValues(alpha: 0.12)
+                    : p.secondary.withValues(alpha: 0.12),
+                textColor: withdrawOpen ? p.primary : p.secondary,
+              ),
+            ],
+          ),
+          if (limits.isNotEmpty || notice.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            const Sep(),
+            const SizedBox(height: 10),
+            if (notice.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  notice,
+                  style: TextStyle(fontSize: 12, color: p.secondary, height: 1.3),
+                ),
+              ),
             for (final limit in limits)
               Padding(
                 padding: const EdgeInsets.only(top: 2),
-                child: Text('· $limit', style: TextStyle(fontSize: 12, color: p.secondary)),
+                child: Text(
+                  '• $limit',
+                  style: TextStyle(fontSize: 12, color: p.secondary),
+                ),
               ),
           ],
-        ],
-      ),
-    );
-  }
-}
-
-class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({required this.open, required this.openText, required this.closedText});
-  final bool open;
-  final String openText;
-  final String closedText;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = open ? CupertinoColors.systemGreen : CupertinoColors.systemGrey;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(CupertinoIcons.circle_fill, size: 6, color: color),
-          const SizedBox(width: 4),
-          Text(open ? openText : closedText, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color)),
         ],
       ),
     );

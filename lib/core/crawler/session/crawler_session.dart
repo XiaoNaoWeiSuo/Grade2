@@ -112,10 +112,16 @@ class CrawlerSession {
   ///   → 直接返回，零网络请求
   /// - [forceRelogin] = true 时跳过缓存，强制重走全链路（不清 cookie，
   ///   CASTGC 仍有效时第①步自动 SSO 免密）
+  /// - [maxAttempts]：默认 2 次尝试。首次遇到非验证码/二次认证的异常（如密码 POST 偶发拒绝、
+  ///   网络闪断、ST 或 verify 延迟）时，会自动清理污染的中间状态并延迟 1 秒重试，
+  ///   不让用户在首次偶发失败时直接报错。
   ///
   /// 抛出：[CasError]/[NeedCaptchaError]/[CredentialError]/
   /// [PortalError]/[AppAuthError]/[HttpError]。
-  Future<EamsApi> ensureApi({bool forceRelogin = false}) async {
+  Future<EamsApi> ensureApi({
+    bool forceRelogin = false,
+    int maxAttempts = 2,
+  }) async {
     if (_disposed) throw const HttpError('会话已销毁');
     await loadState();
 
@@ -124,27 +130,60 @@ class CrawlerSession {
       return _cachedApi ??= EamsApi(http: http, config: config);
     }
 
-    final deviceId = (extra['device_id'] as String?) ?? randomHex(32);
-    extra['device_id'] = deviceId;
+    Object? lastError;
+    StackTrace? lastStackTrace;
 
-    // ① CAS
-    final cas = await step1.login();
-    extra['cas_at'] = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    await saveState();
+    for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        final deviceId = (extra['device_id'] as String?) ?? randomHex(32);
+        extra['device_id'] = deviceId;
 
-    // ② 门户
-    final portal = await step2.establish(cas.redirectUrl, deviceId);
-    extra['portal_at'] = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    extra['display_name'] = portal.displayName;
-    extra['portal_username'] = portal.username;
-    await saveState();
+        // ① CAS
+        final cas = await step1.login();
+        extra['cas_at'] = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        await saveState();
 
-    // ③ 应用授权
-    await step3.enter();
-    extra['app_at'] = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    await saveState();
+        // ② 门户
+        final portal = await step2.establish(cas.redirectUrl, deviceId);
+        extra['portal_at'] = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        extra['display_name'] = portal.displayName;
+        extra['portal_username'] = portal.username;
+        await saveState();
 
-    return _cachedApi = EamsApi(http: http, config: config);
+        // ③ 应用授权
+        await step3.enter();
+        extra['app_at'] = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        await saveState();
+
+        return _cachedApi = EamsApi(http: http, config: config);
+      } catch (e, st) {
+        lastError = e;
+        lastStackTrace = st;
+
+        // 人工干预型异常（图形验证码、网关风控短信）：直接交给外部流程，不盲目重试
+        if (e is NeedCaptchaError || e is NeedSecondaryAuthError) {
+          rethrow;
+        }
+
+        if (attempt < maxAttempts) {
+          onLog?.call('第 $attempt 次登录未成功($e)，清理中间状态并在 1 秒后自动重试...');
+          // 清理会话中可能残留的污染 Cookie 与中间步骤状态
+          http.cookies.clear();
+          extra.remove('app_at');
+          extra.remove('portal_at');
+          extra.remove('cas_at');
+          _step2 = null;
+          _step3 = null;
+          await Future<void>.delayed(const Duration(milliseconds: 1000));
+          continue;
+        }
+      }
+    }
+
+    if (lastError != null) {
+      Error.throwWithStackTrace(lastError, lastStackTrace ?? StackTrace.current);
+    }
+    throw const CasError('登录失败：未知异常');
   }
 
   /// 会话失效自动重建的闭包封装（推荐 Riverpod 层使用）。

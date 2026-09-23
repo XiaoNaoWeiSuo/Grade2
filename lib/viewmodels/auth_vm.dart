@@ -11,8 +11,10 @@
 /// 旧版本 base64 明文条目首次恢复时自动迁移到安全存储并清除明文。
 library;
 
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -53,6 +55,7 @@ class AuthState {
     this.error,
     this.smsMaskedPhone,
     this.smsInterval = 60,
+    this.failureCount = 0,
   });
 
   final AuthStatus status;
@@ -65,7 +68,7 @@ class AuthState {
   /// 离线降级：历史会话存在但本次网络校验未通过，仅可用本地缓存数据。
   final bool offline;
 
-  /// 本机账号簿 `[{username, remember}]`（密码存于安全存储）。
+  /// 本机账号簿 `[{username, remember, autoLogin, startWithCache}]`（密码存于安全存储）。
   final List<Map<String, Object?>> accounts;
 
   /// 展示给用户的错误文案。
@@ -76,6 +79,9 @@ class AuthState {
 
   /// 短信重发间隔（秒）。
   final int smsInterval;
+
+  /// 连续登录失败次数（用于驱动登录按钮分色裂变与缓存进入）。
+  final int failureCount;
 
   AuthState copyWith({
     AuthStatus? status,
@@ -89,6 +95,7 @@ class AuthState {
     bool clearError = false,
     String? smsMaskedPhone,
     int? smsInterval,
+    int? failureCount,
   }) =>
       AuthState(
         status: status ?? this.status,
@@ -100,6 +107,7 @@ class AuthState {
         error: clearError ? null : (error ?? this.error),
         smsMaskedPhone: smsMaskedPhone ?? this.smsMaskedPhone,
         smsInterval: smsInterval ?? this.smsInterval,
+        failureCount: failureCount ?? this.failureCount,
       );
 }
 
@@ -125,15 +133,38 @@ class AuthController extends AsyncNotifier<AuthState> {
       await _persistBook(cache, accounts);
     }
 
-    final username = remembered?['username'] as String? ?? '';
+    final username = remembered?['username'] as String? ?? last;
     final password = await _loadPwd(username);
+
+    // 1) 检查是否启用了【下次缓存】：启动时直接读取上次登陆的缓存数据渲染，不登录刷新数据
+    final startWithCache = remembered?['startWithCache'] == true;
+    final hasCache = await _hasCacheInternal(cache, username);
+    if (startWithCache && hasCache) {
+      return AuthState(
+        status: AuthStatus.authed,
+        username: username,
+        displayName: remembered?['displayName'] as String? ?? username,
+        offline: true,
+        accounts: accounts,
+      );
+    }
+
+    // 2) 检查是否关闭了【自动登录】：若显式设为 false 且未开启下次缓存，停在登录页
+    final autoLogin = remembered?['autoLogin'] ?? true;
+    if (autoLogin == false) {
+      return AuthState(
+        status: AuthStatus.needsLogin,
+        accounts: accounts,
+        username: username,
+      );
+    }
 
     final statePath = await ref.watch(sessionStatePathProvider.future);
     final session = CrawlerSession(
       config: ref.watch(grabberConfigProvider),
       credentials: CrawlerCredentials(username: username, password: password),
       stateStore: FileSessionStateStore(statePath),
-      onLog: (m) {}, // 工程期静默；调试时可接 debugPrint
+      onLog: (m) => debugPrint('[Crawler] $m'),
     );
 
     // ⚠ 必须先载入持久化 cookie 再判定（loadState 幂等，ensureApi 内的再次
@@ -172,12 +203,12 @@ class AuthController extends AsyncNotifier<AuthState> {
           accounts: accounts,
           error: e.message);
     } on CrawlerException catch (e) {
-      // 网络类失败：若历史会话在，降级为离线模式进入（可用缓存数据）
-      if (hasCookies && session.extra['app_at'] != null) {
+      // 网络类失败：若历史会话在或本地有缓存，降级为离线模式进入（可用缓存数据）
+      if ((hasCookies && session.extra['app_at'] != null) || hasCache) {
         return AuthState(
           status: AuthStatus.authed,
           session: session,
-          username: remembered?['username'] as String?,
+          username: username.isNotEmpty ? username : (remembered?['username'] as String?),
           offline: true,
           accounts: accounts,
           error: '网络异常(${e.message})，已进入离线模式（仅本地缓存数据）',
@@ -192,8 +223,14 @@ class AuthController extends AsyncNotifier<AuthState> {
 
   // ---------------- 登录 ----------------
 
-  /// 账号密码登录（走完整四步鉴权）。成功后按 [remember] 更新账号簿与安全存储。
-  Future<void> login(String username, String password, bool remember) async {
+  /// 账号密码登录（走完整四步鉴权）。成功后按选项更新账号簿与安全存储。
+  Future<void> login(
+    String username,
+    String password, [
+    bool remember = true,
+    bool autoLogin = true,
+    bool startWithCache = false,
+  ]) async {
     final cache = await ref.read(localCacheProvider.future);
     var accounts = _book(await cache.readAs<List<Object?>>(
         _nsAuth, _keyAccounts, const []));
@@ -209,32 +246,62 @@ class AuthController extends AsyncNotifier<AuthState> {
       config: ref.read(grabberConfigProvider),
       credentials: CrawlerCredentials(username: username, password: password),
       stateStore: FileSessionStateStore(statePath),
+      onLog: (m) => debugPrint('[Crawler] $m'),
     );
 
     try {
       await session.ensureApi(forceRelogin: true);
-      accounts = _upsert(accounts, {'username': username, 'remember': remember});
+      final displayName = session.extra['display_name'] as String?;
+      accounts = _upsert(accounts, {
+        'username': username,
+        'remember': remember,
+        'autoLogin': autoLogin,
+        'startWithCache': startWithCache,
+        'displayName': ?displayName,
+      });
       await _persistBook(cache, accounts, last: username);
       if (remember) {
         await _savePwd(username, password);
       } else {
         await _deletePwd(username);
       }
+
+      // 每次登录成功刷新这个缓存（异步预拉取课表并写入按账号隔离的缓存中）
+      unawaited(() async {
+        try {
+          final raw =
+              await session.withApi((api) => api.courseTable(kind: 'std'));
+          raw.remove('file');
+          final semId = raw['semester_id'] as int? ?? 409;
+          await cache.write('timetable', 'table_std_$semId', raw);
+          await cache.write('timetable', 'table_std_${username}_$semId', raw);
+        } catch (_) {}
+      }());
+
       state = AsyncData(AuthState(
         status: AuthStatus.authed,
         session: session,
         username: username,
-        displayName: session.extra['display_name'] as String?,
+        displayName: displayName,
         accounts: accounts,
+        failureCount: 0,
       ));
     } on CredentialError catch (e) {
       await _disposeSession(session);
-      state = AsyncData(const AuthState(status: AuthStatus.needsLogin)
-          .copyWith(accounts: accounts, error: e.message));
+      state = AsyncData(cur.copyWith(
+        status: AuthStatus.needsLogin,
+        accounts: accounts,
+        error: e.message,
+        failureCount: cur.failureCount + 1,
+      ));
     } on NeedCaptchaError catch (e) {
       await _disposeSession(session);
-      state = AsyncData(const AuthState(status: AuthStatus.needsLogin)
-          .copyWith(accounts: accounts, error: e.message));
+      state = AsyncData(cur.copyWith(
+        status: AuthStatus.needsLogin,
+        accounts: accounts,
+        error: e.message,
+        failureCount: cur.failureCount + 1,
+      ));
     } on NeedSecondaryAuthError catch (e) {
       // 网关风控：同一会话直接发送短信验证码，进入 needsSms 等待用户输码
       try {
@@ -247,23 +314,89 @@ class AuthController extends AsyncNotifier<AuthState> {
           smsMaskedPhone: c.maskedPhone,
           smsInterval: c.intervalSeconds,
           error: e.message,
+          failureCount: cur.failureCount,
         ));
       } on CrawlerException catch (e2) {
         await _disposeSession(session);
-        state = AsyncData(const AuthState(status: AuthStatus.needsLogin)
-            .copyWith(accounts: accounts, error: e2.message));
+        state = AsyncData(cur.copyWith(
+          status: AuthStatus.needsLogin,
+          accounts: accounts,
+          error: e2.message,
+          failureCount: cur.failureCount + 1,
+        ));
       }
     } on CrawlerException catch (e) {
       await _disposeSession(session);
-      state = AsyncData(const AuthState(status: AuthStatus.needsLogin)
-          .copyWith(accounts: accounts, error: e.message));
+      state = AsyncData(cur.copyWith(
+        status: AuthStatus.needsLogin,
+        accounts: accounts,
+        error: e.message,
+        failureCount: cur.failureCount + 1,
+      ));
     }
   }
 
   /// 用账号簿中已记住的账号直接登录。
   Future<void> loginWithSaved(Map<String, Object?> entry) async {
     final username = entry['username'] as String? ?? '';
-    await login(username, await _loadPwd(username), true);
+    final remember = entry['remember'] != false;
+    final autoLogin = entry['autoLogin'] != false;
+    final startWithCache = entry['startWithCache'] == true;
+    await login(
+      username,
+      await _loadPwd(username),
+      remember,
+      autoLogin,
+      startWithCache,
+    );
+  }
+
+  /// 检测特定账号是否存在有效本地缓存（课表等数据）。
+  Future<bool> hasCacheFor(String username) async {
+    if (username.isEmpty) return false;
+    final cache = await ref.read(localCacheProvider.future);
+    return _hasCacheInternal(cache, username);
+  }
+
+  static Future<bool> _hasCacheInternal(
+      LocalCache cache, String username) async {
+    if (username.isEmpty) return false;
+    final keys = await cache.keys('timetable');
+    final prefix = 'table_std_${username}_';
+    if (keys.any((k) => k.startsWith(prefix))) return true;
+    final last = await cache.readAs<String>(_nsAuth, _keyLast, '');
+    if (last == username && keys.any((k) => k.startsWith('table_std_'))) {
+      return true;
+    }
+    return false;
+  }
+
+  /// 直接从本地缓存进入（离线秒开，用于免登录或连续登录失败时降级）。
+  Future<void> enterFromCache(String username) async {
+    final cache = await ref.read(localCacheProvider.future);
+    final accounts = _book(await cache.readAs<List<Object?>>(
+        _nsAuth, _keyAccounts, const []));
+    final entry = _entryOf(accounts, username);
+    final cur = state.value ?? const AuthState();
+    state = AsyncData(cur.copyWith(
+      status: AuthStatus.authed,
+      username: username,
+      displayName: entry?['displayName'] as String? ?? username,
+      offline: true,
+      clearError: true,
+      failureCount: 0,
+    ));
+  }
+
+  /// 取消短信验证，返回常规登录。
+  Future<void> cancelSms() async {
+    final cur = state.value ?? const AuthState();
+    await _disposeSession();
+    state = AsyncData(cur.copyWith(
+      status: AuthStatus.needsLogin,
+      clearSession: true,
+      clearError: true,
+    ));
   }
 
   // ---------------- 短信二次认证 ----------------
@@ -299,6 +432,7 @@ class AuthController extends AsyncNotifier<AuthState> {
         displayName: session.extra['display_name'] as String?,
         offline: false,
         clearError: true,
+        failureCount: 0,
       ));
       return null;
     } on PortalError catch (e) {

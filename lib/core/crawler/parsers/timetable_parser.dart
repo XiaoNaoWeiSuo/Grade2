@@ -77,8 +77,8 @@ Map<String, Object?> parseCourseHtml(String html) {
   for (final part
       in splitBefore(html, RegExp(r'var\s+teachers\s*='))) {
     final actM = _taskActivityRe.firstMatch(part);
-    final idxM = _indexRe.firstMatch(part);
-    if (actM == null || idxM == null) continue;
+    final idxMatches = _indexRe.allMatches(part).toList();
+    if (actM == null || idxMatches.isEmpty) continue;
     final args = splitJsArgs(actM.group(1)!);
 
     String lit(int i) {
@@ -96,36 +96,39 @@ Map<String, Object?> parseCourseHtml(String html) {
     final task = _splitLabel(lit(2));
     final name = _splitLabel(lit(3));
     final week = weekParse(lit(6));
-    final idx = int.parse(idxM.group(1)!) * (unitCount ?? 0) + int.parse(idxM.group(2)!);
-    final day = unitCount != null && unitCount > 0 ? idx ~/ unitCount + 1 : null;
-    final unit = unitCount != null && unitCount > 0 ? idx % unitCount + 1 : null;
-    courses.add({
-      // 教师
-      'teachers': teachers,
-      'teacher_names': (actTeachers.isNotEmpty ? actTeachers : teachers)
-          .map((t) => t['name'] as String)
-          .join(','),
-      'act_teachers': actTeachers,
-      'assistant': assistant,
-      // 课程标识
-      'task_no': task['no'],
-      'course_code': task['code'],
-      'clazz': task['raw'],
-      'name': name['no'],
-      'name_raw': name['raw'],
-      'course_code2': name['code'],
-      // 地点
-      'room_id': lit(4),
-      'room': lit(5),
-      // 时间
-      'day': day,
-      'day_name': day != null && day >= 1 && day <= 7 ? _dayNames[day - 1] : null,
-      'unit': unit,
-      'weeks': week, // {raw, digest, list, count, total}
-      // 其它标记(第 12 参:实验/实践课标记;全部参数原样保留)
-      'flag': lit(11),
-      'params_raw': args,
-    });
+
+    for (final idxM in idxMatches) {
+      final idx = int.parse(idxM.group(1)!) * (unitCount ?? 0) + int.parse(idxM.group(2)!);
+      final day = unitCount != null && unitCount > 0 ? idx ~/ unitCount + 1 : null;
+      final unit = unitCount != null && unitCount > 0 ? idx % unitCount + 1 : null;
+      courses.add({
+        // 教师
+        'teachers': teachers,
+        'teacher_names': (actTeachers.isNotEmpty ? actTeachers : teachers)
+            .map((t) => t['name'] as String)
+            .join(','),
+        'act_teachers': actTeachers,
+        'assistant': assistant,
+        // 课程标识
+        'task_no': task['no'],
+        'course_code': task['code'],
+        'clazz': task['raw'],
+        'name': name['no'],
+        'name_raw': name['raw'],
+        'course_code2': name['code'],
+        // 地点
+        'room_id': lit(4),
+        'room': lit(5),
+        // 时间
+        'day': day,
+        'day_name': day != null && day >= 1 && day <= 7 ? _dayNames[day - 1] : null,
+        'unit': unit,
+        'weeks': week, // {raw, digest, list, count, total}
+        // 其它标记(第 12 参:实验/实践课标记;全部参数原样保留)
+        'flag': lit(11),
+        'params_raw': args,
+      });
+    }
   }
 
   // 按课程名聚合(同一课程多时段)

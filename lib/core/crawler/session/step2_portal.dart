@@ -186,7 +186,11 @@ class Step2Portal {
         if (a is Map<String, Object?>) a
     ];
     final taskId = d['taskId'] as String? ?? '';
-    final authId = authList.isNotEmpty ? authList.first['authId'] as String? : null;
+    final smsAuth = authList.firstWhere(
+      (a) => a['authType'] == 'auth/sms',
+      orElse: () => authList.isNotEmpty ? authList.first : const {},
+    );
+    final authId = smsAuth['authId'] as String?;
     final params = <String, String>{
       if (taskId.isNotEmpty) 'taskId': taskId,
       if (authId != null && authId.isNotEmpty) 'authId': authId,
@@ -207,7 +211,11 @@ class Step2Portal {
       for (final a in (d['nextServiceList'] as List? ?? const []))
         if (a is Map<String, Object?>) a
     ];
-    final authId = authList.isNotEmpty ? authList.first['authId'] as String? : null;
+    final smsAuth = authList.firstWhere(
+      (a) => a['authType'] == 'auth/sms',
+      orElse: () => authList.isNotEmpty ? authList.first : const {},
+    );
+    final authId = smsAuth['authId'] as String?;
     // 实测：表单编码，键为 code（附 authId 可选）
     final r = await http.post(
         _portalUri('/passport/v1/auth/sms?action=checkcode'),
@@ -312,14 +320,49 @@ class Step2Portal {
   /// 判定 authCheck 失败响应是否为网关风控二次认证（增强认证）。
   ///
   /// 实测风控响应形状：
-  /// `{code: 10000006, type: "enhanced", data: {nextService: "auth/sms",
-  ///  nextServiceList: [{authType, authName, …}], message: …}}`
+  /// - 显式增强认证：`type: "enhanced"` 或 `data.type: "enhanced"` 或 `data.reason: "PolicyDisobeyed"`
+  /// - 二次认证服务：`nextService` 或 `nextServiceList` 中的 `authType`/`action` 属于二次认证类型
+  ///   （如 `auth/sms`、`auth/totp`、`auth/otp` 等），绝不包含 `auth/authCheck`、`auth/firstAuth`、`auth/cas` 等基础认证流服务。
   static bool isSecondaryAuthRequired(Map<String, Object?> data) {
     final d = _asMap(data['data']);
-    return data['type'] == 'enhanced' ||
+
+    // 1) 显式增强认证标志或策略违规
+    if (data['type'] == 'enhanced' ||
         d['type'] == 'enhanced' ||
-        (d['nextService'] as String?)?.startsWith('auth/') == true ||
-        d['nextServiceList'] is List;
+        d['reason'] == 'PolicyDisobeyed') {
+      return true;
+    }
+
+    // 2) 明确的二次认证目标服务（排除 authCheck/firstAuth/cas/pwd 等基础服务）
+    const secondaryAuthServices = {
+      'auth/sms',
+      'auth/totp',
+      'auth/otp',
+      'auth/radius',
+      'auth/email',
+    };
+
+    final nextService = (d['nextService'] as String?) ?? '';
+    if (secondaryAuthServices.contains(nextService)) {
+      return true;
+    }
+
+    // 3) 检查 nextServiceList 中是否包含二次认证项
+    final list = d['nextServiceList'];
+    if (list is List && list.isNotEmpty) {
+      for (final item in list) {
+        if (item is Map) {
+          final authType = item['authType'] as String?;
+          final action = item['action'] as String?;
+          if (secondaryAuthServices.contains(authType) ||
+              secondaryAuthServices.contains(action)) {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
   }
 
   /// 解析 sendsms 响应 → [SmsChallenge]（静态纯函数，便于测试）。
@@ -347,10 +390,19 @@ class Step2Portal {
   static String _clip(String s, int n) =>
       s.length > n ? s.substring(0, n) : s;
 
-  /// 从 shortcut 跳转 URL 解析 login ticket（含 URL 解码）。
+  /// 从 shortcut 跳转 URL 解析 login ticket（含 URL 解码，容错异常编码）。
   static String _loginTicketFrom(String loc) {
-    final m = RegExp(r'"ticket"\s*:\s*"([^"]+)"')
-        .firstMatch(Uri.decodeFull(loc));
+    String decoded;
+    try {
+      decoded = Uri.decodeFull(loc);
+    } catch (_) {
+      try {
+        decoded = Uri.decodeComponent(loc);
+      } catch (_) {
+        decoded = loc;
+      }
+    }
+    final m = RegExp(r'"ticket"\s*:\s*"([^"]+)"').firstMatch(decoded);
     return m?.group(1) ?? '';
   }
 }

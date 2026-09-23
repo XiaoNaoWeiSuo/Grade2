@@ -33,3 +33,6 @@ dev_dependencies:
 flutter:
   # 资产按需添加（当前工程 UI 全部使用 Material 内置图标，无自定义资产）
   uses-material-design: true
+  shaders:
+    - shaders/bank_card.frag
+

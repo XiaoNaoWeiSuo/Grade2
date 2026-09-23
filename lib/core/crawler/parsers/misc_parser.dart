@@ -71,10 +71,12 @@ Map<String, Object?> parseSemestersHtml(String html) {
   final yi = RegExp(r'yearIndex:"(\d+)"').firstMatch(html);
   return {
     'semesters': sems,
-    // value 为空时响应不含 semesterId，回退为列表中最新学期
+    // value 为空时响应不含 semesterId，优先回退为 369（当前在排学期），次之列表中最新学期
     'current': cur != null
         ? int.parse(cur.group(1)!)
-        : (sems.isNotEmpty ? sems.last['id'] : null),
+        : (sems.any((s) => s['id'] == 369)
+            ? 369
+            : (sems.isNotEmpty ? sems.last['id'] : null)),
     'year_index': yi?.group(1),
   };
 }

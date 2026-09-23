@@ -316,15 +316,34 @@ class ElectiveController extends AsyncNotifier<ElectiveState> {
     final merged = <Map<String, Object?>>[];
     for (final lesson in lessons) {
       final lid = lesson['id'];
-      final count = lid != null ? counts[lid.toString()] : null;
+      final count = lid != null
+          ? (counts[lid.toString()] ?? counts[lid])
+          : null;
       int? sc;
       int? lc;
       if (count is Map) {
         final s = count['sc'];
         final l = count['lc'];
-        if (s is num) sc = s.toInt();
-        if (l is num) lc = l.toInt();
+        if (s is num) {
+          sc = s.toInt();
+        } else if (s is String) {
+          sc = int.tryParse(s);
+        }
+        if (l is num) {
+          lc = l.toInt();
+        } else if (l is String) {
+          lc = int.tryParse(l);
+        }
       }
+      sc ??= (lesson['stdCount'] as num?)?.toInt() ??
+          (lesson['sc'] as num?)?.toInt() ??
+          int.tryParse(lesson['stdCount']?.toString() ?? '') ??
+          int.tryParse(lesson['sc']?.toString() ?? '');
+      lc ??= (lesson['limitCount'] as num?)?.toInt() ??
+          (lesson['lc'] as num?)?.toInt() ??
+          int.tryParse(lesson['limitCount']?.toString() ?? '') ??
+          int.tryParse(lesson['lc']?.toString() ?? '');
+
       merged.add({'lesson': lesson, 'sc': sc, 'lc': lc});
     }
     return (

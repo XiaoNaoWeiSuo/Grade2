@@ -75,6 +75,23 @@ void main() {
       expect(SemesterTable.labelFor(410), '学期 410'); // 非法 id 兜底
     });
 
+    test('startDateFor 与 calculateCurrentWeek（秋季学期9.1第一周推算）', () {
+      // 409 = 2026-2027 第 1 学期
+      final start409 = SemesterTable.startDateFor(409);
+      expect(start409.weekday, DateTime.monday);
+      // 2026-09-01 是周二，所在周一为 2026-08-31
+      expect(start409, DateTime(2026, 8, 31));
+
+      // 9月1日应属于第 1 周
+      expect(SemesterTable.calculateCurrentWeek(409, DateTime(2026, 9, 1)), 1);
+      // 开学前兜底为第 1 周
+      expect(SemesterTable.calculateCurrentWeek(409, DateTime(2026, 8, 20)), 1);
+      // 第二周周一 2026-09-07
+      expect(SemesterTable.calculateCurrentWeek(409, DateTime(2026, 9, 7)), 2);
+      // 2026-09-23 为第 4 周
+      expect(SemesterTable.calculateCurrentWeek(409, DateTime(2026, 9, 23)), 4);
+    });
+
     test('allAsMaps 与 API 输出同形', () {
       final all = SemesterTable.allAsMaps();
       expect(all.length, 63);

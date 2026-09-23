@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="Stable Grade"
+        android:label="短小课表"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -30,30 +30,6 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        <!-- 声明widget对应的AppWidgetProvider -->
-        <receiver android:name=".WidgetProvider"
-            android:exported="true">
-            <intent-filter>
-                <!--这个是必须要有的系统规定-->
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-                <!--这个是我们自定义的 action ，用来更新UI，还可以自由添加更多 -->
-                <action android:name="com.lyl.widget.UPDATE_ALL"/>
-            </intent-filter>
-            <!--要显示的布局-->
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/app_widget"/>
-        </receiver>
-
-        <!-- 用来计时，发送 通知桌面部件更新 -->
-        <service android:name=".WidgetService"
-            android:exported="true">
-            <intent-filter>
-                <!--用来启动服务-->
-                <action android:name="android.appwidget.action.APP_WIDGET_SERVICE" />
-            </intent-filter>
-        </service>
-
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
@@ -66,12 +42,4 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 </manifest>

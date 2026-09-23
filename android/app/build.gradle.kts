@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "ink.xiaonaoweisuo.grade"
+    namespace = "ink.xiaonaoweisuo.grade2"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "ink.xiaonaoweisuo.grade"
+        applicationId = "ink.xiaonaoweisuo.grade2"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -42,9 +42,4 @@ kotlin {
 
 flutter {
     source = "../.."
-}
-
-dependencies {
-    implementation("androidx.core:core-ktx:1.7.0")
-    implementation("com.google.code.gson:gson:2.8.9")
 }

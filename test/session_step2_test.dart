@@ -151,5 +151,35 @@ void main() {
         false,
       );
     });
+
+    test('普通登录流（nextService=auth/authCheck、nextServiceList=[authCheck]）→ false', () {
+      const normalResponse = {
+        'code': 0,
+        'message': 'Succeeded',
+        'data': {
+          'currentService': 'auth/cas',
+          'nextService': 'auth/authCheck',
+          'nextServiceList': [
+            {'authId': '-1', 'authType': 'auth/authCheck'}
+          ],
+        },
+      };
+      expect(Step2Portal.isSecondaryAuthRequired(normalResponse), false);
+    });
+
+    test('会话过期/首次登录（nextService=auth/firstAuth、nextServiceList=[firstAuth]）→ false', () {
+      const firstAuthResponse = {
+        'code': 10000001,
+        'message': 'Not logged in',
+        'data': {
+          'currentService': '',
+          'nextService': 'auth/firstAuth',
+          'nextServiceList': [
+            {'authId': '-1', 'authType': 'auth/firstAuth'}
+          ],
+        },
+      };
+      expect(Step2Portal.isSecondaryAuthRequired(firstAuthResponse), false);
+    });
   });
 }

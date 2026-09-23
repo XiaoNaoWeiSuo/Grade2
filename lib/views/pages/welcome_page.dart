@@ -1,4 +1,5 @@
-/// 欢迎页 —— 教务首页（公告/新闻模块列表）。Cupertino 风格。
+/// 欢迎与公告页 —— 校园教务通知公告与新闻资讯。
+/// 采用现代 iOS 卡片式排版与大标题导航栏。
 library;
 
 import 'package:flutter/cupertino.dart';
@@ -16,7 +17,7 @@ class WelcomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final p = AppThemeScope.of(context);
-    
+
     return CupertinoPageScaffold(
       backgroundColor: p.bg,
       child: CustomScrollView(
@@ -24,13 +25,14 @@ class WelcomePage extends ConsumerWidget {
         slivers: [
           CupertinoSliverNavigationBar(
             largeTitle: Text(l10n.welcome),
-            backgroundColor: p.bar.withValues(alpha: 0.8),
+            backgroundColor: p.bar.withValues(alpha: 0.82),
             border: Border(bottom: BorderSide(color: p.separator, width: 0.5)),
             stretch: true,
             trailing: CupertinoButton(
               padding: EdgeInsets.zero,
+              minimumSize: const Size(36, 36),
               onPressed: () => ref.read(welcomeProvider.notifier).refresh(),
-              child: const Icon(CupertinoIcons.arrow_clockwise),
+              child: const Icon(CupertinoIcons.arrow_clockwise, size: 20),
             ),
           ),
           CupertinoSliverRefreshControl(
@@ -40,7 +42,7 @@ class WelcomePage extends ConsumerWidget {
             async: ref.watch(welcomeProvider),
             onRetry: () => ref.invalidate(welcomeProvider),
             emptyText: l10n.noAnnounce,
-            sliverPadding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            sliverPadding: const EdgeInsets.fromLTRB(16, 12, 16, 48),
             builder: (context, data) => _WelcomeContent(data: data),
           ),
         ],
@@ -63,9 +65,12 @@ class _WelcomeContent extends StatelessWidget {
     ];
 
     if (modules.isEmpty) {
-      return SizedBox(
-        height: 200,
-        child: CupertinoEmpty(message: l10n.noAnnounce),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 48),
+        child: CupertinoEmpty(
+          message: l10n.noAnnounce,
+          icon: CupertinoIcons.speaker_slash,
+        ),
       );
     }
 
@@ -73,25 +78,58 @@ class _WelcomeContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (final m in modules)
-          Group(
-            header: Text((m['name'] as String?) ?? l10n.announcement),
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  (m['content'] as String?) ?? '',
-                  style: TextStyle(
-                    fontSize: 15,
-                    height: 1.6,
-                    color: p.label,
-                    letterSpacing: 0.2,
+          Padding(
+            padding: const EdgeInsets.only(bottom: 14),
+            child: CupertinoCard(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: p.warning.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          CupertinoIcons.speaker_2_fill,
+                          size: 14,
+                          color: p.warning,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          (m['name'] as String?) ?? l10n.announcement,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: p.label,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  const Sep(),
+                  const SizedBox(height: 12),
+                  Text(
+                    (m['content'] as String?) ?? '',
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.6,
+                      color: p.label,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
       ],
     );
   }
 }
-

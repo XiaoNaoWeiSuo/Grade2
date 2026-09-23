@@ -16,8 +16,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/crawler/crawler_exceptions.dart';
 import '../core/crawler/models/semester_table.dart';
+import '../core/crawler/parsers/clean.dart';
 import '../core/crawler/session/crawler_session.dart';
 import '../core/storage/local_cache.dart';
+import 'auth_vm.dart';
 import 'providers.dart';
 import 'semester_vm.dart';
 
@@ -57,9 +59,30 @@ class TimetableController extends AsyncNotifier<TimetableData?> {
     final selection = await ref.watch(semesterSelectionProvider.future);
     final semId = selection.currentId;
     final semLabel = selection.label;
+    final username = ref.watch(authProvider).value?.username ?? '';
 
-    // 2) 课表缓存优先（离线可用；切换回历史学期时通常直接命中）
-    final hit = await cache.read(_nsTable, 'table_std_$semId');
+    // 2) 课表缓存优先（支持按账号隔离，兼顾向下兼容）
+    Object? hit;
+    if (username.isNotEmpty) {
+      hit = await cache.read(_nsTable, 'table_std_${username}_$semId');
+    }
+    hit ??= await cache.read(_nsTable, 'table_std_$semId');
+
+    // 离线/免登模式兜底：若当前学期无缓存，自动载入该账号最近可用课表
+    if (hit == null && session == null) {
+      final allKeys = await cache.keys(_nsTable);
+      final fallbackKey = allKeys.cast<String?>().firstWhere(
+        (k) => username.isNotEmpty && k!.startsWith('table_std_${username}_'),
+        orElse: () => allKeys.cast<String?>().firstWhere(
+          (k) => k!.startsWith('table_std_'),
+          orElse: () => null,
+        ),
+      );
+      if (fallbackKey != null) {
+        hit = await cache.read(_nsTable, fallbackKey);
+      }
+    }
+
     if (hit is Map<String, Object?>) {
       return _fromRaw(hit, semId, semLabel, true, null);
     }
@@ -68,7 +91,7 @@ class TimetableController extends AsyncNotifier<TimetableData?> {
     if (session == null) {
       throw const SessionLost('未登录且无本地课表缓存');
     }
-    return _fetch(cache, session, semId, semLabel);
+    return _fetch(cache, session, semId, semLabel, username);
   }
 
   /// 强制在线刷新（绕过课表缓存）。
@@ -85,7 +108,8 @@ class TimetableController extends AsyncNotifier<TimetableData?> {
       final semId = cur?.semesterId ??
           (await ref.read(semesterSelectionProvider.future)).currentId;
       final label = SemesterTable.labelFor(semId);
-      final data = await _fetch(cache, session, semId, label);
+      final username = ref.read(authProvider).value?.username ?? '';
+      final data = await _fetch(cache, session, semId, label, username);
       state = AsyncData(data);
     } on CrawlerException catch (e) {
       // 回落到已有缓存（内存态优先于重新读盘）
@@ -113,20 +137,33 @@ class TimetableController extends AsyncNotifier<TimetableData?> {
   // withApi 时闭包被推断为 (dynamic)→dynamic，运行时签名检查失败
   // （"type '(dynamic) => dynamic' is not a subtype of ..."）
   Future<TimetableData> _fetch(
-      LocalCache cache, CrawlerSession session, int semId, String label) async {
+      LocalCache cache, CrawlerSession session, int semId, String label, String username) async {
     final raw = await session
         .withApi((api) => api.courseTable(kind: 'std', semesterId: semId));
     raw.remove('file'); // 原始文件路径不入缓存
     await cache.write(_nsTable, 'table_std_$semId', raw);
+    if (username.isNotEmpty) {
+      await cache.write(_nsTable, 'table_std_${username}_$semId', raw);
+    }
     return _fromRaw(raw, semId, label, false, null);
   }
 
   TimetableData _fromRaw(Map<String, Object?> raw, int? semId, String label,
       bool fromCache, String? fallbackError) {
-    final courses = [
-      for (final c in (raw['courses'] as List? ?? const []).cast<Object?>())
-        if (c is Map<String, Object?>) c
-    ];
+    final courses = <Map<String, Object?>>[];
+    for (final item in (raw['courses'] as List? ?? const []).cast<Object?>()) {
+      if (item is Map) {
+        final c = Map<String, Object?>.from(item);
+        final weeks = c['weeks'];
+        final rawBits = weeks is Map
+            ? (weeks['raw'] as String?)
+            : (weeks is String ? weeks : null);
+        if (rawBits != null && rawBits.isNotEmpty) {
+          c['weeks'] = weekParse(rawBits);
+        }
+        courses.add(c);
+      }
+    }
     var totalWeeks = 0;
     for (final c in courses) {
       final weeks = c['weeks'];
@@ -152,5 +189,19 @@ final timetableProvider =
     AsyncNotifierProvider<TimetableController, TimetableData?>(
         TimetableController.new);
 
-/// 当前查看的教学周（1 起）。翻页只改它，不触发网络。
-final weekIndexProvider = StateProvider<int>((ref) => 1);
+/// 当前真实教学周（自动按开学日期与周一推算，如秋学期 9.1 所在周为第 1 周）。
+final actualCurrentWeekProvider = Provider<int>((ref) {
+  final selection = ref.watch(semesterSelectionProvider).value;
+  final semId = selection?.currentId ?? SemesterTable.currentSemesterId();
+  final timetable = ref.watch(timetableProvider).value;
+  final maxWeeks = timetable?.totalWeeks ?? 25;
+  return SemesterTable.calculateCurrentWeek(semId, null, maxWeeks);
+});
+
+/// 当前查看的教学周（1 起）。当前学期初始化为真实当前周，历史学期初始化为第 1 周。翻页只改它，不触发网络。
+final weekIndexProvider = StateProvider<int>((ref) {
+  final selection = ref.watch(semesterSelectionProvider).value;
+  final semId = selection?.currentId ?? SemesterTable.currentSemesterId();
+  final isCur = (semId == SemesterTable.currentSemesterId());
+  return isCur ? SemesterTable.calculateCurrentWeek(semId) : 1;
+});

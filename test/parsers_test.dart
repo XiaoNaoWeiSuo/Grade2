@@ -45,6 +45,35 @@ void main() {
       expect(weekDigest([]), '');
     });
 
+    test('weekParse URP 53位串解析与单双周识别', () {
+      // 职场菜鸟礼仪指南：单周 3-15 周（单周第3周开始）
+      final oddCourse =
+          weekParse('00010101010101010000000000000000000000000000000000000');
+      expect(oddCourse['list'], [3, 5, 7, 9, 11, 13, 15]);
+      expect(oddCourse['digest'], '单3-15');
+      expect(oddCourse['count'], 7);
+      expect(oddCourse['total'], 52);
+
+      // 广告创意设计：双周 2-16 周（双周第2周开始）
+      final evenCourse =
+          weekParse('00101010101010101000000000000000000000000000000000000');
+      expect(evenCourse['list'], [2, 4, 6, 8, 10, 12, 14, 16]);
+      expect(evenCourse['digest'], '双2-16');
+
+      // 工艺设计简史：1-9 周
+      final contCourse =
+          weekParse('01111111110000000000000000000000000000000000000000000');
+      expect(contCourse['list'], [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+      expect(contCourse['digest'], '1-9');
+
+      // AIGC：3-18 周
+      final aigcCourse =
+          weekParse('00011111111111111110000000000000000000000000000000000');
+      expect(aigcCourse['list'],
+          [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+      expect(aigcCourse['digest'], '3-18');
+    });
+
     test('weekDigestFromBits 单周与区间', () {
       expect(weekDigestFromBits('000011110000'), '5-8');
       expect(weekDigestFromBits('01000000'), '2');
@@ -220,6 +249,30 @@ index = 1 * unitCount + 2;
       expect(m['rooms'], ['一教301']);
       expect(m['times'], ['周二3节']);
       expect(m['units'], 1);
+    });
+
+    test('parseCourseHtml 多节次连课捕获（单活动多个 index 赋值）', () {
+      const multiJs = '''
+var unitCount = 8;
+var teachers = [{id:115218,name:"李老师",lab:false}];
+var actTeachers = [{id:115218,name:"李老师",lab:false}];
+var assistantName = "";
+activity = new TaskActivity(115218, "李老师", "115218(752760)", "快题设计(752760)", "2988", "实验楼204", "000001111000", null, null, assistantName, "", "1");
+index = 1 * unitCount + 2;
+index = 1 * unitCount + 3;
+''';
+      final r = parseCourseHtml(multiJs);
+      expect(r['unit_count'], 8);
+      expect(r['course_count'], 2);
+      final courses = r['courses'] as List;
+      final c1 = courses[0] as Map<String, Object?>;
+      final c2 = courses[1] as Map<String, Object?>;
+      expect(c1['name'], '快题设计');
+      expect(c1['day'], 2);
+      expect(c1['unit'], 3);
+      expect(c2['name'], '快题设计');
+      expect(c2['day'], 2);
+      expect(c2['unit'], 4);
     });
 
     test('parseCourseTableIds', () {

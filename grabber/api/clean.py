@@ -57,19 +57,48 @@ def _int_or(s, default: int = 1) -> int:
 def week_parse(bits: str) -> dict:
     """周次位串('0111100…')→ 摘要/列表/数量。"""
     bits = bits or ""
-    weeks = [i + 1 for i, ch in enumerate(bits) if ch == "1"]
+    if len(bits) >= 20:
+        # 长江大学教务系统 (URP) 53 位学年周次位串：索引 0 为占位符，index i 对应第 i 周
+        weeks = [i for i in range(1, len(bits)) if bits[i] == "1"]
+        total = len(bits) - 1
+    else:
+        weeks = [i + 1 for i, ch in enumerate(bits) if ch == "1"]
+        total = len(bits)
     return {"raw": bits, "digest": _digest(weeks), "list": weeks,
-            "count": len(weeks), "total": len(bits)}
+            "count": len(weeks), "total": total}
 
 
 def _digest(weeks: list) -> str:
-    runs, i = [], 0
+    if not weeks:
+        return ""
+    wset = set(weeks)
+    runs = []
+    i = 0
     while i < len(weeks):
+        # 1) 连续周（步长 1）
         j = i
         while j + 1 < len(weeks) and weeks[j + 1] == weeks[j] + 1:
             j += 1
-        runs.append(f"{weeks[i]}-{weeks[j]}" if j > i else str(weeks[i]))
-        i = j + 1
+        if j > i:
+            runs.append(f"{weeks[i]}-{weeks[j]}")
+            i = j + 1
+            continue
+
+        # 2) 单双周（步长 2，后续元素不能是连续周的起点）
+        k = i
+        while (k + 1 < len(weeks) and
+               weeks[k + 1] == weeks[k] + 2 and
+               (weeks[k + 1] + 1) not in wset):
+            k += 1
+        if k > i:
+            prefix = "双" if weeks[i] % 2 == 0 else "单"
+            runs.append(f"{prefix}{weeks[i]}-{weeks[k]}")
+            i = k + 1
+            continue
+
+        # 3) 单周
+        runs.append(str(weeks[i]))
+        i += 1
     return ",".join(runs)
 
 

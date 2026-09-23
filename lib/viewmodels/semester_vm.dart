@@ -81,8 +81,10 @@ class SemesterSelectionController extends AsyncNotifier<SemesterSelection> {
     await cache.write(_nsMeta, _keySemester,
         {'id': semesterId, 'label': label, 'source': 'user'});
     state = AsyncData(cur.copyWith(currentId: semesterId, label: label));
-    // 课表随选择立即重取（缓存优先）；周次翻页复位
-    ref.read(weekIndexProvider.notifier).state = 1;
+    // 课表随选择立即重取（缓存优先）；当前学期定位到真实当前周，历史学期从第 1 周开始
+    final isCur = (semesterId == SemesterTable.currentSemesterId());
+    ref.read(weekIndexProvider.notifier).state =
+        isCur ? SemesterTable.calculateCurrentWeek(semesterId) : 1;
     ref.invalidate(timetableProvider);
     return null;
   }

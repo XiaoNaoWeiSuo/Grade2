@@ -47,54 +47,78 @@ Object? toNum(String? s) {
   return v == v.truncateToDouble() ? v.toInt() : v;
 }
 
-/// 周次位串（'0111100…'）→ `{raw, digest, list, count, total}`。
+/// 周次位串（URP 53/56 位串 '0111100…'）→ `{raw, digest, list, count, total}`。
+///
+/// 长江大学教务系统 (URP) 使用 53/56 位学年周次位串：
+/// 索引 0 为占位符（非教学周），索引 1 对应第 1 周，索引 2 对应第 2 周……即 index i 对应第 i 周。
+/// TaskActivity.js 中 table0.marshalTable(2, 1, 20) 计算周次为 index - from + 2 = index (当 from=2)。
 Map<String, Object?> weekParse(String? bits) {
   bits = bits ?? '';
-  final weeks = <int>[
-    for (var i = 0; i < bits.length; i++)
-      if (bits[i] == '1') i + 1
-  ];
+  final weeks = <int>[];
+  if (bits.isNotEmpty) {
+    if (bits.length >= 20) {
+      // URP 53 位位串：从索引 1 开始，index i 即为第 i 周
+      for (var i = 1; i < bits.length; i++) {
+        if (bits[i] == '1') weeks.add(i);
+      }
+    } else {
+      // 兼容简写或自定义测试短位串
+      for (var i = 0; i < bits.length; i++) {
+        if (bits[i] == '1') weeks.add(i + 1);
+      }
+    }
+  }
   return {
     'raw': bits,
     'digest': weekDigest(weeks),
     'list': weeks,
     'count': weeks.length,
-    'total': bits.length,
+    'total': bits.length >= 20 ? bits.length - 1 : bits.length,
   };
 }
 
-/// 周列表 → '5-8,10' 形式摘要（对应 base.py week_digest）。
+/// 周列表 → '1-9' / '单3-15' / '双2-16' 形式摘要（对应 URP TaskActivity.js 与 base.py）。
 String weekDigest(List<int> weeks) {
+  if (weeks.isEmpty) return '';
+  final wset = weeks.toSet();
   final runs = <String>[];
   var i = 0;
   while (i < weeks.length) {
+    // 1) 连续周（步长 1）
     var j = i;
     while (j + 1 < weeks.length && weeks[j + 1] == weeks[j] + 1) {
       j++;
     }
-    runs.add(j > i ? '${weeks[i]}-${weeks[j]}' : '${weeks[i]}');
-    i = j + 1;
+    if (j > i) {
+      runs.add('${weeks[i]}-${weeks[j]}');
+      i = j + 1;
+      continue;
+    }
+
+    // 2) 单双周（步长 2，后续元素不能是连续周的起点）
+    var k = i;
+    while (k + 1 < weeks.length &&
+        weeks[k + 1] == weeks[k] + 2 &&
+        !wset.contains(weeks[k + 1] + 1)) {
+      k++;
+    }
+    if (k > i) {
+      final prefix = (weeks[i] % 2 == 0) ? '双' : '单';
+      runs.add('$prefix${weeks[i]}-${weeks[k]}');
+      i = k + 1;
+      continue;
+    }
+
+    // 3) 单独单周
+    runs.add('${weeks[i]}');
+    i++;
   }
   return runs.join(',');
 }
 
 /// 周位串直转摘要（'000011110000' → '5-8'）。
 String weekDigestFromBits(String state) {
-  final runs = <String>[];
-  var i = 0;
-  while (i < state.length) {
-    if (state[i] == '1') {
-      var j = i;
-      while (j < state.length && state[j] == '1') {
-        j++;
-      }
-      runs.add(j > i + 1 ? '${i + 1}-$j' : '${i + 1}');
-      i = j;
-    } else {
-      i++;
-    }
-  }
-  return runs.join(',');
+  return weekParse(state)['digest'] as String? ?? '';
 }
 
 /// 去除字符串两端出现在 [chars] 中的字符（Python str.strip(chars)）。

@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/crawler/crawler_exceptions.dart';
 import '../core/crawler/session/crawler_session.dart';
 import '../core/storage/local_cache.dart';
+import 'auth_vm.dart';
 import 'providers.dart';
 
 class WelcomeController extends AsyncNotifier<Map<String, Object?>> {
@@ -18,11 +19,16 @@ class WelcomeController extends AsyncNotifier<Map<String, Object?>> {
   @override
   Future<Map<String, Object?>> build() async {
     final cache = await ref.watch(localCacheProvider.future);
-    final hit = await cache.read(_ns, _key);
+    final username = ref.watch(authProvider).value?.username ?? '';
+    Object? hit;
+    if (username.isNotEmpty) {
+      hit = await cache.read(_ns, '${_key}_$username');
+    }
+    hit ??= await cache.read(_ns, _key);
     if (hit is Map<String, Object?>) return hit;
     final session = ref.read(crawlerSessionProvider);
     if (session == null) throw const SessionLost('未登录且无本地欢迎页缓存');
-    return _fetch(cache, session);
+    return _fetch(cache, session, username);
   }
 
   /// 强制在线刷新（绕过缓存；失败回落已有数据）。
@@ -36,7 +42,8 @@ class WelcomeController extends AsyncNotifier<Map<String, Object?>> {
       return;
     }
     try {
-      state = AsyncData(await _fetch(cache, session));
+      final username = ref.read(authProvider).value?.username ?? '';
+      state = AsyncData(await _fetch(cache, session, username));
     } on CrawlerException catch (e) {
       state = cur != null
           ? AsyncData(cur)
@@ -46,10 +53,13 @@ class WelcomeController extends AsyncNotifier<Map<String, Object?>> {
 
   // ⚠ session 静态类型（dynamic 接收者会让 withApi 运行时签名检查失败）
   Future<Map<String, Object?>> _fetch(
-      LocalCache cache, CrawlerSession session) async {
+      LocalCache cache, CrawlerSession session, String username) async {
     final raw = await session.withApi((api) => api.welcome());
     raw.remove('file');
     await cache.write(_ns, _key, raw);
+    if (username.isNotEmpty) {
+      await cache.write(_ns, '${_key}_$username', raw);
+    }
     return raw;
   }
 }

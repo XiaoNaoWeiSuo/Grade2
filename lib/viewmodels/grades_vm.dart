@@ -17,6 +17,7 @@ import '../core/crawler/crawler_exceptions.dart';
 import '../core/crawler/models/semester_table.dart';
 import '../core/crawler/session/crawler_session.dart';
 import '../core/storage/local_cache.dart';
+import 'auth_vm.dart';
 import 'providers.dart';
 import 'semester_vm.dart';
 
@@ -58,9 +59,30 @@ class GradesController extends AsyncNotifier<GradesData?> {
     final selection = await ref.watch(semesterSelectionProvider.future);
     final semId = selection.currentId;
     final semLabel = selection.label;
+    final username = ref.watch(authProvider).value?.username ?? '';
 
-    // 2) 成绩缓存优先（离线可用；切换回历史学期时通常直接命中）
-    final hit = await cache.read(_ns, _key(semId));
+    // 2) 成绩缓存优先（支持按账号隔离，兼顾向下兼容）
+    Object? hit;
+    if (username.isNotEmpty) {
+      hit = await cache.read(_ns, 'grades_${username}_$semId');
+    }
+    hit ??= await cache.read(_ns, _key(semId));
+
+    // 离线/免登模式兜底：若当前学期无缓存，自动载入该账号最近可用成绩
+    if (hit == null && session == null) {
+      final allKeys = await cache.keys(_ns);
+      final fallbackKey = allKeys.cast<String?>().firstWhere(
+        (k) => username.isNotEmpty && k!.startsWith('grades_${username}_'),
+        orElse: () => allKeys.cast<String?>().firstWhere(
+          (k) => k!.startsWith('grades_'),
+          orElse: () => null,
+        ),
+      );
+      if (fallbackKey != null) {
+        hit = await cache.read(_ns, fallbackKey);
+      }
+    }
+
     if (hit is Map<String, Object?>) {
       return _fromRaw(hit, semId, semLabel, true, null);
     }
@@ -69,7 +91,7 @@ class GradesController extends AsyncNotifier<GradesData?> {
     if (session == null) {
       throw const SessionLost('未登录且无本地成绩缓存');
     }
-    return _fetch(cache, session, semId, semLabel);
+    return _fetch(cache, session, semId, semLabel, username);
   }
 
   /// 强制在线刷新（绕过成绩缓存）；失败回落已有数据。
@@ -86,7 +108,8 @@ class GradesController extends AsyncNotifier<GradesData?> {
       final semId = cur?.semesterId ??
           (await ref.read(semesterSelectionProvider.future)).currentId;
       final label = SemesterTable.labelFor(semId);
-      final data = await _fetch(cache, session, semId, label);
+      final username = ref.read(authProvider).value?.username ?? '';
+      final data = await _fetch(cache, session, semId, label, username);
       state = AsyncData(data);
     } on CrawlerException catch (e) {
       // 回落到已有缓存（内存态优先于重新读盘）
@@ -113,10 +136,13 @@ class GradesController extends AsyncNotifier<GradesData?> {
   /// ⚠ session 参数必须是静态类型 CrawlerSession：dynamic 接收者调用泛型
   /// withApi 时闭包被推断为 (dynamic)→dynamic，运行时签名检查失败。
   Future<GradesData> _fetch(
-      LocalCache cache, CrawlerSession session, int semId, String label) async {
+      LocalCache cache, CrawlerSession session, int semId, String label, String username) async {
     final raw = await session.withApi((api) => api.grades(semId));
     raw.remove('file'); // 原始文件路径不入缓存
     await cache.write(_ns, _key(semId), raw);
+    if (username.isNotEmpty) {
+      await cache.write(_ns, 'grades_${username}_$semId', raw);
+    }
     return _fromRaw(raw, semId, label, false, null);
   }
 

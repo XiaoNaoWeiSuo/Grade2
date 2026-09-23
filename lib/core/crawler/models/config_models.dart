@@ -22,7 +22,7 @@ class GrabberConfig {
     this.maxHops = 24,
     this.getRetries = 2,
     this.sessionTtl = 12 * 60,
-    this.maxLoginPostsPerRun = 1,
+    this.maxLoginPostsPerRun = 2,
   });
 
   // ===== aTrust 零信任网关三个域名（抓包实测） =====
@@ -74,8 +74,8 @@ class GrabberConfig {
   /// 授权会话有效期实测 15min，缓存 12min 内视为新鲜，留 3min 余量（秒）。
   final int sessionTtl;
 
-  /// 防封号硬约束：单次 [CrawlerSession] 生命周期内最多 1 次密码登录 POST，
-  /// 失败立即终止、绝不自动重试。
+  /// 防封号硬约束：单次 [CrawlerSession] 生命周期内最多 2 次密码登录 POST，
+  /// 支持首次失败自动重试 1 次，严防无限重试触发账号锁定。
   final int maxLoginPostsPerRun;
 
   /// CAS service：登录成功后跳回 aTrust 换取门户会话 sid。

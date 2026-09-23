@@ -52,20 +52,20 @@ class Step1Cas {
 
   /// 检查该账号本次是否需要验证码。
   Future<bool> checkNeedCaptcha() async {
-    final resp = await http.get(Uri(
-      scheme: Uri.parse(config.casBase).scheme,
-      host: Uri.parse(config.casBase).host,
-      port: Uri.parse(config.casBase).port,
-      path: '/authserver/checkNeedCaptcha.htl',
-      queryParameters: {
-        'username': credentials.username,
-        '_': (DateTime.now().millisecondsSinceEpoch).toString(),
-        'sf_request_type': 'ajax',
-      },
-    ), headers: {'X-Requested-With': 'XMLHttpRequest'});
+    final captchaUri = Uri.parse('${config.casBase}/authserver/checkNeedCaptcha.htl')
+        .replace(queryParameters: {
+      'username': credentials.username,
+      '_': DateTime.now().millisecondsSinceEpoch.toString(),
+      'sf_request_type': 'ajax',
+    });
+    final resp = await http.get(captchaUri, headers: {'X-Requested-With': 'XMLHttpRequest'});
     try {
       final j = jsonDecode(resp.body);
-      return j is Map && j['isNeed'] == true;
+      if (j is Map) {
+        final isNeed = j['isNeed'];
+        return isNeed == true || isNeed == 'true' || isNeed == 1;
+      }
+      return false;
     } on FormatException {
       return false;
     }
@@ -91,11 +91,11 @@ class Step1Cas {
 
     // 2) 走密码登录
     if (_loginPostsUsed >= config.maxLoginPostsPerRun) {
-      throw const CasError('本次运行密码登录 POST 次数已达上限,拒绝继续(防封号)');
+      throw CasError('本次运行密码登录 POST 次数已达上限($_loginPostsUsed/${config.maxLoginPostsPerRun}),拒绝继续(防封号)');
     }
 
     final form = _parseLoginForm(resp.body);
-    if (form['execution']!.isEmpty) {
+    if ((form['execution'] ?? '').isEmpty) {
       throw const CasError('登录页解析失败(未找到 execution 字段)');
     }
 
@@ -103,7 +103,7 @@ class Step1Cas {
       throw const NeedCaptchaError('该账号本次需要验证码,已主动放弃(请稍后再试或人工登录)');
     }
 
-    final salt = form['salt']!;
+    final salt = form['salt'] ?? '';
     _loginPostsUsed++;
     onLog?.call('CAS 密码登录 POST'
         '(第 $_loginPostsUsed/${config.maxLoginPostsPerRun} 次,'
@@ -136,37 +136,53 @@ class Step1Cas {
       throw CasError('登录后跳转异常: ${loc.length > 120 ? loc.substring(0, 120) : loc}');
     }
 
-    // 200 = 登录失败页(错误信息在页面里)。绝不重试。
-    throw CredentialError('CAS 登录被拒绝: ${_extractError(postResp.body)}');
+    // 200 = 登录失败页(错误信息在页面里)。
+    final errorMsg = _extractError(postResp.body);
+    throw CredentialError('CAS 登录被拒绝: $errorMsg');
   }
 
   // ---------------- 登录页解析 ----------------
 
-  /// 提取 execution / lt / pwdEncryptSalt 三个隐藏字段。
+  /// 提取 execution / lt / pwdEncryptSalt 三个隐藏字段（兼容各种属性顺序与引号格式）。
   static Map<String, String> _parseLoginForm(String html) {
     String field(List<String> patterns) {
       for (final p in patterns) {
-        final m = RegExp(p).firstMatch(html);
-        if (m != null) return m.group(1)!;
+        final m = RegExp(p, caseSensitive: false).firstMatch(html);
+        if (m != null && m.group(1) != null) return m.group(1)!;
       }
       return '';
     }
 
     return {
-      'execution': field(
-          [r'name="execution" value="([^"]*)"', r'id="execution"[^>]*value="([^"]*)"']),
-      'lt': field(
-          [r'name="lt"[^>]*value="([^"]*)"', r'id="lt"[^>]*value="([^"]*)"']),
-      'salt': field([r'id="pwdEncryptSalt" value="([^"]*)"']),
+      'execution': field([
+        r'name="execution"[^>]*value="([^"]*)"',
+        r'id="execution"[^>]*value="([^"]*)"',
+        r'value="([^"]*)"[^>]*name="execution"',
+        r"""name=['"]execution['"][^>]*value=['"]([^'"]*)['"]""",
+      ]),
+      'lt': field([
+        r'name="lt"[^>]*value="([^"]*)"',
+        r'id="lt"[^>]*value="([^"]*)"',
+        r'value="([^"]*)"[^>]*name="lt"',
+        r"""name=['"]lt['"][^>]*value=['"]([^'"]*)['"]""",
+      ]),
+      'salt': field([
+        r'id="pwdEncryptSalt"[^>]*value="([^"]*)"',
+        r'value="([^"]*)"[^>]*id="pwdEncryptSalt"',
+        r"""id=['"]pwdEncryptSalt['"][^>]*value=['"]([^'"]*)['"]""",
+        r"""value=['"]([^'"]*)['"][^>]*id=['"]pwdEncryptSalt['"]""",
+      ]),
     };
   }
 
   /// 从登录失败页提取错误文案。
   static String _extractError(String html) {
-    final m = RegExp(r'id="msg"[^>]*>([^<]+)<').firstMatch(html) ??
-        RegExp(r'class="auth_error"[^>]*>([^<]+)<').firstMatch(html) ??
-        RegExp(r'class="errors?[" >][^>]*>([^<]{2,80})<').firstMatch(html);
+    final m = RegExp(r'id="msg"[^>]*>([^<]+)<', caseSensitive: false).firstMatch(html) ??
+        RegExp(r'class="auth_error"[^>]*>([^<]+)<', caseSensitive: false).firstMatch(html) ??
+        RegExp(r'class="errors?[" >][^>]*>([^<]{2,80})<', caseSensitive: false).firstMatch(html) ??
+        RegExp(r'<span[^>]*id="showErrorDiv"[^>]*>([^<]+)<', caseSensitive: false).firstMatch(html);
     if (m == null) return '未知原因';
-    return m.group(1)!.trim();
+    final text = m.group(1)!.trim();
+    return text.isEmpty ? '未知原因' : text;
   }
 }

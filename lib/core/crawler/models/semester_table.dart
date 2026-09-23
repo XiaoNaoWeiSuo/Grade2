@@ -67,13 +67,14 @@ abstract final class SemesterTable {
   static int idFor(int academicStartYear, int term) =>
       anchorId + step * ((academicStartYear - anchorYear) * 2 + (term - 1));
 
+  /// 默认当前学期（教务系统抓包与在册排课权威锚点：369 = 2025-2026 学年第 1 学期）。
+  static const int defaultSemesterId = 369;
+
   /// 按日期推算"当前"学期 id（本地计算，零网络）。
-  ///
-  /// 校历规则：9-12 月与 1 月 = 第 1 学期（1 月为考试周），
-  /// 2-7 月 = 第 2 学期。学校若调整校历，以网络 [EamsApi.semesters]
-  /// 的权威结果为准（ViewModel 落盘后覆盖本地推算）。
+  /// 若未传 now，默认返回当前在线权威学期 [defaultSemesterId] (369)。
   static int currentSemesterId([DateTime? now]) {
-    final t = now ?? DateTime.now();
+    if (now == null) return defaultSemesterId;
+    final t = now;
     final int term;
     final int academicStartYear;
     if (t.month >= 8) {
@@ -100,11 +101,63 @@ abstract final class SemesterTable {
     return (id, '$year-${year + 1}', '$term');
   }
 
-  /// 学期展示文案（如 '2026-2027学年 1学期'）。
+  /// 学期展示文案（如 '2025-2026学年 1学期'）。
   static String labelFor(int id) {
     final e = byId(id);
     if (e == null) return '学期 $id';
     return '${e.$2}学年 ${e.$3}学期';
+  }
+
+  /// 学期开学日期（以开学第 1 周周一为基准）。
+  ///
+  /// - 秋季学期（第 1 学期）：以 9 月 1 日所在周的周一为第 1 周起始（9.1 为第一周）。
+  /// - 春季学期（第 2 学期）：次年春季 2 月下旬（约 2 月 20 日前后周一）开学。
+  /// - 查询当前权威学期时，对齐当前自然日历学年（如 2026 年秋对应 2026-08-31 起始）。
+  static DateTime startDateFor(int semesterId, [DateTime? now]) {
+    final e = byId(semesterId);
+    final int startYear;
+    final int term;
+    if (e != null) {
+      term = int.tryParse(e.$3) ?? 1;
+      if (semesterId == defaultSemesterId) {
+        final ref = now ?? DateTime.now();
+        startYear = (ref.month >= 8 || ref.month == 1)
+            ? (ref.month == 1 ? ref.year - 1 : ref.year)
+            : ref.year - 1;
+      } else {
+        startYear = int.tryParse(e.$2.split('-').first) ?? anchorYear;
+      }
+    } else {
+      startYear = anchorYear;
+      term = 1;
+    }
+    if (term == 1) {
+      final sep1 = DateTime(startYear, 9, 1);
+      return DateTime(sep1.year, sep1.month, sep1.day)
+          .subtract(Duration(days: sep1.weekday - 1));
+    } else {
+      final feb20 = DateTime(startYear + 1, 2, 20);
+      final offset = (feb20.weekday == 1) ? 0 : (8 - feb20.weekday);
+      final firstMonday = feb20.add(Duration(days: offset));
+      return DateTime(firstMonday.year, firstMonday.month, firstMonday.day);
+    }
+  }
+
+  /// 计算指定日期在当前学期所处的真实周次（从 1 开始）。
+  ///
+  /// 开学前返回 1；超过 [maxWeeks] 则限制至 [maxWeeks]。
+  static int calculateCurrentWeek(int semesterId,
+      [DateTime? now, int maxWeeks = 25]) {
+    final t = now ?? DateTime.now();
+    final today = DateTime(t.year, t.month, t.day);
+    final start = startDateFor(semesterId, now);
+    if (today.isBefore(start)) {
+      return 1;
+    }
+    final diffDays = today.difference(start).inDays;
+    final week = (diffDays ~/ 7) + 1;
+    if (week > maxWeeks) return maxWeeks;
+    return week < 1 ? 1 : week;
   }
 
   /// 与 [EamsApi.semesters] 输出同形的全量表（离线渲染用）。

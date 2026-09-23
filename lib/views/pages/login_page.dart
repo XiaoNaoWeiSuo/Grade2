@@ -1,7 +1,15 @@
-/// 登录页（含本机账号簿）。采用现代化的 Cupertino 设计，引入磨砂玻璃质感与更优雅的布局。
+/// 登录页 —— 极致极简优雅的 iOS Cupertino 设计风格（贯彻 Less is More 理念）。
+///
+/// 具备：
+/// - 原生 Inset Grouped 输入框体系与密码可见性切换
+/// - 账号簿轻量胶囊 Chips 快捷横条（即点即切、快捷删除）
+/// - 两个登录时选项：【自动登录】与【下次缓存】
+/// - 登录按钮分色裂变：连续失败达阈值且存在本地缓存时，左侧重试登录、右侧从缓存进入
+/// - 极简 6 位原生 PIN 格短信验证码面板（自动聚焦、满 6 位自动提交）
 library;
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_strings.dart';
@@ -17,24 +25,55 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-  var _tab = 0; // 0=登录 1=账号簿
   final _username = TextEditingController();
   final _password = TextEditingController();
   bool _remember = true;
+  bool _autoLogin = true;
+  bool _startWithCache = false;
   bool _obscure = true;
+  bool _hasCache = false;
+  bool _prefilled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _username.addListener(_onUsernameChanged);
+  }
 
   @override
   void dispose() {
+    _username.removeListener(_onUsernameChanged);
     _username.dispose();
     _password.dispose();
     super.dispose();
   }
 
+  void _onUsernameChanged() {
+    _checkCache();
+  }
+
+  Future<void> _checkCache() async {
+    final u = _username.text.trim();
+    if (u.isEmpty) {
+      if (mounted && _hasCache) setState(() => _hasCache = false);
+      return;
+    }
+    final has = await ref.read(authProvider.notifier).hasCacheFor(u);
+    if (mounted && has != _hasCache) {
+      setState(() => _hasCache = has);
+    }
+  }
+
   void _prefill(List<Map<String, Object?>> accounts) {
-    if (_username.text.isNotEmpty || accounts.isEmpty) return;
-    final last = accounts.where((a) => a['remember'] == true).toList();
-    if (last.isEmpty) return;
-    _username.text = last.last['username'] as String? ?? '';
+    if (_prefilled || accounts.isEmpty) return;
+    _prefilled = true;
+    final last = accounts.last;
+    final u = last['username'] as String? ?? '';
+    _username.text = u;
+    _remember = last['remember'] != false;
+    _autoLogin = last['autoLogin'] != false;
+    _startWithCache = last['startWithCache'] == true;
+    _checkCache();
   }
 
   Future<void> _submit() async {
@@ -44,7 +83,26 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       toast(context, context.l10n.enterAcctPwd, error: true);
       return;
     }
-    await ref.read(authProvider.notifier).login(u, p, _remember);
+    TextInput.finishAutofillContext();
+    await ref.read(authProvider.notifier).login(
+          u,
+          p,
+          _remember,
+          _autoLogin,
+          _startWithCache,
+        );
+  }
+
+  Future<void> _enterCache() async {
+    final u = _username.text.trim();
+    if (u.isEmpty) {
+      toast(context, context.l10n.enterAcctPwd, error: true);
+      return;
+    }
+    await ref.read(authProvider.notifier).enterFromCache(u);
+    if (mounted) {
+      toast(context, context.l10n.offlineCacheToast);
+    }
   }
 
   @override
@@ -61,69 +119,467 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     _prefill(state.accounts);
     final busy = state.status == AuthStatus.busy;
     final p = AppThemeScope.of(context);
+    final l10n = context.l10n;
 
     return CupertinoPageScaffold(
       backgroundColor: p.bg,
       child: Stack(
         children: [
-          // 背景装饰
+          // 顶部柔和环境弥散光
           Positioned(
-            top: -100,
-            right: -100,
+            top: -140,
+            left: -80,
             child: Container(
-              width: 300,
-              height: 300,
+              width: 340,
+              height: 340,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: p.primary.withValues(alpha: 0.05),
+                gradient: RadialGradient(
+                  colors: [
+                    p.primary.withValues(alpha: p.isDark ? 0.15 : 0.09),
+                    p.primary.withValues(alpha: 0.0),
+                  ],
+                ),
               ),
             ),
           ),
-          
+
           SafeArea(
             child: state.status == AuthStatus.needsSms
                 ? _SmsPanel(state: state)
                 : ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     children: [
-                      const SizedBox(height: 60),
+                      const SizedBox(height: 36),
+
+                      // 品牌徽标与欢迎词（Less is more，极简灵动）
                       Center(
-                        child: BlurView(
-                          borderRadius: BorderRadius.circular(24),
-                          color: p.primary.withValues(alpha: 0.1),
-                          blur: 10,
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Icon(CupertinoIcons.book_fill, size: 64, color: p.primary),
+                        child: Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [p.primary, p.primary.withValues(alpha: 0.82)],
+                            ),
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: p.primary.withValues(alpha: 0.22),
+                                blurRadius: 18,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              CupertinoIcons.calendar_today,
+                              size: 34,
+                              color: CupertinoColors.white,
+                            ),
                           ),
                         ),
                       ),
+                      const SizedBox(height: 16),
+                      Text(
+                        l10n.appName,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: p.label,
+                          letterSpacing: -0.6,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        l10n.appSlogan,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: p.secondary,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+
+                      const SizedBox(height: 30),
+
+                      // 快捷已存账号水平胶囊（有账号时极简呈现，即点即切）
+                      if (state.accounts.isNotEmpty) ...[
+                        SizedBox(
+                          height: 36,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: state.accounts.length,
+                            separatorBuilder: (_, _) => const SizedBox(width: 8),
+                            itemBuilder: (ctx, idx) {
+                              final a = state.accounts[idx];
+                              final u = a['username'] as String? ?? '';
+                              final isCurrent = _username.text == u;
+                              return CupertinoScaleButton(
+                                onTap: busy
+                                    ? null
+                                    : () {
+                                        setState(() {
+                                          _username.text = u;
+                                          _autoLogin = a['autoLogin'] != false;
+                                          _startWithCache = a['startWithCache'] == true;
+                                          _remember = a['remember'] != false;
+                                        });
+                                        _checkCache();
+                                      },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: isCurrent ? p.primary.withValues(alpha: 0.12) : p.card,
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(
+                                      color: isCurrent ? p.primary : p.border,
+                                      width: isCurrent ? 1.2 : 0.5,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        CupertinoIcons.person_crop_circle,
+                                        size: 15,
+                                        color: isCurrent ? p.primary : p.secondary,
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        u,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: isCurrent ? p.primary : p.label,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      GestureDetector(
+                                        onTap: () => ref
+                                            .read(authProvider.notifier)
+                                            .removeAccount(u),
+                                        child: Icon(
+                                          CupertinoIcons.xmark_circle_fill,
+                                          size: 13,
+                                          color: p.tertiary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // 表单输入容器
+                      Container(
+                        decoration: BoxDecoration(
+                          color: p.card,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: p.border, width: 0.5),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Column(
+                          children: [
+                            CupertinoTextField(
+                              controller: _username,
+                              placeholder: l10n.username,
+                              keyboardType: TextInputType.text,
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+                              prefix: Padding(
+                                padding: const EdgeInsets.only(left: 16),
+                                child: Icon(
+                                  CupertinoIcons.person,
+                                  size: 20,
+                                  color: p.secondary,
+                                ),
+                              ),
+                              clearButtonMode: OverlayVisibilityMode.editing,
+                              decoration: const BoxDecoration(color: CupertinoColors.transparent),
+                              style: TextStyle(color: p.label, fontSize: 16),
+                              placeholderStyle: TextStyle(
+                                color: p.tertiary,
+                                fontSize: 16,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                            const Sep(indent: 52),
+                            CupertinoTextField(
+                              controller: _password,
+                              placeholder: l10n.password,
+                              obscureText: _obscure,
+                              keyboardType: TextInputType.visiblePassword,
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+                              prefix: Padding(
+                                padding: const EdgeInsets.only(left: 16),
+                                child: Icon(
+                                  CupertinoIcons.lock,
+                                  size: 20,
+                                  color: p.secondary,
+                                ),
+                              ),
+                              suffix: CupertinoButton(
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                minimumSize: const Size(40, 40),
+                                onPressed: () => setState(() => _obscure = !_obscure),
+                                child: Icon(
+                                  _obscure ? CupertinoIcons.eye_slash : CupertinoIcons.eye,
+                                  size: 20,
+                                  color: p.secondary,
+                                ),
+                              ),
+                              decoration: const BoxDecoration(color: CupertinoColors.transparent),
+                              style: TextStyle(color: p.label, fontSize: 16),
+                              placeholderStyle: TextStyle(
+                                color: p.tertiary,
+                                fontSize: 16,
+                                letterSpacing: -0.3,
+                              ),
+                              onSubmitted: (_) => busy ? null : _submit(),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // 登录选项体系：自动登录与下次缓存
+                      Container(
+                        decoration: BoxDecoration(
+                          color: p.card,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: p.border, width: 0.5),
+                        ),
+                        child: Column(
+                          children: [
+                            // 自动登录
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          l10n.autoLogin,
+                                          style: TextStyle(
+                                            color: p.label,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: -0.2,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          l10n.autoLoginSub,
+                                          style: TextStyle(
+                                            color: p.secondary,
+                                            fontSize: 12,
+                                            letterSpacing: -0.2,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  CupertinoSwitch(
+                                    value: _autoLogin,
+                                    activeTrackColor: p.primary,
+                                    onChanged: busy
+                                        ? null
+                                        : (v) {
+                                            setState(() {
+                                              _autoLogin = v;
+                                              if (v) _startWithCache = false;
+                                            });
+                                          },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Sep(indent: 16),
+                            // 下次缓存
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          l10n.startWithCache,
+                                          style: TextStyle(
+                                            color: p.label,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: -0.2,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          l10n.startWithCacheSub,
+                                          style: TextStyle(
+                                            color: p.secondary,
+                                            fontSize: 12,
+                                            letterSpacing: -0.2,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  CupertinoSwitch(
+                                    value: _startWithCache,
+                                    activeTrackColor: CupertinoColors.activeGreen,
+                                    onChanged: busy
+                                        ? null
+                                        : (v) {
+                                            setState(() {
+                                              _startWithCache = v;
+                                              if (v) _autoLogin = false;
+                                            });
+                                          },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
                       const SizedBox(height: 24),
+
+                      // 登录主操作区：支持失败过多时分色双拼裂变
+                      if (state.failureCount >= 2 && _hasCache) ...[
+                        Row(
+                          children: [
+                            // 左侧：重试登录（主色）
+                            Expanded(
+                              child: SizedBox(
+                                height: 50,
+                                child: CupertinoButton.filled(
+                                  padding: EdgeInsets.zero,
+                                  borderRadius: BorderRadius.circular(14),
+                                  onPressed: busy ? null : _submit,
+                                  child: busy
+                                      ? const CupertinoActivityIndicator(color: CupertinoColors.white)
+                                      : Text(
+                                          l10n.retryLogin,
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            // 右侧：从缓存进入（温润翠绿 + 归档图标）
+                            Expanded(
+                              child: SizedBox(
+                                height: 50,
+                                child: CupertinoButton(
+                                  padding: EdgeInsets.zero,
+                                  color: CupertinoColors.activeGreen,
+                                  borderRadius: BorderRadius.circular(14),
+                                  onPressed: busy ? null : _enterCache,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        CupertinoIcons.archivebox_fill,
+                                        size: 17,
+                                        color: CupertinoColors.white,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        l10n.enterFromCache,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: CupertinoColors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ] else ...[
+                        // 正常全宽单按钮
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: CupertinoButton.filled(
+                            borderRadius: BorderRadius.circular(14),
+                            onPressed: busy ? null : _submit,
+                            child: busy
+                                ? const CupertinoActivityIndicator(color: CupertinoColors.white)
+                                : Text(
+                                    l10n.loginBtn,
+                                    style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: -0.4,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        if (_hasCache) ...[
+                          const SizedBox(height: 12),
+                          Center(
+                            child: CupertinoButton(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                              onPressed: busy ? null : _enterCache,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    CupertinoIcons.archivebox,
+                                    size: 15,
+                                    color: p.primary,
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    l10n.enterFromCache,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: p.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+
+                      const SizedBox(height: 20),
+
+                      // 底部安全提示
                       Text(
-                        context.l10n.appName,
+                        l10n.casHint,
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: p.label, letterSpacing: -0.5),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '学期管理 · 成绩查询 · 选课助手',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 14, color: p.secondary, fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(height: 40),
-                      CupertinoSlidingSegmentedControl<int>(
-                        groupValue: _tab,
-                        onValueChanged: (v) => setState(() => _tab = v ?? 0),
-                        children: {
-                          0: Padding(padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8), child: Text(context.l10n.loginTab)),
-                          1: Padding(padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8), child: Text(context.l10n.bookTab)),
-                        },
+                        style: TextStyle(
+                          color: p.tertiary,
+                          fontSize: 12,
+                          height: 1.4,
+                          letterSpacing: -0.2,
+                        ),
                       ),
                       const SizedBox(height: 32),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: _tab == 0 ? _buildLoginTab(busy) : _buildBookTab(state.accounts, busy),
-                      ),
                     ],
                   ),
           ),
@@ -131,187 +587,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       ),
     );
   }
-
-  Widget _buildLoginTab(bool busy) {
-    final p = AppThemeScope.of(context);
-    return Column(
-      key: const ValueKey('login_tab'),
-      children: [
-        Group(
-          margin: const EdgeInsets.only(bottom: 16),
-          children: [
-            _CupertinoField(
-              controller: _username,
-              placeholder: context.l10n.username,
-              keyboardType: TextInputType.number,
-              prefix: const Padding(padding: EdgeInsets.only(left: 12), child: Icon(CupertinoIcons.person, size: 20)),
-            ),
-            _CupertinoField(
-              controller: _password,
-              placeholder: context.l10n.password,
-              obscureText: _obscure,
-              prefix: const Padding(padding: EdgeInsets.only(left: 12), child: Icon(CupertinoIcons.lock, size: 20)),
-              suffix: CupertinoButton(
-                padding: EdgeInsets.zero,
-                onPressed: () => setState(() => _obscure = !_obscure),
-                child: Icon(_obscure ? CupertinoIcons.eye_slash : CupertinoIcons.eye, size: 20, color: p.secondary),
-              ),
-              onSubmitted: (_) => busy ? null : _submit(),
-            ),
-          ],
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: Text(context.l10n.rememberAcct, style: TextStyle(color: p.secondary, fontSize: 14, fontWeight: FontWeight.w500)),
-            ),
-            CupertinoSwitch(
-              value: _remember,
-              activeTrackColor: p.primary,
-              onChanged: (v) => setState(() => _remember = v),
-            ),
-          ],
-        ),
-        const SizedBox(height: 32),
-        SizedBox(
-          width: double.infinity,
-          child: CupertinoButton.filled(
-            borderRadius: BorderRadius.circular(14),
-            onPressed: busy ? null : _submit,
-            child: busy
-                ? const CupertinoActivityIndicator(color: CupertinoColors.white)
-                : Text(context.l10n.loginBtn, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
-          ),
-        ),
-        const SizedBox(height: 20),
-        Text(
-          context.l10n.casHint,
-          textAlign: TextAlign.center,
-          style: TextStyle(color: p.secondary, fontSize: 12, height: 1.4),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBookTab(List<Map<String, Object?>> accounts, bool busy) {
-    final p = AppThemeScope.of(context);
-    return Column(
-      key: const ValueKey('book_tab'),
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Group(
-          margin: const EdgeInsets.only(bottom: 24),
-          header: Text(context.l10n.bookHint),
-          children: [
-            _CupertinoField(
-              controller: _username,
-              placeholder: context.l10n.username,
-              prefix: const Padding(padding: EdgeInsets.only(left: 12), child: Icon(CupertinoIcons.person_add, size: 20)),
-            ),
-            Tile(
-              title: Center(child: Text(context.l10n.saveToBook, style: TextStyle(color: p.primary, fontWeight: FontWeight.bold))),
-              onTap: busy || _username.text.trim().isEmpty ? null : _saveToBook,
-            ),
-          ],
-        ),
-        if (accounts.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 40),
-            child: CupertinoEmpty(message: context.l10n.noAccounts, icon: CupertinoIcons.person_crop_circle_badge_exclam),
-          )
-        else
-          Group(
-            header: Text(context.l10n.bookTab),
-            children: [
-              for (final a in accounts)
-                Tile(
-                  leading: TileIcon(icon: CupertinoIcons.person_fill, color: p.primary.withValues(alpha: 0.1)),
-                  title: Text(a['username'] as String? ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text(a['remember'] == true ? context.l10n.remembered : context.l10n.notRemembered),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CupertinoButton(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        color: p.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        onPressed: busy ? null : () => _loginSaved(a),
-                        child: Text(context.l10n.loginBtn, style: TextStyle(color: p.primary, fontSize: 13, fontWeight: FontWeight.bold)),
-                      ),
-                      const SizedBox(width: 8),
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        onPressed: () => ref.read(authProvider.notifier).removeAccount(a['username'] as String? ?? ''),
-                        child: const Icon(CupertinoIcons.trash, size: 18, color: CupertinoColors.systemGrey),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-      ],
-    );
-  }
-
-  Future<void> _saveToBook() async {
-    final err = await ref.read(authProvider.notifier).saveAccount(_username.text.trim(), _password.text, true);
-    if (mounted) {
-      toast(context, err ?? context.l10n.addedToBook, error: err != null);
-    }
-  }
-
-  Future<void> _loginSaved(Map<String, Object?> a) async {
-    await ref.read(authProvider.notifier).loginWithSaved(a);
-  }
 }
 
-class _CupertinoField extends StatelessWidget {
-  const _CupertinoField({
-    required this.controller,
-    required this.placeholder,
-    this.keyboardType,
-    this.obscureText = false,
-    this.suffix,
-    this.prefix,
-    this.onSubmitted,
-  });
-
-  final TextEditingController controller;
-  final String placeholder;
-  final TextInputType? keyboardType;
-  final bool obscureText;
-  final Widget? suffix;
-  final Widget? prefix;
-  final void Function(String)? onSubmitted;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = AppThemeScope.of(context);
-    return CupertinoTextField(
-      controller: controller,
-      placeholder: placeholder,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      onSubmitted: onSubmitted,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      autocorrect: false,
-      prefix: prefix,
-      suffix: suffix,
-      decoration: BoxDecoration(color: p.card),
-      placeholderStyle: TextStyle(color: p.secondary.withValues(alpha: 0.5)),
-    );
-  }
-}
-
+/// 极简 6 位 PIN 体验的短信验证码面板（Less is More）
 class _SmsPanel extends ConsumerStatefulWidget {
   const _SmsPanel({required this.state});
   final AuthState state;
+
   @override
   ConsumerState<_SmsPanel> createState() => _SmsPanelState();
 }
 
 class _SmsPanelState extends ConsumerState<_SmsPanel> {
   final _code = TextEditingController();
+  final _focusNode = FocusNode();
   int _countdown = 0;
 
   @override
@@ -319,6 +608,17 @@ class _SmsPanelState extends ConsumerState<_SmsPanel> {
     super.initState();
     _countdown = widget.state.smsInterval;
     _tick();
+    _code.addListener(_onCodeChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
+  }
+
+  void _onCodeChanged() {
+    setState(() {});
+    if (_code.text.trim().length == 6) {
+      _submit();
+    }
   }
 
   void _tick() {
@@ -332,12 +632,17 @@ class _SmsPanelState extends ConsumerState<_SmsPanel> {
 
   @override
   void dispose() {
+    _code.removeListener(_onCodeChanged);
     _code.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
-    final err = await ref.read(authProvider.notifier).submitSmsCode(_code.text.trim());
+    final code = _code.text.trim();
+    if (code.length < 4) return;
+    final err =
+        await ref.read(authProvider.notifier).submitSmsCode(code);
     if (err != null && mounted) toast(context, err, error: true);
   }
 
@@ -348,7 +653,8 @@ class _SmsPanelState extends ConsumerState<_SmsPanel> {
         toast(context, err, error: true);
       } else {
         toast(context, context.l10n.smsSent);
-        setState(() => _countdown = ref.read(authProvider).value?.smsInterval ?? 60);
+        setState(
+            () => _countdown = ref.read(authProvider).value?.smsInterval ?? 60);
         _tick();
       }
     }
@@ -360,49 +666,174 @@ class _SmsPanelState extends ConsumerState<_SmsPanel> {
     final state = auth.value ?? widget.state;
     final busy = state.status == AuthStatus.busy;
     final p = AppThemeScope.of(context);
-    
+    final l10n = context.l10n;
+
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       children: [
-        const SizedBox(height: 60),
-        BlurView(
-          borderRadius: BorderRadius.circular(20),
-          color: CupertinoColors.systemOrange.withValues(alpha: 0.1),
-          child: const Padding(padding: EdgeInsets.all(20), child: Icon(CupertinoIcons.shield_lefthalf_fill, size: 52, color: CupertinoColors.systemOrange)),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          state.smsMaskedPhone == null ? context.l10n.needSms : context.l10n.smsSentTo.replaceFirst('%1', state.smsMaskedPhone!),
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: p.label),
-        ),
         const SizedBox(height: 12),
-        Text(context.l10n.smsHint, textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: p.secondary, height: 1.4)),
-        const SizedBox(height: 40),
-        CupertinoTextField(
-          controller: _code,
-          keyboardType: TextInputType.number,
-          maxLength: 6,
-          textAlign: TextAlign.center,
-          autofocus: true,
-          style: const TextStyle(fontSize: 32, letterSpacing: 12, fontWeight: FontWeight.bold),
-          placeholder: '------',
-          decoration: BoxDecoration(color: p.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: p.separator)),
-          onSubmitted: (_) => busy ? null : _submit(),
-        ),
-        const SizedBox(height: 32),
-        SizedBox(
-          width: double.infinity,
-          child: CupertinoButton.filled(
-            borderRadius: BorderRadius.circular(14),
-            onPressed: busy ? null : _submit,
-            child: busy ? const CupertinoActivityIndicator(color: CupertinoColors.white) : Text(context.l10n.verifyBtn, style: const TextStyle(fontWeight: FontWeight.bold)),
+
+        // 顶部取消/返回按钮
+        Align(
+          alignment: Alignment.centerLeft,
+          child: CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: busy
+                ? null
+                : () => ref.read(authProvider.notifier).cancelSms(),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(CupertinoIcons.chevron_back, size: 20, color: p.primary),
+                const SizedBox(width: 2),
+                Text(
+                  l10n.cancel,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: p.primary,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        const SizedBox(height: 12),
-        CupertinoButton(
-          onPressed: busy || _countdown > 0 ? null : _resend,
-          child: Text(_countdown > 0 ? '${context.l10n.resend}(${_countdown}s)' : context.l10n.resendNow, style: const TextStyle(fontWeight: FontWeight.w500)),
+
+        const SizedBox(height: 36),
+
+        // 极简标题与手机号副标题
+        Text(
+          l10n.needSms,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            color: p.label,
+            letterSpacing: -0.5,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          state.smsMaskedPhone == null
+              ? l10n.smsHint
+              : l10n.smsSentTo.replaceFirst('%1', state.smsMaskedPhone!),
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 14,
+            color: p.secondary,
+            height: 1.4,
+          ),
+        ),
+
+        const SizedBox(height: 40),
+
+        // 6 位原生极简 PIN 格验证码面板
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            // 隐藏但承载原生键盘与 Autofill 的输入控件
+            Opacity(
+              opacity: 0.0,
+              child: CupertinoTextField(
+                controller: _code,
+                focusNode: _focusNode,
+                keyboardType: TextInputType.number,
+                maxLength: 6,
+                autofocus: true,
+                autofillHints: const [AutofillHints.oneTimeCode],
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+            ),
+            // 6 个独立精致方格
+            GestureDetector(
+              onTap: () => _focusNode.requestFocus(),
+              behavior: HitTestBehavior.opaque,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(6, (idx) {
+                  final text = _code.text;
+                  final digit = idx < text.length ? text[idx] : '';
+                  final isCurrent = idx == text.length;
+                  return Container(
+                    width: 44,
+                    height: 52,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      color: p.card,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isCurrent
+                            ? p.primary
+                            : (digit.isNotEmpty
+                                ? p.label.withValues(alpha: 0.3)
+                                : p.border),
+                        width: isCurrent ? 1.8 : 0.8,
+                      ),
+                      boxShadow: isCurrent
+                          ? [
+                              BoxShadow(
+                                color: p.primary.withValues(alpha: 0.15),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Center(
+                      child: Text(
+                        digit,
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: p.label,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 36),
+
+        // 验证主按钮
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: CupertinoButton.filled(
+            borderRadius: BorderRadius.circular(14),
+            onPressed: busy || _code.text.trim().length < 6 ? null : _submit,
+            child: busy
+                ? const CupertinoActivityIndicator(color: CupertinoColors.white)
+                : Text(
+                    l10n.verifyBtn,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+          ),
+        ),
+
+        const SizedBox(height: 14),
+
+        // 重新发送文本按钮
+        Center(
+          child: CupertinoButton(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            onPressed: busy || _countdown > 0 ? null : _resend,
+            child: Text(
+              _countdown > 0
+                  ? '${l10n.resend} (${_countdown}s)'
+                  : l10n.resendNow,
+              style: TextStyle(
+                color: _countdown > 0 ? p.secondary : p.primary,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ),
       ],
     );

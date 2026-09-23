@@ -181,16 +181,22 @@ class EamsApi {
   /// （如 courseTableForStd）完成会话内注册，否则返回空表
   /// `{yearDom:"",semesters:{},semesterId:""}`——本会话首次调用自动预热。
   Future<SemestersResult> semesters() async {
+    var defaultValue = '369';
     if (!_dataQueryWarmed) {
-      await _getAjax('/eams/courseTableForStd.action'); // 预热 dataQuery 组件
+      final warmHtml = await _getAjax('/eams/courseTableForStd.action'); // 预热 dataQuery 组件
       _dataQueryWarmed = true;
+      final defaultValM =
+          RegExp(r'value\s*:\s*["\x27]?(\d+)').firstMatch(warmHtml);
+      if (defaultValM != null) {
+        defaultValue = defaultValM.group(1)!;
+      }
     }
     // projectId(与抓包一致的预备查询)
     await _postAjax('/eams/dataQuery.action', {'dataType': 'projectId'});
     final html = await _postAjax('/eams/dataQuery.action', {
       'tagId': _tagId(),
       'dataType': 'semesterCalendar',
-      'value': '',
+      'value': defaultValue,
       'empty': 'false',
     });
     await _save('semesters_raw.txt', html);

@@ -1,8 +1,5 @@
-/// 系统消息页 —— 展示一组系统通知（主题 / 发件人 / 时间）。
-///
-/// 单 Provider（messagesProvider）缓存优先渲染；整页 CustomScrollView +
-/// CupertinoSliverRefreshControl 下拉刷新，导航栏右上角"刷新"按钮强制在线刷新；
-/// 点击单条消息弹底部详情（列出除 _links/file 外的全部 KV）。
+/// 系统消息页 —— 教务系统通知与邮件列表。
+/// 采用 iOS 邮箱质感的列表呈现与抽屉详情。
 library;
 
 import 'package:flutter/cupertino.dart';
@@ -20,7 +17,7 @@ class MessagesPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final p = AppThemeScope.of(context);
     final l10n = context.l10n;
-    
+
     return CupertinoPageScaffold(
       backgroundColor: p.bg,
       child: CustomScrollView(
@@ -28,13 +25,14 @@ class MessagesPage extends ConsumerWidget {
         slivers: [
           CupertinoSliverNavigationBar(
             largeTitle: Text(l10n.messages),
-            backgroundColor: p.bar.withValues(alpha: 0.8),
+            backgroundColor: p.bar.withValues(alpha: 0.82),
             border: Border(bottom: BorderSide(color: p.separator, width: 0.5)),
             stretch: true,
             trailing: CupertinoButton(
               padding: EdgeInsets.zero,
+              minimumSize: const Size(36, 36),
               onPressed: () => ref.read(messagesProvider.notifier).refresh(),
-              child: const Icon(CupertinoIcons.arrow_clockwise),
+              child: const Icon(CupertinoIcons.arrow_clockwise, size: 20),
             ),
           ),
           CupertinoSliverRefreshControl(
@@ -44,7 +42,7 @@ class MessagesPage extends ConsumerWidget {
             async: ref.watch(messagesProvider),
             onRetry: () => ref.read(messagesProvider.notifier).refresh(),
             emptyText: l10n.noMessages,
-            sliverPadding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            sliverPadding: const EdgeInsets.fromLTRB(16, 12, 16, 48),
             builder: (context, data) => _MessagesContent(data: data),
           ),
         ],
@@ -65,117 +63,92 @@ class _MessagesContent extends StatelessWidget {
     ];
 
     if (records.isEmpty) {
-      return SizedBox(
-        height: 200,
-        child: CupertinoEmpty(message: context.l10n.noMessages),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 48),
+        child: CupertinoEmpty(
+          message: context.l10n.noMessages,
+          icon: CupertinoIcons.envelope_badge,
+        ),
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Group(
+      margin: EdgeInsets.zero,
       children: [
-        Group(
-          children: [
-            for (final m in records)
-              Tile(
-                title: Text(
-                  s(m, '主题').isEmpty ? context.l10n.noSubject : s(m, '主题'),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Text(
-                  [
-                    if (s(m, '发件人').isNotEmpty) s(m, '发件人'),
-                    if (s(m, '时间').isNotEmpty) s(m, '时间'),
-                  ].join('  ·  '),
-                ),
-                leading: const TileIcon(
-                  icon: CupertinoIcons.mail,
-                  color: CupertinoColors.systemBlue,
-                ),
-                onTap: () => _showDetail(context, m),
-              ),
-          ],
-        ),
+        for (final m in records)
+          Tile(
+            leading: const TileIcon(
+              icon: CupertinoIcons.mail_solid,
+              color: CupertinoColors.systemRed,
+            ),
+            title: Text(
+              s(m, '主题').isEmpty ? context.l10n.noSubject : s(m, '主题'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: Text(
+              [
+                if (s(m, '发件人').isNotEmpty) s(m, '发件人'),
+                if (s(m, '时间').isNotEmpty) s(m, '时间'),
+              ].join(' · '),
+            ),
+            onTap: () => _showDetail(context, m),
+          ),
       ],
     );
   }
 
   void _showDetail(BuildContext context, Map<String, Object?> m) {
-    showCupertinoModalPopup<void>(
-      context: context,
-      builder: (ctx) => _DetailSheet(record: m),
-    );
-  }
-}
-
-class _DetailSheet extends StatelessWidget {
-  const _DetailSheet({required this.record});
-  final Map<String, Object?> record;
-
-  @override
-  Widget build(BuildContext context) {
+    final title = s(m, '主题').isEmpty ? context.l10n.msgDetail : s(m, '主题');
     final p = AppThemeScope.of(context);
     final kv = [
-      for (final e in record.entries)
-        if (e.key != '_links' && e.key != 'file') (e.key, '${e.value ?? ''}'),
+      for (final e in m.entries)
+        if (e.key != '_links' && e.key != 'file' && e.value != null && e.value.toString().isNotEmpty)
+          (e.key, '${e.value}'),
     ];
 
-    return BlurView(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      child: SafeArea(
-        top: false,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 36,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: p.separator,
-                  borderRadius: BorderRadius.circular(2.5),
+    showCupertinoModalSheet<void>(
+      context: context,
+      builder: (ctx) => CupertinoSheetContainer(
+        title: title,
+        subtitle: s(m, '时间'),
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          children: [
+            for (final item in kv)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 90,
+                      child: Text(
+                        item.$1,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: p.secondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        item.$2,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: p.label,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
-              Text(
-                s(record, '主题').isEmpty ? context.l10n.msgDetail : s(record, '主题'),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: p.label,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Flexible(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Group(
-                    margin: EdgeInsets.zero,
-                    children: kv.isEmpty
-                        ? [
-                            Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Text(context.l10n.noDetail,
-                                  style: TextStyle(color: p.secondary)),
-                            ),
-                          ]
-                        : [
-                            for (final item in kv)
-                              KVRow(label: item.$1, value: item.$2),
-                          ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              CupertinoButton(
-                child: Text(context.l10n.close),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
-          ),
+            const SizedBox(height: 24),
+          ],
         ),
       ),
     );
